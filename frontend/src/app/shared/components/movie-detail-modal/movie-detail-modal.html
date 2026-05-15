@@ -1,0 +1,129 @@
+@if (isOpen()) {
+  <div class="modal-overlay d-flex align-items-center justify-content-center">
+    <div class="modal-container bg-white rounded-4 shadow-lg overflow-hidden animate__animated animate__zoomIn">
+      <div class="position-relative">
+        @if (movie().backdrop_path || movie().poster_path) {
+          <img [src]="'https://image.tmdb.org/t/p/original' + (movie().backdrop_path || movie().poster_path)" class="w-100" style="max-height: 250px; object-fit: cover; filter: brightness(0.6);">
+        }
+        <button class="btn-close btn-close-white position-absolute top-0 end-0 m-3 shadow-none" (click)="onClose()"></button>
+        
+        <div class="position-absolute bottom-0 start-0 p-4 w-100 text-white" style="background: linear-gradient(transparent, rgba(0,0,0,0.9));">
+          <h2 class="m-0 fw-bold">{{ movie().title }}</h2>
+          <div class="d-flex align-items-center flex-wrap gap-2 mt-2 small">
+            <span class="badge bg-warning text-dark">{{ movie().vote_average | number:'1.1-1' }} <i class="bi bi-star-fill"></i> TMDB</span>
+            
+            @if (stats() && stats()!.total_votes > 0) {
+              <span class="badge bg-primary">{{ stats()!.avg_rating | number:'1.1-1' }} <i class="bi bi-star-fill"></i> FilmStack</span>
+            }
+
+            <span class="opacity-50">|</span>
+            <span>{{ movie().release_date | date:'y' }}</span>
+            @if (movie().runtime) {
+              <span class="opacity-50">•</span>
+              <span>{{ movie().runtime | runtime }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-body-scroll p-4 pt-3" style="max-height: 70vh; overflow-y: auto;">
+        <div class="row g-4">
+          <!-- Main Content Column -->
+          <div class="col-12 col-md-7 col-lg-8">
+            <!-- Synopsis -->
+            <section class="mb-4">
+              <h6 class="text-grey-olive fw-bold text-uppercase small mb-2"><i class="bi bi-justify-left me-1"></i>Sinopsis</h6>
+              <p class="text-dark line-height-base m-0">
+                {{ movie().overview || 'No hay descripción disponible.' }}
+              </p>
+            </section>
+
+            <!-- Cast -->
+            @if (movie().credits?.cast?.length) {
+              <section class="mb-4">
+                <h6 class="text-grey-olive fw-bold text-uppercase small mb-3"><i class="bi bi-people me-1"></i>Reparto Principal</h6>
+                <div class="d-flex gap-3 overflow-x-auto pb-2 cast-scroll">
+                  @for (person of movie().credits?.cast?.slice(0, 12); track person.id) {
+                    <div class="text-center" style="min-width: 90px;">
+                      <img [src]="getProfileImage(person.profile_path)" class="rounded-circle mb-2 object-fit-cover shadow-sm border border-2 border-white" style="width: 70px; height: 70px;">
+                      <div class="small fw-bold text-truncate text-dark" style="max-width: 90px;">{{ person.name }}</div>
+                      <div class="text-grey-olive text-truncate" style="max-width: 90px; font-size: 0.7rem;">{{ person.character }}</div>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+
+            <!-- Trailer -->
+            @if (mainTrailer()) {
+              <section>
+                <h6 class="text-grey-olive fw-bold text-uppercase small mb-3"><i class="bi bi-play-btn me-1"></i>Trailer Oficial</h6>
+                <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow-sm border border-platinum">
+                  <iframe [src]="'https://www.youtube.com/embed/' + mainTrailer()!.key | safe" allowfullscreen></iframe>
+                </div>
+              </section>
+            }
+          </div>
+
+          <!-- Sidebar Column -->
+          <div class="col-12 col-md-5 col-lg-4 border-start-md ps-md-4">
+            <!-- Genres -->
+            @if (movie().genres) {
+              <div class="mb-4">
+                <h6 class="text-grey-olive fw-bold text-uppercase small mb-2">Géneros</h6>
+                <div class="d-flex flex-wrap gap-1">
+                  @for (genre of movie().genres; track genre.id) {
+                    <span class="badge rounded-pill bg-light text-grey-olive border border-platinum">{{ genre.name }}</span>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Technical Stats -->
+            <div class="mb-4">
+              <h6 class="text-grey-olive fw-bold text-uppercase small mb-2">Detalles Técnicos</h6>
+              <ul class="list-unstyled small text-dark mb-0">
+                <li class="mb-2 d-flex justify-content-between">
+                  <span class="text-grey-olive">Lanzamiento:</span>
+                  <span class="fw-bold">{{ movie().release_date | date:'longDate' }}</span>
+                </li>
+                @if (movie().runtime) {
+                  <li class="mb-2 d-flex justify-content-between">
+                    <span class="text-grey-olive">Duración:</span>
+                    <span class="fw-bold">{{ movie().runtime | runtime }}</span>
+                  </li>
+                }
+                <li class="mb-2 d-flex justify-content-between">
+                  <span class="text-grey-olive">Puntuación TMDB:</span>
+                  <span class="fw-bold text-warning"><i class="bi bi-star-fill"></i> {{ movie().vote_average | number:'1.1-1' }}</span>
+                </li>
+                @if (stats() && stats()!.total_votes > 0) {
+                  <li class="mb-0 d-flex justify-content-between">
+                    <span class="text-grey-olive">Votos FilmStack:</span>
+                    <div class="text-end">
+                      <div class="fw-bold text-primary"><i class="bi bi-star-fill"></i> {{ stats()!.avg_rating | number:'1.1-1' }}</div>
+                      <div class="text-grey-olive" style="font-size: 0.65rem;">({{ stats()!.total_votes }} {{ stats()!.total_votes === 1 ? 'voto' : 'votos' }})</div>
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-light border-top d-flex gap-2">
+        <button class="btn btn-outline-secondary flex-grow-1" (click)="onClose()">Cerrar</button>
+        @if (!isAlreadyInBacklog()) {
+          <button class="btn btn-primary flex-grow-2" (click)="onAdd()">
+            <i class="bi bi-plus-lg"></i> Añadir a mi colección
+          </button>
+        } @else {
+          <div class="badge bg-success-subtle text-success p-2 flex-grow-2 d-flex align-items-center justify-content-center border border-success-subtle">
+            <i class="bi bi-check-circle-fill me-2"></i> En tu colección
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

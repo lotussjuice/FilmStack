@@ -1,0 +1,30 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1050;
+}
+
+.modal-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 1rem;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.rating-stars i {
+    transition: transform 0.2s;
+}
+
+.rating-stars i:hover {
+    transform: scale(1.2);
+}
+
+.animate__fadeInUp {
+    animation-duration: 0.4s;
+}

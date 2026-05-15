@@ -1,0 +1,46 @@
+.movie-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.movie-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.border-dashed {
+    border-style: dashed !important;
+}
+
+.btn-group .btn.active {
+    background-color: var(--platinum);
+    border-color: var(--dusk-blue);
+    font-weight: 600;
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.1);
+}
+
+.btn-group .btn.text-warning.active {
+    background-color: #fff9e6;
+    border-color: #ffc107;
+}
+
+.btn-group .btn.text-success.active {
+    background-color: #e6ffed;
+    border-color: #28a745;
+}
+
+.btn-group .btn.text-danger.active {
+    background-color: #ffeef0;
+    border-color: #dc3545;
+}

@@ -1,0 +1,79 @@
+@if (auth.isAuthenticated()) {
+  <div class="d-flex flex-column min-vh-100 bg-light text-dark">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom border-platinum shadow-sm">
+      <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" routerLink="/">
+          <i class="bi bi-film fs-3 text-primary me-2"></i>
+          <span class="fw-bold text-primary">FilmStack</span>
+        </a>
+        <div class="d-flex align-items-center ms-auto">
+          <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle border-0" type="button" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle me-1"></i> 
+              {{ auth.user()?.name || 'Usuario' }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+              <li><a class="dropdown-item py-2" routerLink="/profile"><i class="bi bi-person me-2"></i>Mi Perfil</a></li>
+              <li><a class="dropdown-item py-2" href="#"><i class="bi bi-gear me-2"></i>Ajustes</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item py-2 text-danger fw-bold" href="javascript:void(0)" (click)="auth.logout()"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid flex-grow-1 d-flex p-0">
+      <!-- Sidebar -->
+      <div class="bg-white border-end border-platinum flex-shrink-0 shadow-sm" style="width: 250px;">
+        <div class="d-flex flex-column p-3 h-100">
+          <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+              <a routerLink="/search" routerLinkActive="active" class="nav-link text-dark mb-2">
+                <i class="bi bi-search me-2"></i>
+                Buscar
+              </a>
+            </li>
+            
+            @if (auth.role() !== 'guest') {
+              <li>
+                <a routerLink="/backlog" routerLinkActive="active" class="nav-link text-dark mb-2">
+                  <i class="bi bi-collection-play me-2"></i>
+                  Mi Backlog
+                </a>
+              </li>
+            }
+
+            @if (auth.isAdmin()) {
+              <li class="mt-4">
+                <span class="text-grey-olive small text-uppercase fw-bold ps-3 mb-2 d-block">Admin</span>
+              </li>
+              <li>
+                <a routerLink="/admin/users" routerLinkActive="active" class="nav-link text-secondary mb-2">
+                  <i class="bi bi-people me-2"></i>
+                  Gestión de Usuarios
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <main class="flex-grow-1 overflow-auto bg-white p-4" style="height: calc(100vh - 57px - 57px);">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-top border-platinum mt-auto py-3">
+      <div class="container-fluid text-center">
+        <span class="text-grey-olive small">FilmStack &copy; 2026 - Plataforma Académica</span>
+      </div>
+    </footer>
+  </div>
+} @else {
+  <!-- Vista de Login (pantalla completa) -->
+  <router-outlet></router-outlet>
+}

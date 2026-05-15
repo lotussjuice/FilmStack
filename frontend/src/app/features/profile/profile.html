@@ -1,0 +1,66 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-sm border-platinum bg-white">
+        <div class="card-body p-4 p-md-5">
+          <h2 class="mb-4 fw-bold text-primary"><i class="bi bi-person-circle me-2"></i>Mi Perfil</h2>
+          
+          <p class="text-grey-olive mb-4">Administra tu información personal de FilmStack.</p>
+
+          @if (message()) {
+            <div class="alert mb-4" [class.alert-success]="messageType() === 'success'" [class.alert-danger]="messageType() === 'danger'">
+              <i class="bi" [class.bi-check-circle-fill]="messageType() === 'success'" [class.bi-exclamation-triangle-fill]="messageType() === 'danger'"></i>
+              {{ message() }}
+            </div>
+          }
+
+          <form (ngSubmit)="onUpdateProfile()">
+            <!-- Nombre -->
+            <div class="mb-4">
+              <label for="name" class="form-label text-grey-olive small text-uppercase fw-bold">Nombre Completo</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-platinum text-grey-olive">
+                  <i class="bi bi-person"></i>
+                </span>
+                <input 
+                  type="text" 
+                  id="name" 
+                  class="form-control border-platinum" 
+                  [ngModel]="name()" 
+                  (ngModelChange)="name.set($event)" 
+                  name="name" 
+                  required>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-5">
+              <label for="email" class="form-label text-grey-olive small text-uppercase fw-bold">Correo Electrónico</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-platinum text-grey-olive">
+                  <i class="bi bi-envelope"></i>
+                </span>
+                <input 
+                  type="email" 
+                  id="email" 
+                  class="form-control border-platinum" 
+                  [ngModel]="email()" 
+                  (ngModelChange)="email.set($event)" 
+                  name="email" 
+                  required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm" [disabled]="isLoading()">
+              @if (isLoading()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span> Guardando...
+              } @else {
+                Guardar Cambios <i class="bi bi-check2-circle ms-2"></i>
+              }
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
