@@ -1,0 +1,58 @@
+/* Theme: Bootswatch Sandstone (via CDN in index.html) */
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+:root {
+  --platinum: #ffffff;
+  --dusk-blue: #274c77;
+  --steel-blue: #6096ba;
+  --icy-blue: #a3cef1;
+  --grey-olive: #8b8c89;
+  
+  --primary: var(--dusk-blue);
+  --secondary: var(--steel-blue);
+  --accent: var(--icy-blue);
+}
+
+body {
+  background-color: var(--platinum);
+  color: #333;
+  font-family: 'Open Sans', sans-serif;
+}
+
+/* Custom Overrides for Sandstone + Palette */
+.btn-primary {
+  background-color: var(--dusk-blue) !important;
+  border-color: var(--dusk-blue) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--steel-blue) !important;
+  border-color: var(--steel-blue) !important;
+}
+
+.text-primary {
+  color: var(--dusk-blue) !important;
+}
+
+.bg-light-accent {
+  background-color: var(--icy-blue) !important;
+}
+
+.border-platinum {
+  border-color: var(--platinum) !important;
+}
+
+.text-grey-olive {
+  color: var(--grey-olive) !important;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Auth card/container styling */
+.auth-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}

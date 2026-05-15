@@ -1,0 +1,26 @@
+.movie-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.movie-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.bg-gold {
+    background-color: #ffd700 !important;
+    color: #000 !important;
+}
+
+.form-range::-webkit-slider-thumb {
+    background: var(--dusk-blue);
+}
+
+.form-range::-moz-range-thumb {
+    background: var(--dusk-blue);
+}
+
+.animate__animated {
+    animation-duration: 0.5s;
+}
