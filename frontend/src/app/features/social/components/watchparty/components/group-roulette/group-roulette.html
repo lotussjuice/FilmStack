@@ -1,0 +1,159 @@
+<div class="roulette-wrap">
+  @if (party().status === 'lobby') {
+    <div class="text-center">
+      <h5 class="text-dark-green mb-2"><i class="bi bi-dice-5 me-1"></i> Pozo de la ruleta</h5>
+      <p class="text-dry-sage">Peliculas en el pozo: <strong class="text-onyx">{{ party().spinPool.length }}</strong></p>
+      @if (poolMovies().length > 0) {
+        <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+          @for (movie of poolMovies(); track movie.id) {
+            <span class="badge bg-light text-onyx border border-dry-sage d-flex align-items-center gap-1">
+              {{ movie.title }}
+              @if (isHost()) {
+                <i class="bi bi-x-circle-fill text-status-red ms-1" style="cursor: pointer;" (click)="removeFromPool(movie.id)"></i>
+              }
+            </span>
+          }
+        </div>
+      }
+      <p class="text-dry-sage small">Los miembros pueden proponer peliculas desde el chat. Tu, como host, podras girar cuando haya sugerencias.</p>
+
+      @if (isHost()) {
+        @if (showDirectForm()) {
+          <div class="direct-form p-3 rounded-3 mb-3 text-start">
+            <label class="form-label fw-semibold text-dry-sage small">Buscar pelicula para ver directo</label>
+            <div class="position-relative mb-2">
+              <i class="bi bi-search position-absolute" style="left: 12px; top: 50%; transform: translateY(-50%); color: var(--color-dry-sage);"></i>
+              <input
+                type="text"
+                class="form-control border-dry-sage ps-5"
+                placeholder="Titulo de la pelicula..."
+                [value]="directQuery()"
+                (input)="onDirectQueryChange($any($event.target).value)">
+            </div>
+
+            @if (isSearchingDirect()) {
+              <div class="text-center py-2">
+                <div class="spinner-border spinner-border-sm text-dark-green" role="status"></div>
+              </div>
+            } @else if (directResults().length > 0 && !directSelected()) {
+              <div class="direct-results">
+                @for (m of directResults(); track m.id) {
+                  <button
+                    type="button"
+                    class="direct-result-item d-flex align-items-center gap-2 p-2 rounded-2"
+                    (click)="selectDirectMovie(m)">
+                    @if (posterUrl(m.poster_path); as url) {
+                      <img [src]="url" alt="" class="direct-thumb">
+                    } @else {
+                      <div class="direct-thumb-placeholder d-flex align-items-center justify-content-center">
+                        <i class="bi bi-film"></i>
+                      </div>
+                    }
+                    <div class="flex-grow-1 text-start">
+                      <div class="fw-bold text-onyx small">{{ m.title }}</div>
+                      <div class="text-dry-sage" style="font-size: 0.75rem;">{{ m.release_date | date:'y' }} · {{ m.vote_average?.toFixed(1) }}</div>
+                    </div>
+                  </button>
+                }
+              </div>
+            } @else if (directSelected(); as sel) {
+              <div class="direct-selected d-flex align-items-center gap-2 p-2 rounded-2 mb-2">
+                @if (posterUrl(sel.poster_path); as url) {
+                  <img [src]="url" alt="" class="direct-thumb">
+                } @else {
+                  <div class="direct-thumb-placeholder d-flex align-items-center justify-content-center">
+                    <i class="bi bi-film"></i>
+                  </div>
+                }
+                <div class="flex-grow-1">
+                  <div class="fw-bold text-onyx small">{{ sel.title }}</div>
+                  <div class="text-dry-sage" style="font-size: 0.75rem;">{{ sel.release_date | date:'y' }}</div>
+                </div>
+                <button type="button" class="btn btn-sm btn-link text-status-red p-0" (click)="directSelected.set(null)">
+                  <i class="bi bi-x-circle"></i>
+                </button>
+              </div>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-primary flex-grow-1" (click)="directStart()">
+                  <i class="bi bi-play-fill me-1"></i> Iniciar sesion directa
+                </button>
+                <button type="button" class="btn btn-light" (click)="resetDirectForm()">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            } @else if (directQuery().length > 0) {
+              <p class="text-dry-sage small text-center py-2 m-0">Sin resultados</p>
+            }
+          </div>
+        } @else {
+          <div class="d-flex gap-2 justify-content-center flex-wrap">
+            <button type="button" class="btn btn-primary" [disabled]="party().spinPool.length === 0" (click)="spin()">
+              <i class="bi bi-dice-5-fill me-1"></i> Girar Ruleta Grupal
+            </button>
+            <button type="button" class="btn btn-outline-primary" (click)="toggleDirectForm()">
+              <i class="bi bi-fast-forward me-1"></i> Watchparty Directa
+            </button>
+          </div>
+        }
+      }
+    </div>
+  } @else if (party().status === 'voting') {
+    <div class="text-center">
+      <h5 class="text-dark-green mb-3"><i class="bi bi-hourglass-split me-1"></i> Votacion sincronizada</h5>
+      <p class="text-onyx">La ruleta ha elegido. Todos deben aceptar o negar:</p>
+      <h3 class="text-dark-green fw-bold mb-3">{{ party().activeMovieTitle }}</h3>
+      @if (partyPosterUrl(); as url) {
+        <img [src]="url" alt="Poster" class="roulette-poster rounded-3 shadow mb-3">
+      }
+      @if (isHost()) {
+        <p class="text-dry-sage small">Como host, inicia la visualizacion cuando todos hayan aceptado.</p>
+        <button type="button" class="btn btn-primary" (click)="finish()">
+          <i class="bi bi-play-fill me-1"></i> Comenzar a ver
+        </button>
+        <button type="button" class="btn btn-outline-danger ms-2" (click)="wp.declineAndReroll()">
+          <i class="bi bi-x-circle me-1"></i> Cancelar
+        </button>
+      } @else {
+        <p class="text-dry-sage small">Esperando a que el host inicie la visualización...</p>
+      }
+    </div>
+  } @else if (party().status === 'watching') {
+    <div class="text-center">
+      <h5 class="text-dark-green mb-3"><i class="bi bi-eye-fill me-1"></i> Viendo ahora</h5>
+      <h3 class="text-onyx fw-bold">{{ party().activeMovieTitle }}</h3>
+      <div class="w-100 d-flex flex-column align-items-center">
+        @if (partyPosterUrl(); as url) {
+          <div class="mb-3">
+            <img [src]="url" alt="Poster" class="roulette-poster rounded-3 shadow">
+          </div>
+        }
+        @if (isHost()) {
+          <div class="mt-2 w-100 d-flex justify-content-center gap-2">
+            <button type="button" class="btn btn-outline-danger" (click)="wp.declineAndReroll()">
+              <i class="bi bi-x-lg"></i>
+            </button>
+            <button type="button" class="btn btn-success" (click)="finishReview()">
+              <i class="bi bi-check2-circle me-1"></i> Finalizar y reseñar
+            </button>
+          </div>
+        } @else {
+          <p class="text-dry-sage small mt-2">Esperando a que el host finalice la sesión...</p>
+        }
+      </div>
+    </div>
+  } @else if (party().status === 'finished') {
+    <div class="text-center">
+      <h5 class="text-dark-green mb-3"><i class="bi bi-trophy me-1"></i> Sesion finalizada</h5>
+      <p class="text-onyx">Es hora de calificar juntos: <strong>{{ party().activeMovieTitle }}</strong></p>
+      <button type="button" class="btn btn-primary" (click)="finishReview()">
+        <i class="bi bi-star me-1"></i> Abrir reseña grupal
+      </button>
+    </div>
+  }
+
+  <div class="text-center mt-4">
+    <button type="button" class="btn btn-link text-status-red" (click)="leave()">
+      <i class="bi bi-box-arrow-left me-1"></i> Salir de la watchparty
+    </button>
+  </div>
+</div>

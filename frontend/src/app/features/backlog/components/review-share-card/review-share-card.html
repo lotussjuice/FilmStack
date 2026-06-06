@@ -1,0 +1,53 @@
+<div class="share-card" #shareCard>
+  <div class="share-card-inner">
+    <div class="share-poster">
+      @if (posterUrl()) {
+        <img [src]="posterUrl()" alt="Poster" crossorigin="anonymous">
+      } @else {
+        <div class="poster-placeholder">
+          <span>FilmStack</span>
+        </div>
+      }
+    </div>
+
+    <div class="share-content">
+      <div class="share-header">
+        <span class="share-date">{{ reviewDate() }}</span>
+      </div>
+
+      <h2 class="share-title">{{ movie().tmdb_data?.title || 'Sin título' }}</h2>
+
+      @if (hasReviewText()) {
+        <div class="share-stars">
+          @for (filled of ratingStars(); track $index) {
+            <span class="star" [class.filled]="filled">★</span>
+          }
+          <span class="rating-number">{{ movie().rating || 0 }}/5</span>
+        </div>
+
+        <p class="share-review">"{{ movie().review }}"</p>
+      } @else {
+        <div class="share-rating-center">
+          <div class="big-rating">{{ movie().rating || 0 }}</div>
+          <div class="big-rating-max">/ 5</div>
+          <div class="big-stars mt-2">
+            @for (filled of ratingStars(); track $index) {
+              <span class="star" [class.filled]="filled">★</span>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="share-footer">
+        <div class="share-user">
+          <div class="user-avatar">{{ userName().charAt(0).toUpperCase() }}</div>
+          <div>
+            <div class="user-name">{{ userName() }}</div>
+            <div class="user-tag">Reseña en FilmStack</div>
+          </div>
+        </div>
+        <div class="share-icon">FilmStack</div>
+      </div>
+    </div>
+  </div>
+</div>

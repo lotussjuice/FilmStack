@@ -1,13 +1,14 @@
 import { Component, signal, effect, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { TmdbService } from '../../core/services/tmdb.service';
 import { FilmRepositoryService } from '../../core/services/film-repository.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PocketbaseService } from '../../core/services/pocketbase.service';
 import { TMDbMovie } from '../../models/movie.model';
-import { MovieDetailModalComponent } from '../../shared/components/movie-detail-modal/movie-detail-modal';
-import { AddMovieModalComponent } from '../../shared/components/add-movie-modal/add-movie-modal';
+import { MovieDetailModalComponent } from '../backlog/components/movie-detail-modal/movie-detail-modal';
+import { AddMovieModalComponent } from './components/add-movie-modal/add-movie-modal';
 
 @Component({
   selector: 'app-search',
@@ -20,26 +21,24 @@ export class SearchComponent implements OnInit {
   private tmdbService = inject(TmdbService);
   private repo = inject(FilmRepositoryService);
   private pbService = inject(PocketbaseService);
+  private route = inject(ActivatedRoute);
   public auth = inject(AuthService);
 
   searchQuery = signal<string>('');
   searchResults = signal<TMDbMovie[]>([]);
   isLoading = signal<boolean>(false);
 
-  // Filtros
   genres = signal<{id: number, name: string}[]>([]);
   selectedGenre = signal<number | null>(null);
   selectedYear = signal<number | null>(null);
   minRating = signal<number>(0);
 
-  // Estado aplicado de los filtros
   appliedFilters = signal<{ genre: number | null, year: number | null, rating: number }>({ 
     genre: null, 
     year: null, 
     rating: 0 
   });
 
-  // Resultados filtrados (basados en filtros aplicados)
   filteredResults = computed(() => {
     let results = this.searchResults();
     const { genre, year, rating } = this.appliedFilters();
@@ -57,22 +56,20 @@ export class SearchComponent implements OnInit {
     return results;
   });
 
-  // Estado de los modales
   selectedMovie = signal<TMDbMovie | null>(null);
   selectedMovieStats = signal<any | null>(null);
   isInfoModalOpen = signal<boolean>(false);
   isAddModalOpen = signal<boolean>(false);
 
-  private searchTimeout: any;
+  private searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
-    // Efecto para manejar la búsqueda con debounce
     effect(() => {
       const query = this.searchQuery();
-      if (this.searchTimeout) {
+      if (this.searchTimeout !== null) {
         clearTimeout(this.searchTimeout);
       }
-      
+
       if (!query.trim()) {
         this.searchResults.set([]);
         this.isLoading.set(false);
@@ -85,13 +82,13 @@ export class SearchComponent implements OnInit {
           const results = await this.tmdbService.searchMovies(query);
           this.searchResults.set(results);
         } catch (e) {
-          console.error('Error al buscar películas:', e);
+          console.error('Error al buscar peliculas:', e);
           this.searchResults.set([]);
         } finally {
           this.isLoading.set(false);
         }
-      }, 500); 
-    }, { allowSignalWrites: true });
+      }, 500);
+    });
   }
 
   async ngOnInit() {
@@ -99,8 +96,14 @@ export class SearchComponent implements OnInit {
       const genres = await this.tmdbService.getGenres();
       this.genres.set(genres);
     } catch (e) {
-      console.error('Error al cargar géneros:', e);
+      console.error('Error al cargar generos:', e);
     }
+    this.route.queryParamMap.subscribe(params => {
+      const q = params.get('q');
+      if (q) {
+        this.searchQuery.set(q);
+      }
+    });
   }
 
   onSearchChange(event: Event) {
@@ -123,7 +126,6 @@ export class SearchComponent implements OnInit {
     this.applyFilters();
   }
 
-  // Abre el modal de información y carga detalles adicionales + estadísticas
   async openInfo(movie: TMDbMovie) {
     this.selectedMovie.set(movie);
     this.selectedMovieStats.set(null); 
@@ -138,7 +140,7 @@ export class SearchComponent implements OnInit {
       this.selectedMovie.set(fullDetails);
       this.selectedMovieStats.set(stats);
     } catch (e) {
-      console.error('Error al obtener detalles/estadísticas:', e);
+      console.error('Error al obtener detalles/estadisticas:', e);
     }
   }
 
@@ -148,7 +150,7 @@ export class SearchComponent implements OnInit {
     this.isAddModalOpen.set(true);
   }
 
-  async onAddConfirm(options: any) {
+  async onAddConfirm(options: { status: 'pending' | 'watched' | 'dropped'; rating: number; review: string; is_favorite: boolean }) {
     const movie = this.selectedMovie();
     if (movie) {
       await this.repo.addMovieToBacklog(movie.id, options);
@@ -157,7 +159,6 @@ export class SearchComponent implements OnInit {
     }
   }
 
-  // Comprueba si una película ya existe en el backlog del usuario
   isMovieInBacklog(tmdbId: number): boolean {
     return this.repo.hybridMovies().some(m => m.tmdb_id === tmdbId);
   }

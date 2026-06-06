@@ -1,0 +1,27 @@
+.member-pick {
+  background: var(--color-platinum);
+  border: 1px solid var(--color-dry-sage);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.member-pick:hover {
+  background: var(--color-dry-sage);
+}
+.member-pick.selected {
+  background: var(--color-dry-sage);
+  border-color: var(--color-dark-green);
+}
+
+.friend-avatar-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-dark-green);
+  color: var(--color-platinum);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}

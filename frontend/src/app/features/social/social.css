@@ -1,0 +1,6 @@
+.nav-pills .nav-link {
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  font-family: var(--font-accent);
+}

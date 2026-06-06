@@ -1,68 +1,65 @@
-<div class="row g-0 vh-100 bg-white">
-  <!-- Izquierda: Información (Dusk Blue background) -->
+<div class="row g-0 vh-100 bg-platinum">
   <div
-    class="col-lg-6 d-none d-lg-flex flex-column justify-content-center align-items-start p-5 text-white" 
-    style="background-color: var(--dusk-blue);">
+    class="col-lg-6 d-none d-lg-flex flex-column justify-content-center align-items-start p-5 text-platinum login-info-panel">
     <div class="mb-4">
-      <i class="bi bi-film text-white" style="font-size: 5rem;"></i>
+      <i class="bi bi-film text-platinum" style="font-size: 5rem;"></i>
     </div>
-    <h1 class="display-4 fw-bold mb-3">FilmStack</h1>
-    <p class="lead mb-5" style="color: var(--icy-blue);">
-      La plataforma para gestionar tu catálogo cinematográfico.
-      Descubre, organiza y lleva el control de todas las películas que deseas ver o ya has visto.
+    <h1 class="display-4 fw-bold mb-3 text-platinum">FilmStack</h1>
+    <p class="lead mb-5 text-dry-sage">
+      La plataforma para gestionar tu catalogo cinematografico.
+      Descubre, organiza y lleva el control de todas las peliculas que deseas ver o ya has visto.
     </p>
-    <div class="mt-auto small" style="color: var(--icy-blue);">
+    <div class="mt-auto small text-dry-sage">
       &copy; 2026 FilmStack.
     </div>
   </div>
 
-  <!-- Derecha: Login -->
-  <div class="col-12 col-lg-6 d-flex justify-content-center align-items-center p-5 bg-white">
+  <div class="col-12 col-lg-6 d-flex justify-content-center align-items-center p-5 bg-platinum">
     <div class="w-100 auth-container p-5" style="max-width: 450px;">
 
       <div class="d-lg-none text-center mb-5">
-        <i class="bi bi-film text-primary fs-1 mb-2"></i>
-        <h2 class="fw-bold text-primary">FilmStack</h2>
+        <i class="bi bi-film text-dark-green fs-1 mb-2"></i>
+        <h2 class="fw-bold text-dark-green">FilmStack</h2>
       </div>
 
-      <h3 class="mb-4 fw-bold text-dark text-center">Iniciar Sesión</h3>
+      <h3 class="mb-4 fw-bold text-onyx text-center">Iniciar Sesion</h3>
 
       @if (errorMessage()) {
-      <div class="alert alert-danger mb-4" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage() }}
-      </div>
+        <div class="alert alert-danger mb-4" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage() }}
+        </div>
       }
 
       <form (ngSubmit)="onLogin()">
         <div class="mb-4">
-          <label for="email" class="form-label text-grey-olive small text-uppercase fw-bold">Correo Electrónico</label>
+          <label for="email" class="form-label text-dry-sage small text-uppercase fw-bold">Correo Electronico</label>
           <div class="input-group">
-            <span class="input-group-text bg-white border-end-0 border-platinum">
-              <i class="bi bi-envelope text-grey-olive"></i>
+            <span class="input-group-text bg-platinum border-end-0 border-dry-sage">
+              <i class="bi bi-envelope text-dry-sage"></i>
             </span>
-            <input type="email" id="email" class="form-control border-start-0 ps-0 border-platinum"
+            <input type="email" id="email" class="form-control border-start-0 ps-0 border-dry-sage"
               placeholder="tu@correo.com" [ngModel]="email()" (ngModelChange)="email.set($event)" name="email" required>
           </div>
         </div>
 
         <div class="mb-5">
-          <label for="password" class="form-label text-grey-olive small text-uppercase fw-bold">Contraseña</label>
+          <label for="password" class="form-label text-dry-sage small text-uppercase fw-bold">Contrasena</label>
           <div class="input-group">
-            <span class="input-group-text bg-white border-end-0 border-platinum">
-              <i class="bi bi-lock text-grey-olive"></i>
+            <span class="input-group-text bg-platinum border-end-0 border-dry-sage">
+              <i class="bi bi-lock text-dry-sage"></i>
             </span>
-            <input type="password" id="password" class="form-control border-start-0 ps-0 border-platinum"
-              placeholder="••••••••" [ngModel]="password()" (ngModelChange)="password.set($event)" name="password"
+            <input type="password" id="password" class="form-control border-start-0 ps-0 border-dry-sage"
+              placeholder="********" [ngModel]="password()" (ngModelChange)="password.set($event)" name="password"
               required>
           </div>
         </div>
 
         <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm" [disabled]="isLoading()">
           @if (isLoading()) {
-          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-          Verificando...
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Verificando...
           } @else {
-          Ingresar <i class="bi bi-arrow-right ms-2"></i>
+            Ingresar <i class="bi bi-arrow-right ms-2"></i>
           }
         </button>
       </form>

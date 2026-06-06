@@ -1,5 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
-import { inject } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { PocketbaseService } from './pocketbase.service';
 import { Router } from '@angular/router';
 
@@ -19,17 +18,17 @@ export interface User {
 export class AuthService {
   private currentUser = signal<User | null>(null);
   private router = inject(Router);
+  private pbService = inject(PocketbaseService);
 
   public user = computed(() => this.currentUser());
   public isAuthenticated = computed(() => this.currentUser() !== null && this.pbService.pb.authStore.isValid);
   public role = computed<Role>(() => this.currentUser()?.role || 'guest');
   public isAdmin = computed(() => this.role() === 'admin');
 
-  constructor(private pbService: PocketbaseService) {
+  constructor() {
     this.initAuth();
   }
 
-  // Inicializa el estado de autenticación desde el authStore de PocketBase
   private initAuth() {
     const authStore = this.pbService.pb.authStore;
     if (authStore.isValid && authStore.record) {
@@ -39,7 +38,6 @@ export class AuthService {
       this.logout();
     }
 
-    // Suscribirse a cambios en el almacenamiento de autenticación
     this.pbService.pb.authStore.onChange((token, record) => {
       if (token && record && this.pbService.pb.authStore.isValid) {
         this.currentUser.set(record as unknown as User);
@@ -64,7 +62,6 @@ export class AuthService {
     }
   }
 
-  // Verifica y refresca el token si es necesario
   private async checkTokenExpiration() {
     try {
       await this.pbService.pb.collection('users').authRefresh();
@@ -79,3 +76,4 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 }
+

@@ -1,0 +1,2 @@
+.rating-stars i { transition: transform 0.15s; }
+.rating-stars i:hover { transform: scale(1.15); }

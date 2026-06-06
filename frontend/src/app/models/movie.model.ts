@@ -31,6 +31,7 @@ export interface MovieStats {
   tmdb_id: number;
   avg_rating: number;
   total_votes: number;
+  group_votes?: number;
 }
 
 export interface HybridMovie extends Movie {

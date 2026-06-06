@@ -1,0 +1,122 @@
+@if (isOpen()) {
+  <div class="modal-overlay d-flex align-items-center justify-content-center">
+    <div class="modal-container rounded-4 shadow-lg overflow-hidden animate__animated animate__zoomIn">
+      <div class="position-relative">
+        @if (movie().backdrop_path || movie().poster_path) {
+          <img [src]="'https://image.tmdb.org/t/p/original' + (movie().backdrop_path || movie().poster_path)" class="w-100" style="max-height: 250px; object-fit: cover; filter: brightness(0.6);">
+        }
+        <button class="btn-close btn-close-white position-absolute top-0 end-0 m-3 shadow-none" (click)="onClose()"></button>
+
+        <div class="position-absolute bottom-0 start-0 p-4 w-100 text-platinum movie-backdrop-overlay">
+          <h2 class="m-0 fw-bold text-platinum">{{ movie().title }}</h2>
+          <div class="d-flex align-items-center flex-wrap gap-2 mt-2 small">
+            <span class="badge bg-status-yellow text-onyx">{{ movie().vote_average | number:'1.1-1' }} <i class="bi bi-star-fill"></i> TMDB</span>
+
+            @if (stats() && stats()!.total_votes > 0) {
+              <span class="badge bg-dark-green text-platinum">{{ stats()!.avg_rating | number:'1.1-1' }} <i class="bi bi-star-fill"></i> FilmStack</span>
+            }
+
+            <span class="opacity-50">|</span>
+            <span>{{ movie().release_date | date:'y' }}</span>
+            @if (movie().runtime) {
+              <span class="opacity-50">&bull;</span>
+              <span>{{ movie().runtime | runtime }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-body-scroll p-4 pt-3" style="max-height: 70vh; overflow-y: auto;">
+        <div class="row g-4">
+          <div class="col-12 col-md-7 col-lg-8">
+            <section class="mb-4">
+              <h6 class="text-dry-sage fw-bold text-uppercase small mb-2"><i class="bi bi-justify-left me-1"></i>Sinopsis</h6>
+              <p class="text-onyx line-height-base m-0">
+                {{ movie().overview || 'No hay descripcion disponible.' }}
+              </p>
+            </section>
+
+            @if (movie().credits?.cast?.length) {
+              <section class="mb-4">
+                <h6 class="text-dry-sage fw-bold text-uppercase small mb-3"><i class="bi bi-people me-1"></i>Reparto Principal</h6>
+                <div class="d-flex gap-3 overflow-x-auto pb-2 cast-scroll">
+                  @for (person of movie().credits?.cast?.slice(0, 12); track person.id) {
+                    <div class="text-center" style="min-width: 90px;">
+                      <img [src]="getProfileImage(person.profile_path)" class="rounded-circle mb-2 object-fit-cover shadow-sm border border-2 border-platinum" style="width: 70px; height: 70px;">
+                      <div class="small fw-bold text-truncate text-onyx" style="max-width: 90px;">{{ person.name }}</div>
+                      <div class="text-dry-sage text-truncate" style="max-width: 90px; font-size: 0.7rem;">{{ person.character }}</div>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+
+            @if (mainTrailer()) {
+              <section>
+                <h6 class="text-dry-sage fw-bold text-uppercase small mb-3"><i class="bi bi-play-btn me-1"></i>Trailer Oficial</h6>
+                <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow-sm border border-dry-sage">
+                  <iframe [src]="'https://www.youtube.com/embed/' + mainTrailer()!.key | safe" allowfullscreen></iframe>
+                </div>
+              </section>
+            }
+          </div>
+
+          <div class="col-12 col-md-5 col-lg-4 border-start-md ps-md-4">
+            @if (movie().genres) {
+              <div class="mb-4">
+                <h6 class="text-dry-sage fw-bold text-uppercase small mb-2">Generos</h6>
+                <div class="d-flex flex-wrap gap-1">
+                  @for (genre of movie().genres; track genre.id) {
+                    <span class="badge rounded-pill bg-dry-sage text-onyx">{{ genre.name }}</span>
+                  }
+                </div>
+              </div>
+            }
+
+            <div class="mb-4">
+              <h6 class="text-dry-sage fw-bold text-uppercase small mb-2">Detalles Tecnicos</h6>
+              <ul class="list-unstyled small text-onyx mb-0">
+                <li class="mb-2 d-flex justify-content-between">
+                  <span class="text-dry-sage">Lanzamiento:</span>
+                  <span class="fw-bold">{{ movie().release_date | date:'longDate' }}</span>
+                </li>
+                @if (movie().runtime) {
+                  <li class="mb-2 d-flex justify-content-between">
+                    <span class="text-dry-sage">Duracion:</span>
+                    <span class="fw-bold">{{ movie().runtime | runtime }}</span>
+                  </li>
+                }
+                <li class="mb-2 d-flex justify-content-between">
+                  <span class="text-dry-sage">Puntuacion TMDB:</span>
+                  <span class="fw-bold text-status-yellow"><i class="bi bi-star-fill"></i> {{ movie().vote_average | number:'1.1-1' }}</span>
+                </li>
+                @if (stats() && stats()!.total_votes > 0) {
+                  <li class="mb-0 d-flex justify-content-between">
+                    <span class="text-dry-sage">Votos FilmStack:</span>
+                    <div class="text-end">
+                      <div class="fw-bold text-dark-green"><i class="bi bi-star-fill"></i> {{ stats()!.avg_rating | number:'1.1-1' }}</div>
+                      <div class="text-dry-sage" style="font-size: 0.65rem;">({{ stats()!.total_votes }} {{ stats()!.total_votes === 1 ? 'voto' : 'votos' }})</div>
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-dry-sage border-top border-dry-sage d-flex gap-2">
+        <button class="btn btn-light flex-grow-1 text-onyx" (click)="onClose()">Cerrar</button>
+        @if (!isAlreadyInBacklog()) {
+          <button class="btn btn-primary flex-grow-2" (click)="onAdd()">
+            <i class="bi bi-plus-lg"></i> Anadir a mi coleccion
+          </button>
+        } @else {
+          <div class="badge bg-status-green text-onyx p-2 flex-grow-2 d-flex align-items-center justify-content-center">
+            <i class="bi bi-check-circle-fill me-2"></i> En tu coleccion
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

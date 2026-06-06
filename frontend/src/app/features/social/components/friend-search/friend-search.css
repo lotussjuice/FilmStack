@@ -1,0 +1,8 @@
+.search-result {
+  background: var(--color-platinum);
+  border: 1px solid var(--color-dry-sage);
+  transition: background 0.15s;
+}
+.search-result:hover {
+  background: var(--color-dry-sage);
+}

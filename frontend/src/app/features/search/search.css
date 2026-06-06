@@ -5,20 +5,15 @@
 
 .movie-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-}
-
-.bg-gold {
-    background-color: #ffd700 !important;
-    color: #000 !important;
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15) !important;
 }
 
 .form-range::-webkit-slider-thumb {
-    background: var(--dusk-blue);
+    background: var(--color-dark-green);
 }
 
 .form-range::-moz-range-thumb {
-    background: var(--dusk-blue);
+    background: var(--color-dark-green);
 }
 
 .animate__animated {

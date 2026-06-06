@@ -1,47 +1,83 @@
-import { Component, computed, inject, signal } from '@angular/core'
+import { Component, computed, inject, signal, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FilmRepositoryService } from '../../core/services/film-repository.service';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal';
-import { EditMovieModalComponent } from '../../shared/components/edit-movie-modal/edit-movie-modal';
-import { MovieDetailModalComponent } from '../../shared/components/movie-detail-modal/movie-detail-modal';
+import { EditMovieModalComponent } from './components/edit-movie-modal/edit-movie-modal';
+import { MovieDetailModalComponent } from './components/movie-detail-modal/movie-detail-modal';
 import { HybridMovie } from '../../models/movie.model';
 
 @Component({
   selector: 'app-backlog',
   standalone: true,
-  imports: [CommonModule, RouterModule, ConfirmModalComponent, EditMovieModalComponent, MovieDetailModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ConfirmModalComponent, EditMovieModalComponent, MovieDetailModalComponent],
   templateUrl: './backlog.html',
   styleUrl: './backlog.css'
 })
-export class BacklogComponent {
+export class BacklogComponent implements OnInit {
   private repo = inject(FilmRepositoryService);
+  private route = inject(ActivatedRoute);
 
   filterStatus = signal<'all' | 'pending' | 'watched' | 'dropped'>('all');
+  filterTitle = signal<string>('');
+  filterMinRating = signal<number>(0);
+  filterFavoritesOnly = signal<boolean>(false);
   
-  // Control del modal de eliminación
   isDeleteModalOpen = signal(false);
   movieIdToDelete = signal<string | null>(null);
 
-  // Control de otros modales (Edición e Info)
   isEditModalOpen = signal(false);
   isInfoModalOpen = signal(false);
   selectedMovie = signal<HybridMovie | null>(null);
 
-  // Filtra las películas según el estado seleccionado (Vistas, Pendientes, Abandonadas)
   filteredMovies = computed(() => {
-    const all = this.repo.hybridMovies();
+    let all = this.repo.hybridMovies();
     const status = this.filterStatus();
+    const title = this.filterTitle().trim().toLowerCase();
+    const minRating = this.filterMinRating();
+    const favoritesOnly = this.filterFavoritesOnly();
     
-    if (status === 'all') return all;
-    return all.filter(m => m.status === status);
+    if (status !== 'all') all = all.filter(m => m.status === status);
+    if (title) all = all.filter(m => (m.tmdb_data?.title || '').toLowerCase().includes(title));
+    if (minRating > 0) all = all.filter(m => (m.rating || 0) >= minRating);
+    if (favoritesOnly) all = all.filter(m => m.is_favorite);
+    
+    return all;
   });
+
+  ngOnInit(): void {
+    this.route.queryParamMap.subscribe(params => {
+      const editTmdbId = params.get('edit');
+      if (editTmdbId) {
+        const tmdbIdNum = Number(editTmdbId);
+        const movie = this.repo.hybridMovies().find(m => m.tmdb_id === tmdbIdNum);
+        if (movie) {
+          setTimeout(() => this.openEdit(movie), 100);
+        }
+      }
+    });
+  }
 
   setFilter(status: 'all' | 'pending' | 'watched' | 'dropped') {
     this.filterStatus.set(status);
   }
 
-  // Solicita confirmación para eliminar una película
+  onTitleFilter(value: string) {
+    this.filterTitle.set(value);
+  }
+
+  toggleFavoritesOnly() {
+    this.filterFavoritesOnly.update(v => !v);
+  }
+
+  resetFilters() {
+    this.filterStatus.set('all');
+    this.filterTitle.set('');
+    this.filterMinRating.set(0);
+    this.filterFavoritesOnly.set(false);
+  }
+
   requestRemove(id: string, event: Event) {
     event.stopPropagation();
     this.movieIdToDelete.set(id);
@@ -73,12 +109,17 @@ export class BacklogComponent {
     this.isEditModalOpen.set(false);
   }
 
-  async onEditConfirm(data: any) {
+  async onEditConfirm(data: { status: 'pending' | 'watched' | 'dropped'; rating: number; review: string; is_favorite: boolean }) {
     const movie = this.selectedMovie();
     if (movie) {
       await this.repo.updateMovie(movie.id, data);
-      this.isEditModalOpen.set(false);
-      this.selectedMovie.set(null);
     }
+    this.isEditModalOpen.set(false);
+    this.selectedMovie.set(null);
+  }
+
+  onEditCancel() {
+    this.isEditModalOpen.set(false);
+    this.selectedMovie.set(null);
   }
 }

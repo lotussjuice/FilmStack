@@ -1,0 +1,9 @@
+<div class="toast-stack">
+  @for (t of toasts(); track t.id) {
+    <div class="toast-item toast-{{ t.type }} d-flex align-items-center gap-2 p-3 rounded-3 shadow-lg" (click)="dismiss(t.id)">
+      <i class="bi" [class]="iconFor(t.type)"></i>
+      <span class="flex-grow-1">{{ t.message }}</span>
+      <button type="button" class="btn-close btn-close-white ms-2" (click)="dismiss(t.id); $event.stopPropagation()"></button>
+    </div>
+  }
+</div>
