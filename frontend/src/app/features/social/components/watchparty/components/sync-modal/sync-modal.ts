@@ -1,7 +1,7 @@
 import { Component, input, output, inject, ChangeDetectionStrategy, signal, computed, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WatchpartyService } from '../../../../../../core/services/watchparty.service';
-import { WatchParty } from '../../../../../../models/social.model';
+import { WatchParty } from '../../../../../../features/social/interfaces/social.interface';
 
 const VOTING_DURATION_MS = 30000;
 

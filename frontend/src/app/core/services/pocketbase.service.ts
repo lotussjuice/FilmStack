@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import PocketBase from 'pocketbase';
-import { Movie } from '../../models/movie.model';
+import { Movie } from '../interfaces/movie.interface';
 
 @Injectable({
   providedIn: 'root'

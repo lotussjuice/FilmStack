@@ -2,7 +2,8 @@ import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { PocketbaseService } from './pocketbase.service';
 import { TmdbService } from './tmdb.service';
 import { AuthService } from './auth.service';
-import { Movie, HybridMovie } from '../../models/movie.model';
+import { ToastService } from './toast.service';
+import { Movie, HybridMovie } from '../interfaces/movie.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +12,7 @@ export class FilmRepositoryService {
   private pbService = inject(PocketbaseService);
   private tmdbService = inject(TmdbService);
   private auth = inject(AuthService);
+  private toast = inject(ToastService);
 
   // Almacena los datos básicos de PocketBase
   private moviesSignal = signal<Movie[]>([]);
@@ -58,7 +60,7 @@ export class FilmRepositoryService {
       this.loadTmdbDetails(movies);
       this.loadStats();
     } catch (error) {
-      console.error('Error al cargar películas', error);
+      this.toast.error('Error al cargar películas');
     }
   }
 
@@ -70,7 +72,7 @@ export class FilmRepositoryService {
       statsList.forEach((s: any) => statsMap.set(s.tmdb_id, s));
       this.statsSignal.set(statsMap);
     } catch (e) {
-      console.error('Error al cargar estadísticas', e);
+      this.toast.error('Error al cargar estadísticas');
     }
   }
 
@@ -115,7 +117,7 @@ export class FilmRepositoryService {
       this.moviesSignal.update(movies => [...movies, created]);
       this.loadTmdbDetails([created]);
     } catch (error) {
-      console.error('Error al añadir película al backlog', error);
+      this.toast.error('Error al añadir película al backlog');
     }
   }
 
@@ -127,7 +129,7 @@ export class FilmRepositoryService {
         movies.map(m => m.id === id ? { ...m, ...updated } : m)
       );
     } catch (error) {
-      console.error('Error al actualizar película', error);
+      this.toast.error('Error al actualizar película');
     }
   }
 
@@ -139,13 +141,22 @@ export class FilmRepositoryService {
     return this.updateMovie(id, { rating });
   }
 
+  // Obtiene estadísticas de una película específica por su TMDB ID
+  async getMovieStats(tmdbId: number): Promise<any> {
+    try {
+      return await this.pbService.pb.collection('rankings').getOne(tmdbId.toString());
+    } catch (e) {
+      return { avg_rating: 0, total_votes: 0 };
+    }
+  }
+
   // Elimina una película del backlog
   async removeMovie(id: string) {
     try {
       await this.pbService.deleteMovie(id);
       this.moviesSignal.update(movies => movies.filter(m => m.id !== id));
     } catch (error) {
-      console.error('Error al eliminar película', error);
+      this.toast.error('Error al eliminar película');
     }
   }
 }

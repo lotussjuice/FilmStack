@@ -1,6 +1,6 @@
 import { Component, input, output, inject, ChangeDetectionStrategy, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { WatchParty } from '../../../../../../models/social.model';
+import { WatchParty } from '../../../../../../features/social/interfaces/social.interface';
 import { FormsModule } from '@angular/forms';
 import { WatchpartyService } from '../../../../../../core/services/watchparty.service';
 import { FilmRepositoryService } from '../../../../../../core/services/film-repository.service';

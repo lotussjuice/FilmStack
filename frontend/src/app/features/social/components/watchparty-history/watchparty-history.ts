@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { WatchpartyService } from '../../../../core/services/watchparty.service';
 import { ExportService } from '../../../../core/services/export.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { WatchParty } from '../../../../models/social.model';
+import { WatchParty } from '../../interfaces/social.interface';
 import { ToastService } from '../../../../core/services/toast.service';
 
 interface FinishedPartyWithReviews {

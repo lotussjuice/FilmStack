@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WatchpartyService } from '../../../../../../core/services/watchparty.service';
 import { AuthService } from '../../../../../../core/services/auth.service';
-import { WatchParty, MovieProposal } from '../../../../../../models/social.model';
+import { WatchParty, MovieProposal } from '../../../../../../features/social/interfaces/social.interface';
 import { TmdbService } from '../../../../../../core/services/tmdb.service';
 
 @Component({

@@ -1,5 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { PocketbaseService } from './pocketbase.service';
+import { ActiveSessionService } from './active-session.service';
 import { Router } from '@angular/router';
 
 export type Role = 'guest' | 'user' | 'admin';
@@ -19,6 +20,7 @@ export class AuthService {
   private currentUser = signal<User | null>(null);
   private router = inject(Router);
   private pbService = inject(PocketbaseService);
+  private activeSession = inject(ActiveSessionService);
 
   public user = computed(() => this.currentUser());
   public isAuthenticated = computed(() => this.currentUser() !== null && this.pbService.pb.authStore.isValid);
@@ -71,6 +73,7 @@ export class AuthService {
   }
 
   logout() {
+    this.activeSession.discard();
     this.pbService.pb.authStore.clear();
     this.currentUser.set(null);
     this.router.navigate(['/login']);

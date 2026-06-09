@@ -25,12 +25,19 @@
                 <input 
                   type="text" 
                   id="name" 
-                  class="form-control border-platinum" 
+                  class="form-control border-platinum"
+                  [class.is-invalid]="nameError()"
                   [ngModel]="name()" 
                   (ngModelChange)="name.set($event)" 
+                  (blur)="onNameBlur()"
                   name="name" 
                   required>
               </div>
+              @if (nameError()) {
+                <div class="invalid-feedback d-block">
+                  <i class="bi bi-exclamation-circle me-1"></i>{{ nameError() }}
+                </div>
+              }
             </div>
 
             <!-- Email -->
@@ -43,12 +50,19 @@
                 <input 
                   type="email" 
                   id="email" 
-                  class="form-control border-platinum" 
+                  class="form-control border-platinum"
+                  [class.is-invalid]="emailError()"
                   [ngModel]="email()" 
                   (ngModelChange)="email.set($event)" 
+                  (blur)="onEmailBlur()"
                   name="email" 
                   required>
               </div>
+              @if (emailError()) {
+                <div class="invalid-feedback d-block">
+                  <i class="bi bi-exclamation-circle me-1"></i>{{ emailError() }}
+                </div>
+              }
             </div>
 
             <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm" [disabled]="isLoading()">

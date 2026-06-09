@@ -50,9 +50,3 @@ export interface WatchParty {
   isActive: boolean;
   updatedAt?: string;
 }
-
-export interface UserSummary {
-  id: string;
-  name: string;
-  email: string;
-}

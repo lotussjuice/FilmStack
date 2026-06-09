@@ -1,9 +1,9 @@
 import { Component, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FilmRepositoryService } from '../../core/services/film-repository.service';
-import { ActiveSessionService } from '../../core/services/active-session.service';
-import { RouletteResultModalComponent } from './components/roulette-result-modal/roulette-result-modal';
-import { HybridMovie } from '../../models/movie.model';
+import { FilmRepositoryService } from '../../../../core/services/film-repository.service';
+import { ActiveSessionService } from '../../../../core/services/active-session.service';
+import { RouletteResultModalComponent } from '../roulette-result-modal/roulette-result-modal';
+import { HybridMovie } from '../../../../core/interfaces/movie.interface';
 
 type RouletteMode = 'pending' | 'rewatch';
 
@@ -12,8 +12,8 @@ type RouletteMode = 'pending' | 'rewatch';
   standalone: true,
   imports: [CommonModule, RouletteResultModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './roulette.html',
-  styleUrl: './roulette.css'
+  templateUrl: './roulette-view.html',
+  styleUrl: './roulette-view.css'
 })
 export class RouletteComponent {
   private repo = inject(FilmRepositoryService);

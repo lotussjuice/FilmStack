@@ -2,7 +2,7 @@ import { Injectable, signal, computed, inject, DestroyRef } from '@angular/core'
 import { PocketbaseService } from './pocketbase.service';
 import { AuthService } from './auth.service';
 import { ActiveSessionService } from './active-session.service';
-import { ChatMessage, MovieProposal, WatchParty } from '../../models/social.model';
+import { ChatMessage, MovieProposal, WatchParty } from '../../features/social/interfaces/social.interface';
 import PocketBase from 'pocketbase';
 
 interface PartyRecord {

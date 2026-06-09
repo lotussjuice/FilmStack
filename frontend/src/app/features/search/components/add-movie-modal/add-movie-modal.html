@@ -56,6 +56,11 @@
                 </i>
               }
             </div>
+            @if (ratingError()) {
+              <div class="text-danger small mt-1">
+                <i class="bi bi-exclamation-circle me-1"></i>{{ ratingError() }}
+              </div>
+            }
           </div>
           <div class="mb-3">
             <label class="form-label fw-semibold text-dry-sage">Tu Resena</label>

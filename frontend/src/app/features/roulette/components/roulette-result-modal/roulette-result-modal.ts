@@ -1,6 +1,6 @@
 import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HybridMovie } from '../../../../models/movie.model';
+import { HybridMovie } from '../../../../core/interfaces/movie.interface';
 
 @Component({
   selector: 'app-roulette-result-modal',

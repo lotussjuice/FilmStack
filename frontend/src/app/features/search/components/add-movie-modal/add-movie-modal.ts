@@ -1,7 +1,7 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, input, output, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TMDbMovie } from '../../../../models/movie.model';
+import { TMDbMovie } from '../../../../core/interfaces/movie.interface';
 
 @Component({
   selector: 'app-add-movie-modal',
@@ -21,8 +21,19 @@ export class AddMovieModalComponent {
   rating = signal<number>(0);
   review = signal<string>('');
   isFavorite = signal<boolean>(false);
+  ratingTouched = signal(false);
+
+  ratingError = computed(() => {
+    if (!this.ratingTouched() || this.status() !== 'watched') return '';
+    if (this.rating() === 0) return 'Selecciona una nota para la película.';
+    return '';
+  });
 
   onSave() {
+    this.ratingTouched.set(true);
+
+    if (this.ratingError()) return;
+
     this.save.emit({
       status: this.status(),
       rating: this.status() === 'watched' ? this.rating() : 0,
@@ -42,9 +53,11 @@ export class AddMovieModalComponent {
     this.rating.set(0);
     this.review.set('');
     this.isFavorite.set(false);
+    this.ratingTouched.set(false);
   }
 
   setRating(val: number) {
     this.rating.set(val);
+    this.ratingTouched.set(true);
   }
 }

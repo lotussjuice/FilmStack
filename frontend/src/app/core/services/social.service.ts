@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject, effect, DestroyRef } from '@angular/core';
 import { PocketbaseService } from './pocketbase.service';
 import { AuthService } from './auth.service';
-import { UserSummary } from '../../models/social.model';
+import { UserSummary } from '../interfaces/user.interface';
 
 @Injectable({
   providedIn: 'root'

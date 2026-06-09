@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WatchpartyService } from '../../../../../../core/services/watchparty.service';
 import { TmdbService } from '../../../../../../core/services/tmdb.service';
-import { WatchParty } from '../../../../../../models/social.model';
-import { TMDbMovie } from '../../../../../../models/movie.model';
+import { WatchParty } from '../../../../../../features/social/interfaces/social.interface';
+import { TMDbMovie } from '../../../../../../core/interfaces/movie.interface';
 
 @Component({
   selector: 'app-group-roulette',

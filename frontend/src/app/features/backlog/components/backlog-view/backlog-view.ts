@@ -2,18 +2,19 @@ import { Component, computed, inject, signal, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { FilmRepositoryService } from '../../core/services/film-repository.service';
-import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal';
-import { EditMovieModalComponent } from './components/edit-movie-modal/edit-movie-modal';
-import { MovieDetailModalComponent } from './components/movie-detail-modal/movie-detail-modal';
-import { HybridMovie } from '../../models/movie.model';
+import { FilmRepositoryService } from '../../../../core/services/film-repository.service';
+import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal';
+import { EditMovieModalComponent } from '../edit-movie-modal/edit-movie-modal';
+import { MovieDetailModalComponent } from '../movie-detail-modal/movie-detail-modal';
+import { BacklogCardComponent } from '../backlog-card/backlog-card';
+import { HybridMovie } from '../../../../core/interfaces/movie.interface';
 
 @Component({
   selector: 'app-backlog',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ConfirmModalComponent, EditMovieModalComponent, MovieDetailModalComponent],
-  templateUrl: './backlog.html',
-  styleUrl: './backlog.css'
+  imports: [CommonModule, FormsModule, RouterModule, ConfirmModalComponent, EditMovieModalComponent, MovieDetailModalComponent, BacklogCardComponent],
+  templateUrl: './backlog-view.html',
+  styleUrl: './backlog-view.css'
 })
 export class BacklogComponent implements OnInit {
   private repo = inject(FilmRepositoryService);

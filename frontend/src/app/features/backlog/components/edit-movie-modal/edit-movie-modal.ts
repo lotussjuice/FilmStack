@@ -1,9 +1,10 @@
-import { Component, input, output, signal, effect, inject, viewChild } from '@angular/core';
+import { Component, input, output, signal, effect, inject, viewChild, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HybridMovie } from '../../../../models/movie.model';
+import { HybridMovie } from '../../../../core/interfaces/movie.interface';
 import { ExportService } from '../../../../core/services/export.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { ReviewShareCardComponent } from '../review-share-card/review-share-card';
 
 @Component({
@@ -26,10 +27,18 @@ export class EditMovieModalComponent {
   isFavorite = signal<boolean>(false);
   isExporting = signal<boolean>(false);
   exportMessage = signal<string>('');
+  ratingTouched = signal(false);
 
   private exportService = inject(ExportService);
   private auth = inject(AuthService);
+  private toast = inject(ToastService);
   private shareCardRef = viewChild<ReviewShareCardComponent>('shareCard');
+
+  ratingError = computed(() => {
+    if (!this.ratingTouched() || this.status() !== 'watched') return '';
+    if (this.rating() === 0) return 'Selecciona una nota para la película.';
+    return '';
+  });
 
   constructor() {
     effect(() => {
@@ -44,6 +53,10 @@ export class EditMovieModalComponent {
   }
 
   onSave() {
+    this.ratingTouched.set(true);
+
+    if (this.ratingError()) return;
+
     this.save.emit({
       status: this.status(),
       rating: this.status() === 'watched' ? this.rating() : 0,
@@ -58,6 +71,7 @@ export class EditMovieModalComponent {
 
   setRating(val: number) {
     this.rating.set(val);
+    this.ratingTouched.set(true);
   }
 
   async exportReview() {
@@ -68,6 +82,7 @@ export class EditMovieModalComponent {
     const el = card.elementRef.nativeElement as HTMLElement;
     if (!el) {
       this.exportMessage.set('No se pudo generar la imagen');
+      this.toast.error('No se pudo generar la imagen');
       this.isExporting.set(false);
       return;
     }
@@ -75,7 +90,13 @@ export class EditMovieModalComponent {
       el,
       this.exportService.buildFilename(this.movie())
     );
-    this.exportMessage.set(ok ? 'Imagen descargada' : 'Error al exportar');
+    if (ok) {
+      this.exportMessage.set('Imagen descargada');
+      this.toast.success('Imagen descargada correctamente');
+    } else {
+      this.exportMessage.set('Error al exportar');
+      this.toast.error('Error al exportar la imagen');
+    }
     this.isExporting.set(false);
     setTimeout(() => this.exportMessage.set(''), 2500);
   }

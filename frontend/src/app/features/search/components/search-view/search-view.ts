@@ -2,26 +2,26 @@ import { Component, signal, effect, inject, OnInit, computed } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { TmdbService } from '../../core/services/tmdb.service';
-import { FilmRepositoryService } from '../../core/services/film-repository.service';
-import { AuthService } from '../../core/services/auth.service';
-import { PocketbaseService } from '../../core/services/pocketbase.service';
-import { TMDbMovie } from '../../models/movie.model';
-import { MovieDetailModalComponent } from '../backlog/components/movie-detail-modal/movie-detail-modal';
-import { AddMovieModalComponent } from './components/add-movie-modal/add-movie-modal';
+import { TmdbService } from '../../../../core/services/tmdb.service';
+import { FilmRepositoryService } from '../../../../core/services/film-repository.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { ToastService } from '../../../../core/services/toast.service';
+import { TMDbMovie } from '../../../../core/interfaces/movie.interface';
+import { MovieDetailModalComponent } from '../../../backlog/components/movie-detail-modal/movie-detail-modal';
+import { AddMovieModalComponent } from '../add-movie-modal/add-movie-modal';
 
 @Component({
   selector: 'app-search',
   standalone: true,
   imports: [CommonModule, FormsModule, MovieDetailModalComponent, AddMovieModalComponent],
-  templateUrl: './search.html',
-  styleUrl: './search.css'
+  templateUrl: './search-view.html',
+  styleUrl: './search-view.css'
 })
 export class SearchComponent implements OnInit {
   private tmdbService = inject(TmdbService);
   private repo = inject(FilmRepositoryService);
-  private pbService = inject(PocketbaseService);
   private route = inject(ActivatedRoute);
+  private toast = inject(ToastService);
   public auth = inject(AuthService);
 
   searchQuery = signal<string>('');
@@ -82,7 +82,7 @@ export class SearchComponent implements OnInit {
           const results = await this.tmdbService.searchMovies(query);
           this.searchResults.set(results);
         } catch (e) {
-          console.error('Error al buscar peliculas:', e);
+          this.toast.error('Error al buscar películas');
           this.searchResults.set([]);
         } finally {
           this.isLoading.set(false);
@@ -96,7 +96,7 @@ export class SearchComponent implements OnInit {
       const genres = await this.tmdbService.getGenres();
       this.genres.set(genres);
     } catch (e) {
-      console.error('Error al cargar generos:', e);
+      this.toast.error('Error al cargar géneros');
     }
     this.route.queryParamMap.subscribe(params => {
       const q = params.get('q');
@@ -134,13 +134,13 @@ export class SearchComponent implements OnInit {
     try {
       const [fullDetails, stats] = await Promise.all([
         this.tmdbService.getMovieDetails(movie.id),
-        this.pbService.getMovieStats(movie.id)
+        this.repo.getMovieStats(movie.id)
       ]);
       
       this.selectedMovie.set(fullDetails);
       this.selectedMovieStats.set(stats);
     } catch (e) {
-      console.error('Error al obtener detalles/estadisticas:', e);
+      this.toast.error('Error al obtener detalles de la película');
     }
   }
 

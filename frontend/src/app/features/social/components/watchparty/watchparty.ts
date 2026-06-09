@@ -6,7 +6,7 @@ import { SocialService } from '../../../../core/services/social.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { FilmRepositoryService } from '../../../../core/services/film-repository.service';
 import { TmdbService } from '../../../../core/services/tmdb.service';
-import { HybridMovie } from '../../../../models/movie.model';
+import { HybridMovie } from '../../../../core/interfaces/movie.interface';
 import { ChatPanelComponent } from './components/chat-panel/chat-panel';
 import { GroupRouletteComponent } from './components/group-roulette/group-roulette';
 import { SyncModalComponent } from './components/sync-modal/sync-modal';
