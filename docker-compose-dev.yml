@@ -1,5 +1,6 @@
 services:
   frontend:
+    container_name: mb-filmstack-frontend-dev
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
@@ -16,6 +17,7 @@ services:
       - backend
 
   backend:
+    container_name: mb-filmstack-backend-dev
     build:
       context: ./backend
       dockerfile: pocketbase.Dockerfile

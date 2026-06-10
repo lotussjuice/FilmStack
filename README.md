@@ -10,7 +10,7 @@ FilmStack es una plataforma web social para la gestion de catalogos cinematograf
 | :--- | :--- |
 | **Frontend** | Angular 21 (Standalone) + TypeScript 5.7 + Bootstrap 5 + Signals API |
 | **Backend** | PocketBase 0.25.3 (Go) - API REST + base de datos SQLite |
-| **Gateway** | Nginx (reverse proxy) |
+| **Proxy** | Nginx (integrados en frontend) |
 | **Contenedores** | Docker Compose |
 | **Fuente de datos** | TMDB API (The Movie Database) |
 
@@ -78,11 +78,11 @@ Reemplazar `tu_api_key_aqui` por la API Key real obtenida de TMDB. Sin esta vari
 ### Arquitectura
 
 ```
-Localhost:4200 (Angular Dev Server con live-reload)
-  |- /api/*  -> proxy.conf.json -> http://backend:8090 (PocketBase)
-  |- /_/*    -> proxy.conf.json -> http://backend:8090 (PocketBase Admin)
+Localhost:4200 (mb-filmstack-frontend-dev | Angular Dev Server con live-reload)
+  |- /api/*  -> proxy.conf.json -> http://backend-dev:8090 (PocketBase)
+  |- /_/*    -> proxy.conf.json -> http://backend-dev:8090 (PocketBase Admin)
 
-Localhost:8090 (PocketBase directamente)
+Localhost:8090 (mb-filmstack-backend-dev | PocketBase directamente)
 ```
 
 El frontend se ejecuta en un contenedor con Angular Dev Server que soporta recarga en caliente al modificar archivos. Las peticiones a `/api/` y `/_/` son redirigidas al backend de PocketBase mediante el proxy integrado de Angular CLI (`proxy.conf.json`).
@@ -99,10 +99,10 @@ docker compose -f docker-compose-dev.yml up --build
 
 Este comando construye las imagenes y levanta los 2 servicios (frontend en puerto 4200, backend en puerto 8090):
 
-| Servicio | Descripcion | Puerto |
+| Servicio (contenedor) | Descripcion | Puerto |
 | :--- | :--- | :--- |
-| `frontend` | Angular Dev Server con live-reload | 4200 |
-| `backend` | PocketBase (API + admin + SQLite) | 8090 |
+| `frontend-dev` (`mb-filmstack-frontend-dev`) | Angular Dev Server con live-reload | 4200 |
+| `backend-dev` (`mb-filmstack-backend-dev`) | PocketBase (API + admin + SQLite) | 8090 |
 
 ### Acceso
 
@@ -145,11 +145,17 @@ El servidor Pacheco expone unicamente los puertos **8067** y **8068** hacia el e
 ```
 Cliente externo
   |
-  |- http://pacheco.chillan.ubiobio.cl:8067 --> gateway (nginx) --> frontend (nginx:80) --> Angular SPA
-  |- http://pacheco.chillan.ubiobio.cl:8068 --> gateway (nginx) --> backend (PocketBase:8090) --> API + Admin /_/
+  |- http://pacheco.chillan.ubiobio.cl:8067 --> mb-filmstack-frontend (nginx:80)
+  |     |- /       -> Angular SPA (archivos estaticos)
+  |     |- /api/*  -> proxy_pass a backend:8090
+  |     |- /_/*    -> proxy_pass a backend:8090
+  |
+  |- http://pacheco.chillan.ubiobio.cl:8068 --> mb-filmstack-backend (PocketBase:8090)
+        |- /api/*  -> PocketBase API directa
+        |- /_/*    -> PocketBase Admin directo
 ```
 
-El Gateway Nginx escucha en ambos puertos y redirige segun corresponda. El frontend se sirve desde una imagen Nginx ligera que contiene solo los archivos estaticos compilados de Angular (sin Node.js ni dev server).
+El contenedor `mb-filmstack-frontend` ejecuta Nginx que sirve los archivos compilados de Angular y hace de proxy reverso hacia el backend. El contenedor `mb-filmstack-backend` expone PocketBase directamente en su propio puerto. No existe un gateway separado; cada contenedor publica su puerto al host.
 
 ### Comandos para produccion
 
@@ -203,11 +209,10 @@ docker compose down -v
 
 ### Servicios
 
-| Servicio | Descripcion | Puerto interno | Puerto externo |
-| :--- | :--- | :--- | :--- |
-| `frontend` | Angular compilado servido por Nginx | 80 | - |
-| `backend` | PocketBase (API + SQLite) | 8090 | - |
-| `gateway` | Nginx reverse proxy | 8067 y 8068 | 8067 y 8068 |
+| Servicio | contenedor | Descripcion | Puerto interno | Puerto externo |
+| :--- | :--- | :--- | :--- | :--- |
+| `frontend` | `mb-filmstack-frontend` | Angular compilado + proxy Nginx integrado | 80 | 8067 |
+| `backend` | `mb-filmstack-backend` | PocketBase (API + admin + SQLite) | 8090 | 8068 |
 
 ### Volumen persistente
 
@@ -281,7 +286,7 @@ Para crear usuarios directamente sin usar el panel web, ejecutar dentro del cont
 
 **Desarrollo local:**
 ```bash
-docker compose -f docker-compose-dev.yml exec backend \
+docker compose -f docker-compose-dev.yml exec backend-dev \
   /usr/local/bin/pocketbase admin create "admin@filmstack.com" "1234567890"
 ```
 
@@ -295,7 +300,7 @@ Para crear un usuario regular (no admin) en la coleccion `users` via API local d
 
 ```bash
 # Desarrollo local
-docker compose -f docker-compose-dev.yml exec backend \
+docker compose -f docker-compose-dev.yml exec backend-dev \
   wget -qO- --post-data='{"email":"test@filmstack.com","password":"1234567890","passwordConfirm":"1234567890","name":"Usuario Test"}' \
   --header='Content-Type: application/json' \
   http://localhost:8090/api/collections/users/records
@@ -341,13 +346,11 @@ FilmStack/
   .env.example              # Plantilla de variables de entorno
   docker-compose.yml        # Orquestacion de produccion (Pacheco)
   docker-compose-dev.yml    # Orquestacion de desarrollo local
-  nginx.conf                # Configuracion del gateway Nginx (produccion)
   frontend/
     Dockerfile.prod         # Build multi-etapa para produccion
     Dockerfile.dev          # Dev server con live-reload
-    nginx.conf              # Nginx interno del frontend (sirve static files)
+    nginx.conf              # Nginx: sirve SPA + proxy /api/ y /_/ hacia backend
     proxy.conf.json         # Proxy de Angular CLI para desarrollo
-    frontend.Dockerfile     # (legacy) Build anterior, mantenido por compatibilidad
   backend/
     pocketbase.Dockerfile   # Imagen de PocketBase
     pb_migrations/          # Migraciones de base de datos
@@ -367,5 +370,5 @@ Ver el archivo `PROGRESS.md` y `documentation.md` para la documentacion detallad
 
 - La `TMDB_API_KEY` nunca se expone al frontend. Solo el hook `tmdb.pb.js` en el servidor tiene acceso.
 - PocketBase utiliza JWT para autenticacion. Los tokens se almacenan en localStorage del navegador.
-- En produccion, el gateway Nginx oculta la topologia interna de la red de contenedores.
+- En produccion, el Nginx del contenedor frontend oculta la topologia interna de la red de contenedores.
 - El volumen `pb_data` en produccion debe ser respaldado periodicamente.
