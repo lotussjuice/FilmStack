@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TmdbService } from '../../../../core/services/tmdb.service';
-import { FilmRepositoryService } from '../../../../core/services/film-repository.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { FilmRepositoryService } from '../../../backlog/services/film-repository.service';
+import { AuthService } from '../../../auth/services/auth.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { TMDbMovie } from '../../../../core/interfaces/movie.interface';
-import { MovieDetailModalComponent } from '../../../backlog/components/movie-detail-modal/movie-detail-modal';
+import { MovieDetailModalComponent } from '../../../../shared/components/movie-detail-modal/movie-detail-modal';
 import { AddMovieModalComponent } from '../add-movie-modal/add-movie-modal';
 
 @Component({

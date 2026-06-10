@@ -1,9 +1,9 @@
 import { Component, input, output, inject, ChangeDetectionStrategy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { WatchpartyService } from '../../../../../../core/services/watchparty.service';
+import { WatchpartyService } from '../../../../services/watchparty.service';
 import { TmdbService } from '../../../../../../core/services/tmdb.service';
-import { WatchParty } from '../../../../../../features/social/interfaces/social.interface';
+import { WatchParty } from '../../../../interfaces/social.interface';
 import { TMDbMovie } from '../../../../../../core/interfaces/movie.interface';
 
 @Component({

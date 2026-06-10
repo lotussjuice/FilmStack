@@ -1,17 +1,8 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { PocketbaseService } from './pocketbase.service';
-import { ActiveSessionService } from './active-session.service';
+import { PocketbaseService } from '../../../core/services/pocketbase.service';
+import { ActiveSessionService } from '../../roulette/services/active-session.service';
 import { Router } from '@angular/router';
-
-export type Role = 'guest' | 'user' | 'admin';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: Role;
-  deleted?: boolean;
-}
+import { Role, User } from '../../../core/interfaces/user.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +14,7 @@ export class AuthService {
   private activeSession = inject(ActiveSessionService);
 
   public user = computed(() => this.currentUser());
-  public isAuthenticated = computed(() => this.currentUser() !== null && this.pbService.pb.authStore.isValid);
+  public isAuthenticated = computed(() => this.currentUser() !== null && this.pbService.authStore.isValid);
   public role = computed<Role>(() => this.currentUser()?.role || 'guest');
   public isAdmin = computed(() => this.role() === 'admin');
 
@@ -32,7 +23,7 @@ export class AuthService {
   }
 
   private initAuth() {
-    const authStore = this.pbService.pb.authStore;
+    const authStore = this.pbService.authStore;
     if (authStore.isValid && authStore.record) {
       this.currentUser.set(authStore.record as unknown as User);
       this.checkTokenExpiration();
@@ -40,8 +31,8 @@ export class AuthService {
       this.logout();
     }
 
-    this.pbService.pb.authStore.onChange((token, record) => {
-      if (token && record && this.pbService.pb.authStore.isValid) {
+    this.pbService.authStore.onChange((token, record) => {
+      if (token && record && this.pbService.authStore.isValid) {
         this.currentUser.set(record as unknown as User);
       } else {
         this.currentUser.set(null);
@@ -51,9 +42,9 @@ export class AuthService {
 
   async login(email: string, pass: string): Promise<void> {
     try {
-      await this.pbService.pb.collection('users').authWithPassword(email, pass);
-      if (this.pbService.pb.authStore.record) {
-        const user = this.pbService.pb.authStore.record as unknown as User;
+      await this.pbService.collection('users').authWithPassword(email, pass);
+      if (this.pbService.authStore.record) {
+        const user = this.pbService.authStore.record as unknown as User;
         if (user.deleted) {
           this.logout();
           throw new Error('La cuenta ha sido suspendida.');
@@ -66,7 +57,7 @@ export class AuthService {
 
   private async checkTokenExpiration() {
     try {
-      await this.pbService.pb.collection('users').authRefresh();
+      await this.pbService.collection('users').authRefresh();
     } catch (err) {
       this.logout();
     }
@@ -74,9 +65,8 @@ export class AuthService {
 
   logout() {
     this.activeSession.discard();
-    this.pbService.pb.authStore.clear();
+    this.pbService.authStore.clear();
     this.currentUser.set(null);
     this.router.navigate(['/login']);
   }
 }
-

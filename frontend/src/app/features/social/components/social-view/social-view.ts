@@ -1,6 +1,6 @@
 import { Component, inject, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SocialService } from '../../../../core/services/social.service';
+import { SocialService } from '../../services/social.service';
 import { FriendSearchComponent } from '../friend-search/friend-search';
 import { FriendListComponent } from '../friend-list/friend-list';
 import { FriendRequestsComponent } from '../friend-requests/friend-requests';

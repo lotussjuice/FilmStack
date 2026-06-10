@@ -1,11 +1,11 @@
-import { Component, computed, inject, signal, OnInit } from '@angular/core'
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { FilmRepositoryService } from '../../../../core/services/film-repository.service';
+import { FilmRepositoryService } from '../../services/film-repository.service';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal';
 import { EditMovieModalComponent } from '../../../../shared/components/edit-movie-modal/edit-movie-modal';
-import { MovieDetailModalComponent } from '../movie-detail-modal/movie-detail-modal';
+import { MovieDetailModalComponent } from '../../../../shared/components/movie-detail-modal/movie-detail-modal';
 import { BacklogCardComponent } from '../backlog-card/backlog-card';
 import { HybridMovie } from '../../../../core/interfaces/movie.interface';
 

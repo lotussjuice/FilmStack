@@ -1,8 +1,8 @@
 import { Injectable, signal, computed, inject, effect, DestroyRef } from '@angular/core';
-import { PocketbaseService } from './pocketbase.service';
-import { AuthService } from './auth.service';
-import { ToastService } from './toast.service';
-import { UserSummary } from '../interfaces/user.interface';
+import { PocketbaseService } from '../../../core/services/pocketbase.service';
+import { AuthService } from '../../auth/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { UserSummary } from '../../../core/interfaces/user.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -50,20 +50,8 @@ export class SocialService {
   }
 
   private async fetchUsersByIds(ids: string[]): Promise<Map<string, UserSummary>> {
-    const map = new Map<string, UserSummary>();
-    if (ids.length === 0) return map;
-    try {
-      const filter = ids.map(id => `id = "${this.escapeFilterValue(id)}"`).join(' || ');
-      const records = await this.pb.pb.collection('users').getFullList({
-        filter,
-        fields: 'id,name,email',
-        $autoCancel: false
-      });
-      for (const r of records as any[]) {
-        map.set(r.id, { id: r.id, name: r['name'] || 'Sin nombre', email: r['email'] || '' });
-      }
-    } catch (e: any) {
-      console.error('Error fetching users by ids:', e?.message || e);
+    const map = await this.pb.fetchUsersByIds(ids);
+    if (map.size === 0 && ids.length > 0) {
       this.toast.error('Error al cargar usuarios.');
     }
     return map;
@@ -74,7 +62,7 @@ export class SocialService {
     if (!me) return;
     this.errorState.set('');
     try {
-      const ownRecord = await this.pb.pb.collection('users').getOne(me.id, { $autoCancel: false });
+      const ownRecord = await this.pb.collection('users').getOne(me.id, { $autoCancel: false });
       let friendIds = (ownRecord as any)['friends'] || [];
       if (!Array.isArray(friendIds)) friendIds = friendIds ? [friendIds] : [];
       friendIds = friendIds.filter((id: any) => typeof id === 'string' && id.trim().length > 0);
@@ -97,7 +85,7 @@ export class SocialService {
     const me = this.auth.user();
     if (!me) return;
     try {
-      const rec = await this.pb.pb.collection('users').getOne(me.id, { $autoCancel: false });
+      const rec = await this.pb.collection('users').getOne(me.id, { $autoCancel: false });
       let sentIds = (rec as any)['friend_requests_sent'] || [];
       if (!Array.isArray(sentIds)) sentIds = sentIds ? [sentIds] : [];
       let receivedIds = (rec as any)['friend_requests_received'] || [];
@@ -133,7 +121,7 @@ export class SocialService {
       const me = this.auth.user();
       const safe = this.escapeFilterValue(name.trim().toLowerCase());
       const filter = `name ~ "${safe}"${me ? ` && id != "${this.escapeFilterValue(me.id)}"` : ''}`;
-      const records = await this.pb.pb.collection('users').getFullList({
+      const records = await this.pb.collection('users').getFullList({
         filter,
         fields: 'id,name,email',
         $autoCancel: false
@@ -168,22 +156,22 @@ export class SocialService {
     this.errorState.set('');
 
     try {
-      const target = await this.pb.pb.collection('users').getOne(userId, { $autoCancel: false });
+      const target = await this.pb.collection('users').getOne(userId, { $autoCancel: false });
       const received: string[] = Array.isArray((target as any)['friend_requests_received'])
         ? [...(target as any)['friend_requests_received']]
         : [];
       if (!received.includes(me.id)) {
         received.push(me.id);
-        await this.pb.pb.collection('users').update(userId, { friend_requests_received: received });
+        await this.pb.collection('users').update(userId, { friend_requests_received: received });
       }
 
-      const mine = await this.pb.pb.collection('users').getOne(me.id, { $autoCancel: false });
+      const mine = await this.pb.collection('users').getOne(me.id, { $autoCancel: false });
       const sent: string[] = Array.isArray((mine as any)['friend_requests_sent'])
         ? [...(mine as any)['friend_requests_sent']]
         : [];
       if (!sent.includes(userId)) {
         sent.push(userId);
-        await this.pb.pb.collection('users').update(me.id, { friend_requests_sent: sent });
+        await this.pb.collection('users').update(me.id, { friend_requests_sent: sent });
       }
 
       await this.loadRequests();
@@ -208,7 +196,7 @@ export class SocialService {
     this.errorState.set('');
 
     try {
-      const myRec = await this.pb.pb.collection('users').getOne(me.id, { $autoCancel: false });
+      const myRec = await this.pb.collection('users').getOne(me.id, { $autoCancel: false });
       const friends: string[] = Array.isArray((myRec as any)['friends'])
         ? [...(myRec as any)['friends']]
         : [];
@@ -217,12 +205,12 @@ export class SocialService {
         : [];
       if (!friends.includes(userId)) friends.push(userId);
       const newReceived = received.filter(id => id !== userId);
-      await this.pb.pb.collection('users').update(me.id, {
+      await this.pb.collection('users').update(me.id, {
         friends,
         friend_requests_received: newReceived
       });
 
-      const otherRec = await this.pb.pb.collection('users').getOne(userId, { $autoCancel: false });
+      const otherRec = await this.pb.collection('users').getOne(userId, { $autoCancel: false });
       const otherFriends: string[] = Array.isArray((otherRec as any)['friends'])
         ? [...(otherRec as any)['friends']]
         : [];
@@ -231,7 +219,7 @@ export class SocialService {
         : [];
       if (!otherFriends.includes(me.id)) otherFriends.push(me.id);
       const newSent = otherSent.filter(id => id !== me.id);
-      await this.pb.pb.collection('users').update(userId, {
+      await this.pb.collection('users').update(userId, {
         friends: otherFriends,
         friend_requests_sent: newSent
       });
@@ -258,19 +246,19 @@ export class SocialService {
     this.errorState.set('');
 
     try {
-      const myRec = await this.pb.pb.collection('users').getOne(me.id, { $autoCancel: false });
+      const myRec = await this.pb.collection('users').getOne(me.id, { $autoCancel: false });
       const received: string[] = Array.isArray((myRec as any)['friend_requests_received'])
         ? [...(myRec as any)['friend_requests_received']]
         : [];
       const newReceived = received.filter(id => id !== userId);
-      await this.pb.pb.collection('users').update(me.id, { friend_requests_received: newReceived });
+      await this.pb.collection('users').update(me.id, { friend_requests_received: newReceived });
 
-      const otherRec = await this.pb.pb.collection('users').getOne(userId, { $autoCancel: false });
+      const otherRec = await this.pb.collection('users').getOne(userId, { $autoCancel: false });
       const sent: string[] = Array.isArray((otherRec as any)['friend_requests_sent'])
         ? [...(otherRec as any)['friend_requests_sent']]
         : [];
       const newSent = sent.filter(id => id !== me.id);
-      await this.pb.pb.collection('users').update(userId, { friend_requests_sent: newSent });
+      await this.pb.collection('users').update(userId, { friend_requests_sent: newSent });
 
       await this.loadRequests();
       return true;
@@ -294,13 +282,13 @@ export class SocialService {
     this.errorState.set('');
 
     try {
-      const myRec = await this.pb.pb.collection('users').getOne(me.id, { $autoCancel: false });
+      const myRec = await this.pb.collection('users').getOne(me.id, { $autoCancel: false });
       const friends: string[] = ((myRec as any)['friends'] || []).filter((id: string) => id !== userId);
-      await this.pb.pb.collection('users').update(me.id, { friends });
+      await this.pb.collection('users').update(me.id, { friends });
 
-      const otherRec = await this.pb.pb.collection('users').getOne(userId, { $autoCancel: false });
+      const otherRec = await this.pb.collection('users').getOne(userId, { $autoCancel: false });
       const otherFriends: string[] = ((otherRec as any)['friends'] || []).filter((id: string) => id !== me.id);
-      await this.pb.pb.collection('users').update(userId, { friends: otherFriends });
+      await this.pb.collection('users').update(userId, { friends: otherFriends });
 
       await this.loadFriends();
       return true;
@@ -329,7 +317,7 @@ export class SocialService {
     this.teardownUserSubscription();
     this.subscribedUserId = userId;
     try {
-      const unsub = await this.pb.pb.collection('users').subscribe(userId, (e: any) => {
+      const unsub = await this.pb.collection('users').subscribe(userId, (e: any) => {
         if (e.action === 'update') {
           this.loadFriends();
           this.loadRequests();

@@ -1,6 +1,6 @@
 import { Component, inject, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SocialService } from '../../../../core/services/social.service';
+import { SocialService } from '../../services/social.service';
 import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({

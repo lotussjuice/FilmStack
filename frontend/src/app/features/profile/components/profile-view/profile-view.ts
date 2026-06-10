@@ -1,8 +1,8 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../../../core/services/auth.service';
-import { UserService } from '../../../../core/services/user.service';
+import { AuthService } from '../../../auth/services/auth.service';
+import { UserService } from '../../services/user.service';
 import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({

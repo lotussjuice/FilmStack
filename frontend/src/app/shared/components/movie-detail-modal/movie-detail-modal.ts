@@ -1,8 +1,8 @@
 import { Component, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TMDbMovie, MovieStats } from '../../../../core/interfaces/movie.interface';
-import { RuntimePipe } from '../../../../shared/pipes/runtime.pipe';
-import { SafePipe } from '../../../../shared/pipes/safe.pipe';
+import { TMDbMovie, MovieStats } from '../../../core/interfaces/movie.interface';
+import { RuntimePipe } from '../../pipes/runtime.pipe';
+import { SafePipe } from '../../pipes/safe.pipe';
 
 @Component({
   selector: 'app-movie-detail-modal',

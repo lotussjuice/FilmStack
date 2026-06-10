@@ -1,10 +1,9 @@
 import { Injectable, signal, computed, inject, DestroyRef } from '@angular/core';
-import { PocketbaseService } from './pocketbase.service';
-import { AuthService } from './auth.service';
-import { ActiveSessionService } from './active-session.service';
-import { ToastService } from './toast.service';
-import { ChatMessage, MovieProposal, WatchParty } from '../../features/social/interfaces/social.interface';
-import PocketBase from 'pocketbase';
+import { PocketbaseService } from '../../../core/services/pocketbase.service';
+import { AuthService } from '../../auth/services/auth.service';
+import { ActiveSessionService } from '../../roulette/services/active-session.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { ChatMessage, MovieProposal, WatchParty } from '../interfaces/social.interface';
 
 interface PartyRecord {
   id: string;
@@ -32,7 +31,7 @@ function parseJsonField<T>(raw: string | null | undefined, fallback: T): T {
   try { return JSON.parse(raw) as T; } catch { return fallback; }
 }
 
-const VOTING_DURATION_MS = 30000;
+import { VOTING_DURATION_MS } from '../../../core/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -75,7 +74,7 @@ export class WatchpartyService {
     const me = this.auth.user();
     if (!me) return;
     try {
-      const records = await this.pb.pb.collection('watchparties').getFullList<PartyRecord>({
+      const records = await this.pb.collection('watchparties').getFullList<PartyRecord>({
         filter: `(host = "${me.id}" || members ~ "${me.id}") && is_active = true && status != 'finished'`,
         sort: '-created',
         $autoCancel: false
@@ -136,7 +135,7 @@ export class WatchpartyService {
     if (!me) return null;
     try {
       await this.loadMemberNames([...memberIds, me.id]);
-      const record = await this.pb.pb.collection('watchparties').create<PartyRecord>({
+      const record = await this.pb.collection('watchparties').create<PartyRecord>({
         host: me.id,
         members: [me.id, ...memberIds.filter(id => id !== me.id)],
         status: 'lobby',
@@ -168,10 +167,10 @@ export class WatchpartyService {
     const me = this.auth.user();
     if (!invite || !me) return;
     try {
-      const rec = await this.pb.pb.collection('watchparties').getOne<PartyRecord>(invite.id, { $autoCancel: false });
+      const rec = await this.pb.collection('watchparties').getOne<PartyRecord>(invite.id, { $autoCancel: false });
       const confirmedMembers = Array.isArray(rec.confirmed_members) ? rec.confirmed_members : [];
       if (!confirmedMembers.includes(me.id)) {
-        await this.pb.pb.collection('watchparties').update(invite.id, {
+        await this.pb.collection('watchparties').update(invite.id, {
           confirmed_members: [...confirmedMembers, me.id]
         });
       }
@@ -214,7 +213,7 @@ export class WatchpartyService {
     const me = this.auth.user();
     if (invite && me) {
       const newMembers = invite.members?.filter((id: string) => id !== me.id) || [];
-      try { await this.pb.pb.collection('watchparties').update(invite.id, { members: newMembers }); } catch (e) {}
+      try { await this.pb.collection('watchparties').update(invite.id, { members: newMembers }); } catch (e) {}
     }
     this.pendingInviteState.set(null);
   }
@@ -522,7 +521,7 @@ export class WatchpartyService {
     }
     votesMap['sync_vote'] = { ...votesMap['sync_vote'], [me.id]: vote };
     try {
-      await this.pb.pb.collection('watchparties').update(party.id, { votes: JSON.stringify(votesMap) });
+      await this.pb.collection('watchparties').update(party.id, { votes: JSON.stringify(votesMap) });
       this.currentPartyState.set({ ...party, votes: votesMap });
     } catch (e) {
       console.error('Error enviando sync vote', e);
@@ -598,19 +597,19 @@ export class WatchpartyService {
     const party = this.currentPartyState();
     if (!me || !party || !party.activeMovie) return;
     try {
-      const existing = await this.pb.pb.collection('group_reviews').getFullList({
+      const existing = await this.pb.collection('group_reviews').getFullList({
         filter: `watchparty = "${party.id}" && user = "${me.id}"`,
         $autoCancel: false
       });
       if (existing.length > 0) {
-        await this.pb.pb.collection('group_reviews').update(existing[0].id, {
+        await this.pb.collection('group_reviews').update(existing[0].id, {
           rating,
           review,
           tmdb_id: party.activeMovie,
           user_name: me.name
         });
       } else {
-        await this.pb.pb.collection('group_reviews').create({
+        await this.pb.collection('group_reviews').create({
           watchparty: party.id,
           user: me.id,
           tmdb_id: party.activeMovie,
@@ -630,7 +629,7 @@ export class WatchpartyService {
     const party = this.currentPartyState();
     if (!party || !party.activeMovie) return null;
     try {
-      const records = await this.pb.pb.collection('group_reviews').getFullList({
+      const records = await this.pb.collection('group_reviews').getFullList({
         filter: `watchparty = "${party.id}"`,
         sort: '-created',
         $autoCancel: false
@@ -647,7 +646,7 @@ export class WatchpartyService {
     const me = this.auth.user();
     if (!me) return [];
     try {
-      const records = await this.pb.pb.collection('watchparties').getFullList<PartyRecord>({
+      const records = await this.pb.collection('watchparties').getFullList<PartyRecord>({
         filter: `(host = "${me.id}" || members ~ "${me.id}" || confirmed_members ~ "${me.id}") && status = 'finished'`,
         sort: '-created',
         $autoCancel: false
@@ -668,7 +667,7 @@ export class WatchpartyService {
 
   async getReviewsForParty(partyId: string): Promise<{ avg: number; count: number; reviews: any[] }> {
     try {
-      const records = await this.pb.pb.collection('group_reviews').getFullList({
+      const records = await this.pb.collection('group_reviews').getFullList({
         filter: `watchparty = "${partyId}"`,
         sort: '-created',
         $autoCancel: false
@@ -685,7 +684,7 @@ export class WatchpartyService {
     const me = this.auth.user();
     if (!me) return [];
     try {
-      const records = await this.pb.pb.collection('watchparties').getFullList<PartyRecord>({
+      const records = await this.pb.collection('watchparties').getFullList<PartyRecord>({
         filter: `(members ~ "${me.id}" || confirmed_members ~ "${me.id}") && status = 'finished' && active_movie_tmdb != null`,
         sort: '-finished_at',
         $autoCancel: false
@@ -728,7 +727,7 @@ export class WatchpartyService {
       this.unsubscribeFn = null;
     }
     try {
-      const unsub = await this.pb.pb.collection('watchparties').subscribe(partyId, (e: any) => {
+      const unsub = await this.pb.collection('watchparties').subscribe(partyId, (e: any) => {
         if (e.action === 'update' || e.action === 'create') {
           const rec = e.record as PartyRecord;
           if (!rec.is_active) {
@@ -766,7 +765,7 @@ export class WatchpartyService {
     const missing = ids.filter(id => !this.memberNamesCache.has(id));
     if (missing.length === 0) return;
     try {
-      const records = await this.pb.pb.collection('users').getFullList({
+      const records = await this.pb.collection('users').getFullList({
         filter: missing.map(id => `id="${id}"`).join(' || '),
         $autoCancel: false
       });
@@ -783,7 +782,7 @@ export class WatchpartyService {
       this.inviteUnsubscribeFn = null;
     }
     try {
-      const unsub = await this.pb.pb.collection('watchparties').subscribe('*', (e: any) => {
+      const unsub = await this.pb.collection('watchparties').subscribe('*', (e: any) => {
         if (e.action === 'create' || e.action === 'update') {
           const me = this.auth.user();
           if (!me) return;
@@ -815,7 +814,7 @@ export class WatchpartyService {
     const party = this.currentPartyState();
     if (!party) return;
     try {
-      await this.pb.pb.collection('watchparties').update(party.id, { chat_messages: JSON.stringify(messages) });
+      await this.pb.collection('watchparties').update(party.id, { chat_messages: JSON.stringify(messages) });
     } catch (e) {
       console.warn('Error persistiendo chat', e);
     }
@@ -830,7 +829,7 @@ export class WatchpartyService {
       votesMap[k] = p.votes;
     });
     try {
-      await this.pb.pb.collection('watchparties').update(party.id, { votes: JSON.stringify(votesMap) });
+      await this.pb.collection('watchparties').update(party.id, { votes: JSON.stringify(votesMap) });
     } catch (e) {
       console.warn('Error persistiendo propuestas', e);
     }
@@ -840,7 +839,7 @@ export class WatchpartyService {
     const party = this.currentPartyState();
     if (!party) return;
     try {
-      await this.pb.pb.collection('watchparties').update(party.id, data);
+      await this.pb.collection('watchparties').update(party.id, data);
     } catch (e) {
       console.warn('Error persistiendo party', e);
     }

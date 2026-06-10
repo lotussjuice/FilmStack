@@ -1,9 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { AuthService } from './core/services/auth.service';
+import { AuthService } from './features/auth/services/auth.service';
 import { ActiveSessionBannerComponent } from './features/roulette/components/active-session-banner/active-session-banner';
 import { ToastContainerComponent } from './shared/components/toast-container/toast-container';
-import { WatchpartyService } from './core/services/watchparty.service';
+import { WatchpartyService } from './features/social/services/watchparty.service';
 
 @Component({
   selector: 'app-root',

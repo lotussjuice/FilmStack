@@ -1,10 +1,10 @@
 import { Component, inject, signal, ChangeDetectionStrategy, computed, effect, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { WatchpartyService } from '../../../../../../core/services/watchparty.service';
-import { SocialService } from '../../../../../../core/services/social.service';
-import { AuthService } from '../../../../../../core/services/auth.service';
-import { FilmRepositoryService } from '../../../../../../core/services/film-repository.service';
+import { WatchpartyService } from '../../../../services/watchparty.service';
+import { SocialService } from '../../../../services/social.service';
+import { AuthService } from '../../../../../auth/services/auth.service';
+import { FilmRepositoryService } from '../../../../../backlog/services/film-repository.service';
 import { TmdbService } from '../../../../../../core/services/tmdb.service';
 import { HybridMovie } from '../../../../../../core/interfaces/movie.interface';
 import { ChatPanelComponent } from '../chat-panel/chat-panel';

@@ -1,9 +1,9 @@
 import { Component, OnInit, inject, ChangeDetectionStrategy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { WatchpartyService } from '../../../../../../core/services/watchparty.service';
+import { WatchpartyService } from '../../../../services/watchparty.service';
 import { ExportService } from '../../../../../../core/services/export.service';
-import { AuthService } from '../../../../../../core/services/auth.service';
+import { AuthService } from '../../../../../auth/services/auth.service';
 import { WatchParty } from '../../../../interfaces/social.interface';
 import { ToastService } from '../../../../../../core/services/toast.service';
 

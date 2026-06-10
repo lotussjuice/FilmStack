@@ -1,8 +1,8 @@
 import { Component, inject, ChangeDetectionStrategy, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ActiveSessionService } from '../../../../core/services/active-session.service';
-import { FilmRepositoryService } from '../../../../core/services/film-repository.service';
+import { ActiveSessionService } from '../../services/active-session.service';
+import { FilmRepositoryService } from '../../../backlog/services/film-repository.service';
 
 @Component({
   selector: 'app-active-session-banner',

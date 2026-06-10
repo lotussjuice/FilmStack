@@ -1,7 +1,7 @@
 import { Component, input, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FilmRepositoryService } from '../../../../core/services/film-repository.service';
+import { FilmRepositoryService } from '../../../backlog/services/film-repository.service';
 import { RuntimePipe } from '../../../../shared/pipes/runtime.pipe';
 
 @Component({

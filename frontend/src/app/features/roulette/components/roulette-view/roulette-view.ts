@@ -1,7 +1,7 @@
 import { Component, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FilmRepositoryService } from '../../../../core/services/film-repository.service';
-import { ActiveSessionService } from '../../../../core/services/active-session.service';
+import { FilmRepositoryService } from '../../../backlog/services/film-repository.service';
+import { ActiveSessionService } from '../../services/active-session.service';
 import { RouletteResultModalComponent } from '../roulette-result-modal/roulette-result-modal';
 import { HybridMovie } from '../../../../core/interfaces/movie.interface';
 

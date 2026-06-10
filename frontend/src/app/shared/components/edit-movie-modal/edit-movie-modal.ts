@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HybridMovie } from '../../../core/interfaces/movie.interface';
 import { ExportService } from '../../../core/services/export.service';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../features/auth/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ReviewShareCardComponent } from '../review-share-card/review-share-card';
 

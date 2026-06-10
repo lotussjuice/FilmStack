@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HybridMovie } from '../interfaces/movie.interface';
-import { AuthService } from './auth.service';
+import { AuthService } from '../../features/auth/services/auth.service';
 import html2canvas from 'html2canvas';
 
 @Injectable({

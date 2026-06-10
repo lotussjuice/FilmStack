@@ -1,8 +1,9 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { UserService, AppUser } from '../../../../../core/services/user.service';
+import { UserService } from '../../../../profile/services/user.service';
 import { ToastService } from '../../../../../core/services/toast.service';
 import { ConfirmModalComponent } from '../../../../../shared/components/confirm-modal/confirm-modal';
+import { User } from '../../../../../core/interfaces/user.interface';
 
 @Component({
   selector: 'app-users',
@@ -15,11 +16,11 @@ export class UsersComponent implements OnInit {
   private userService = inject(UserService);
   private toast = inject(ToastService);
   
-  users = signal<AppUser[]>([]);
+  users = signal<User[]>([]);
   isLoading = signal<boolean>(true);
 
   isModalOpen = signal(false);
-  targetUser = signal<AppUser | null>(null);
+  targetUser = signal<User | null>(null);
 
   async ngOnInit() {
     await this.loadUsers();
@@ -46,7 +47,7 @@ export class UsersComponent implements OnInit {
     }
   }
 
-  requestToggleDelete(user: AppUser) {
+  requestToggleDelete(user: User) {
     this.targetUser.set(user);
     this.isModalOpen.set(true);
   }

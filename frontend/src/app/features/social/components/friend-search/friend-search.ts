@@ -1,7 +1,7 @@
 import { Component, inject, signal, ChangeDetectionStrategy, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SocialService } from '../../../../core/services/social.service';
+import { SocialService } from '../../services/social.service';
 import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({

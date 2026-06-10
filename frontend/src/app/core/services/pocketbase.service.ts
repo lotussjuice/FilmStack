@@ -1,18 +1,26 @@
 import { Injectable } from '@angular/core';
 import PocketBase from 'pocketbase';
 import { Movie } from '../interfaces/movie.interface';
+import { UserSummary } from '../interfaces/user.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PocketbaseService {
-  public pb: PocketBase;
+  private pb: PocketBase;
 
   constructor() {
     this.pb = new PocketBase('/');
   }
 
-  // Obtiene la lista de películas del usuario actual
+  collection(name: string) {
+    return this.pb.collection(name);
+  }
+
+  get authStore() {
+    return this.pb.authStore;
+  }
+
   async getMovies(): Promise<Movie[]> {
     const userId = this.pb.authStore.record?.id;
     if (!userId) return [];
@@ -26,7 +34,6 @@ export class PocketbaseService {
     }
   }
 
-  // Añade una nueva película con un ID generado manualmente (necesario para ciertas versiones de PB)
   async addMovie(movie: Omit<Movie, 'id'>): Promise<Movie> {
     const payload = { 
       ...movie,
@@ -35,7 +42,6 @@ export class PocketbaseService {
     return this.pb.collection('movies').create<Movie>(payload);
   }
 
-  // Genera un ID compatible con PocketBase (15 caracteres alfanuméricos)
   private generateId(): string {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
@@ -53,12 +59,26 @@ export class PocketbaseService {
     return this.pb.collection('movies').delete(id);
   }
 
-  // Obtiene las estadísticas de la comunidad para una película específica
-  async getMovieStats(tmdbId: number): Promise<any> {
+  async fetchUsersByIds(ids: string[]): Promise<Map<string, UserSummary>> {
+    const map = new Map<string, UserSummary>();
+    if (ids.length === 0) return map;
     try {
-      return await this.pb.collection('rankings').getOne(tmdbId.toString());
-    } catch (e) {
-      return { avg_rating: 0, total_votes: 0 };
+      const filter = ids.map(id => `id = "${this.escapeFilterValue(id)}"`).join(' || ');
+      const records = await this.pb.collection('users').getFullList({
+        filter,
+        fields: 'id,name,email',
+        $autoCancel: false
+      });
+      for (const r of records as any[]) {
+        map.set(r.id, { id: r.id, name: r['name'] || 'Sin nombre', email: r['email'] || '' });
+      }
+    } catch (e: any) {
+      console.error('Error fetching users by ids:', e?.message || e);
     }
+    return map;
+  }
+
+  private escapeFilterValue(value: string): string {
+    return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
   }
 }

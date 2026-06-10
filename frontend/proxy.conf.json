@@ -1,0 +1,12 @@
+{
+  "/api": {
+    "target": "http://backend:8090",
+    "secure": false,
+    "logLevel": "debug"
+  },
+  "/_": {
+    "target": "http://backend:8090",
+    "secure": false,
+    "logLevel": "debug"
+  }
+}

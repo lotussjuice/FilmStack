@@ -1,9 +1,9 @@
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
-import { PocketbaseService } from './pocketbase.service';
-import { TmdbService } from './tmdb.service';
-import { AuthService } from './auth.service';
-import { ToastService } from './toast.service';
-import { Movie, HybridMovie } from '../interfaces/movie.interface';
+import { PocketbaseService } from '../../../core/services/pocketbase.service';
+import { TmdbService } from '../../../core/services/tmdb.service';
+import { AuthService } from '../../auth/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { Movie, HybridMovie } from '../../../core/interfaces/movie.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -14,16 +14,10 @@ export class FilmRepositoryService {
   private auth = inject(AuthService);
   private toast = inject(ToastService);
 
-  // Almacena los datos básicos de PocketBase
   private moviesSignal = signal<Movie[]>([]);
-  
-  // Almacena el mapa de detalles de TMDB (TMDB_ID -> TMDbMovie)
   private tmdbDetailsSignal = signal<Map<number, any>>(new Map());
-
-  // Almacena el mapa de estadísticas de la comunidad (TMDB_ID -> MovieStats)
   private statsSignal = signal<Map<number, any>>(new Map());
 
-  // Señal computada que combina ambas fuentes de datos (PB + TMDB + Stats)
   public hybridMovies = computed<HybridMovie[]>(() => {
     const user = this.auth.user();
     if (!user) return [];
@@ -40,7 +34,6 @@ export class FilmRepositoryService {
   });
 
   constructor() {
-    // Reaccionar a cambios en el usuario para recargar el backlog
     effect(() => {
       const user = this.auth.user();
       if (user) {
@@ -52,7 +45,6 @@ export class FilmRepositoryService {
     });
   }
 
-  // Carga las películas de PB y luego dispara la obtención de detalles de TMDB y estadísticas
   async loadMovies() {
     try {
       const movies = await this.pbService.getMovies();
@@ -64,10 +56,9 @@ export class FilmRepositoryService {
     }
   }
 
-  // Carga las estadísticas globales de las películas (promedio de ratings, etc.)
   async loadStats() {
     try {
-      const statsList = await this.pbService.pb.collection('rankings').getFullList();
+      const statsList = await this.pbService.collection('rankings').getFullList();
       const statsMap = new Map();
       statsList.forEach((s: any) => statsMap.set(s.tmdb_id, s));
       this.statsSignal.set(statsMap);
@@ -75,7 +66,6 @@ export class FilmRepositoryService {
     }
   }
 
-  // Obtiene los detalles de TMDB para las películas que aún no los tienen en caché
   private async loadTmdbDetails(movies: Movie[]) {
     const currentDetails = new Map(this.tmdbDetailsSignal());
     const promises = movies
@@ -95,7 +85,6 @@ export class FilmRepositoryService {
     }
   }
 
-  // Añade una película al backlog del usuario
   async addMovieToBacklog(tmdbId: number, options: Partial<Omit<Movie, 'id' | 'tmdb_id' | 'user_id'>> = {}) {
     const existing = this.moviesSignal().find(m => m.tmdb_id === tmdbId);
     if (existing) return;
@@ -106,10 +95,10 @@ export class FilmRepositoryService {
     try {
       const newMovie: Omit<Movie, 'id'> = {
         tmdb_id: tmdbId,
-        status: options.status || 'pending',
-        rating: options.rating || 0,
-        review: options.review || '',
-        is_favorite: options.is_favorite || false,
+        status: options['status'] || 'pending',
+        rating: options['rating'] || 0,
+        review: options['review'] || '',
+        is_favorite: options['is_favorite'] || false,
         user_id: currentUser.id
       };
       const created = await this.pbService.addMovie(newMovie);
@@ -120,7 +109,6 @@ export class FilmRepositoryService {
     }
   }
 
-  // Actualiza los datos de una película existente
   async updateMovie(id: string, data: Partial<Movie>) {
     try {
       const updated = await this.pbService.updateMovie(id, data);
@@ -140,16 +128,14 @@ export class FilmRepositoryService {
     return this.updateMovie(id, { rating });
   }
 
-  // Obtiene estadísticas de una película específica por su TMDB ID
   async getMovieStats(tmdbId: number): Promise<any> {
     try {
-      return await this.pbService.pb.collection('rankings').getOne(tmdbId.toString());
+      return await this.pbService.collection('rankings').getOne(tmdbId.toString());
     } catch (e) {
       return { avg_rating: 0, total_votes: 0 };
     }
   }
 
-  // Elimina una película del backlog
   async removeMovie(id: string) {
     try {
       await this.pbService.deleteMovie(id);

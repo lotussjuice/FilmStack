@@ -1,9 +1,9 @@
 import { Component, inject, ChangeDetectionStrategy, OnInit, OnDestroy, signal, effect, ElementRef, viewChild, AfterViewChecked, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { WatchpartyService } from '../../../../../../core/services/watchparty.service';
-import { AuthService } from '../../../../../../core/services/auth.service';
-import { WatchParty, MovieProposal } from '../../../../../../features/social/interfaces/social.interface';
+import { WatchpartyService } from '../../../../services/watchparty.service';
+import { AuthService } from '../../../../../auth/services/auth.service';
+import { WatchParty, MovieProposal } from '../../../../interfaces/social.interface';
 import { TmdbService } from '../../../../../../core/services/tmdb.service';
 
 @Component({

@@ -1,0 +1,1 @@
+export const VOTING_DURATION_MS = 30000;
