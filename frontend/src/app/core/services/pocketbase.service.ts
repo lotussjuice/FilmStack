@@ -16,11 +16,14 @@ export class PocketbaseService {
   async getMovies(): Promise<Movie[]> {
     const userId = this.pb.authStore.record?.id;
     if (!userId) return [];
-    
-    return this.pb.collection('movies').getFullList<Movie>({
-      filter: `user_id = "${userId}"`,
-      sort: '-created'
-    });
+    try {
+      return await this.pb.collection('movies').getFullList<Movie>({
+        filter: `user_id = "${userId}"`,
+        sort: '-created'
+      });
+    } catch {
+      return [];
+    }
   }
 
   // Añade una nueva película con un ID generado manualmente (necesario para ciertas versiones de PB)

@@ -36,6 +36,8 @@ export interface WatchParty {
   hostName: string;
   members: string[];
   memberNames: string[];
+  confirmedMembers: string[];
+  confirmedMemberNames: string[];
   status: 'lobby' | 'voting' | 'watching' | 'finished';
   activeMovie: number | null;
   activeMovieTmdb: number | null;

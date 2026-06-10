@@ -1,4 +1,4 @@
-# FilmStack 
+# FilmStack
 
 FilmStack es una plataforma web social para la gestión de catálogos cinematográficos propios (_watchlist_). Permite organizar películas, resolver la indecisión de qué ver, compartir reseñas con amigos y llevar registro de tu opinión sobre cada película.
 
@@ -16,72 +16,12 @@ FilmStack es una plataforma web social para la gestión de catálogos cinematogr
 
 ---
 
-## Arquitectura
+## Despliegue con Docker
 
-El frontend sigue una **Arquitectura Domain-Driven Design (DDD)** con Clean Architecture:
-
-```
-src/
-├── app/
-│   ├── core/                    # Capa de infraestructura global
-│   │   ├── guards/              # Guards de ruta (AuthGuard)
-│   │   ├── interfaces/          # Interfaces compartidas (Movie, UserSummary)
-│   │   └── services/            # Servicios globales (Pocketbase, Auth, Toast, etc.)
-│   │
-│   ├── features/                # Módulos por dominio
-│   │   ├── auth/                # Autenticación
-│   │   │   └── components/login/
-│   │   ├── backlog/             # Gestión de backlog personal
-│   │   │   └── components/
-│   │   │       ├── backlog-view/
-│   │   │       ├── backlog-card/        # Componente presentacional
-│   │   │       ├── edit-movie-modal/
-│   │   │       ├── movie-detail-modal/
-│   │   │       └── review-share-card/
-│   │   ├── search/              # Búsqueda TMDB
-│   │   │   └── components/
-│   │   │       ├── search-view/
-│   │   │       └── add-movie-modal/
-│   │   ├── roulette/            # Ruleta de películas
-│   │   ├── social/              # Funcionalidad social (amigos, watchparty)
-│   │   │   ├── interfaces/      # Interfaces de dominio social
-│   │   │   └── components/
-│   │   │       ├── social-view/
-│   │   │       ├── watchparty/
-│   │   │       └── watchparty-history/
-│   │   ├── profile/             # Perfil de usuario
-│   │   └── admin/               # Panel de administración
-│   │
-│   └── shared/                  # Componentes reutilizables
-```
-
-Principios aplicados:
-- **Container/Presentational Pattern**: Separación entre lógica (container) y presentación (componentes hijos)
-- **Inyección de Dependencias**: Componentes nunca inyectan `PocketbaseService` directamente; usan servicios de dominio intermedios
-- **Signals API**: Estado reactivo sin Zone.js tradicional
-- **Validación en UI**: Feedback visual en formularios con clases `is-invalid` y mensajes de error por campo
-
----
-
-## Funcionalidades
-
-| Función | Descripción |
-| :--- | :--- |
-|  **Autenticación** | Login con email/contraseña, manejo de sesión con JWT, detección de cuentas suspendidas |
-|  **Búsqueda TMDB** | Buscar películas, filtrar por género/año/rating, ver detalles |
-|  **Backlog** | Agregar películas con estado (pendiente/vista/abandonada), calificar con estrellas, escribir reseñas |
-|  **Ruleta** | Selección aleatoria de película del backlog para decidir qué ver |
-|  **Social** | Gestión de amigos, solicitudes, perfil público |
-|  **Watchparty** | Sesiones grupales de visualización con chat en tiempo real y reseñas grupales |
-|  **Exportar reseña** | Exportar reseña como imagen PNG para compartir |
-|  **Admin** | Gestión de usuarios, roles, suspensión de cuentas |
-
----
-
-## Prerrequisitos
+### Prerrequisitos
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo.
-- Archivo `.env` en la raíz del proyecto. **IMPORTANTE**: Necesitás una clave de TMDB API.
+- Archivo `.env` en la raíz del proyecto con tu TMDB API Key.
 
 ### Obtener TMDB API Key
 
@@ -95,11 +35,7 @@ cp .env.example .env
 # Editá .env y reemplazá tu_api_key_aqui con tu key real
 ```
 
----
-
-## Levantar el proyecto
-
-Desde la raíz del proyecto (donde está `docker-compose.yml`):
+### Levantar el proyecto
 
 ```bash
 docker compose up --build
@@ -115,7 +51,7 @@ Esto construirá las imágenes y levantará los 3 servicios:
 
 Una vez arriba, accedé a la aplicación en: **http://localhost:8090**
 
-El panel de administración de PocketBase está disponible en: **http://localhost:8090/_/**
+El panel de administración de PocketBase está disponible en: **http://localhost:8090/_/_**
 
 ### Prueba rápida
 
@@ -130,11 +66,7 @@ docker compose logs backend
 docker compose logs frontend
 ```
 
----
-
-## Reconstruir el proyecto
-
-Si realizás cambios en el código fuente o las dependencias, reconstruí las imágenes con:
+### Reconstruir el proyecto
 
 ```bash
 docker compose up --build
@@ -147,9 +79,7 @@ docker compose build --no-cache
 docker compose up
 ```
 
----
-
-## Detener el proyecto
+### Detener el proyecto
 
 ```bash
 docker compose down
@@ -163,19 +93,187 @@ docker compose down -v
 
 ---
 
-## Desarrollo local (sin Docker)
+## Arquitectura del Frontend (DDD + Clean Architecture)
 
-Si preferís correr el frontend en modo desarrollo:
+El frontend sigue una **Arquitectura Domain-Driven Design (DDD)** con Clean Architecture, dividiendo el código en tres capas principales:
 
-```bash
-cd frontend
-npm install
-npm start
+```
+src/
+└── app/
+    ├── core/                              # Capa de infraestructura global
+    │   ├── guards/                        # AuthGuard (protección de rutas)
+    │   ├── interfaces/                    # Interfaces compartidas (Movie, User, etc.)
+    │   └── services/                      # Servicios globales singleton
+    │       ├── auth.service.ts            # Autenticación JWT + gestión de sesión
+    │       ├── pocketbase.service.ts      # Conexión a PocketBase (singleton)
+    │       ├── film-repository.service.ts # Repositorio de películas (híbrido PB+TMDB)
+    │       ├── watchparty.service.ts      # Lógica de watchparty
+    │       ├── social.service.ts          # Amigos y solicitudes
+    │       ├── toast.service.ts           # Notificaciones toast globales
+    │       ├── export.service.ts          # Exportación de reseñas a PNG
+    │       ├── tmdb.service.ts            # Consultas a API de TMDB
+    │       ├── user.service.ts            # Operaciones de perfil de usuario
+    │       └── active-session.service.ts  # Sesión activa de reproducción
+    │
+    ├── features/                          # Módulos por dominio de negocio
+    │   ├── auth/
+    │   │   └── components/login/          # Formulario de inicio de sesión
+    │   ├── backlog/
+    │   │   └── components/
+    │   │       ├── backlog-view/          # CRUD de backlog personal
+    │   │       ├── backlog-card/          # Tarjeta presentacional de película
+    │   │       └── movie-detail-modal/    # Modal de detalle
+    │   ├── search/
+    │   │   └── components/
+    │   │       ├── search-view/           # Búsqueda en TMDB
+    │   │       └── add-movie-modal/       # Modal de añadir al backlog
+    │   ├── roulette/
+    │   │   └── components/roulette-view/  # Ruleta de selección aleatoria
+    │   ├── social/
+    │   │   ├── interfaces/                # Interfaces de dominio social
+    │   │   └── components/
+    │   │       ├── social-view/           # Gestión de amigos
+    │   │       ├── watchparty/
+    │   │       │   └── components/
+    │   │       │       ├── watchparty-view/        # Sala de watchparty
+    │   │       │       ├── chat-panel/             # Chat en tiempo real
+    │   │       │       ├── group-roulette/         # Ruleta grupal
+    │   │       │       ├── sync-modal/             # Modal de sincronización
+    │   │       │       └── group-review-modal/     # Reseña grupal
+    │   │       └── watchparty-history/
+    │   │           └── components/
+    │   │               └── watchparty-history-view/ # Historial de sesiones
+    │   ├── profile/
+    │   │   └── components/profile-view/   # Edición de perfil
+    │   └── admin/
+    │       └── users/components/users-view/  # Panel de administración
+    │
+    └── shared/                            # Componentes reutilizables
+        └── components/
+            ├── toast-container/           # Contenedor de notificaciones
+            ├── confirm-modal/             # Confirmación genérica
+            ├── edit-movie-modal/          # Modal de edición de película
+            └── review-share-card/         # Tarjeta de reseña para exportar
 ```
 
-El servidor de desarrollo estará disponible en **http://localhost:4200**.
+### Principios aplicados
 
-> **Nota:** Necesitás tener el backend (PocketBase) corriendo por separado para que la app funcione correctamente.
+- **Standalone Components**: Todos los componentes son independientes, sin NgModules.
+- **Signals API**: Estado reactivo mediante signals y computed, sin Zone.js tradicional.
+- **Inyección de Dependencias**: Los componentes nunca inyectan `PocketbaseService` directamente; usan servicios de dominio intermedios.
+- **Container/Presentational Pattern**: Separación entre lógica de negocio (servicios) y presentación (componentes).
+- **Feature isolation**: Cada feature es autocontenida; los componentes compartidos entre features residen en `shared/components/`.
+
+---
+
+## Seguridad y Autenticación (JWT)
+
+PocketBase maneja la autenticación mediante **JSON Web Tokens (JWT)** internamente en su `authStore`. El flujo completo es:
+
+1. **Login**: El usuario ingresa email/contraseña. `AuthService.login()` llama a `pb.collection('users').authWithPassword()`, que PocketBase resuelve validando credenciales y devolviendo un JWT firmado.
+
+2. **Persistencia**: El token JWT se almacena en el `authStore` de PocketBase (persistido en `localStorage`). En cada recarga de página, `AuthService.initAuth()` verifica `authStore.isValid` (que internamente chequea expiración del JWT) y restaura la sesión automáticamente, o redirige al login si expiró.
+
+3. **AuthGuard**: El guard `auth.guard.ts` usa el computed `isAuthenticated()` del `AuthService`, que combina dos condiciones:
+   - `currentUser !== null` → hay un usuario cargado en memoria
+   - `pb.authStore.isValid` → el JWT no ha expirado
+   
+   Si alguna falla, redirige a `/login`. Esto protege todas las rutas del frontend.
+
+4. **Cierre de sesión blindado**: `AuthService.logout()` ejecuta secuencialmente:
+   - `activeSession.discard()` → limpia la sesión de ruleta activa
+   - `pb.authStore.clear()` → elimina el JWT del almacenamiento
+   - `currentUser.set(null)` → limpia el estado en memoria
+   - `router.navigate(['/login'])` → redirige forzosamente
+
+5. **Cuentas suspendidas**: En cada login, se verifica el flag `user.deleted`. Si está activo, se fuerza el logout y se lanza error.
+
+6. **Protección de UI**: Los botones de navegación y "Cerrar Sesión" están protegidos por directivas `@if (auth.isAuthenticated())`, asegurando que solo usuarios autenticados vean contenido sensible.
+
+---
+
+## Arquitectura de Docker y Proxy Inverso
+
+El proyecto se despliega con **3 contenedores** coordinados por `docker-compose.yml`:
+
+```
+Cliente → Gateway (Nginx, puerto 8090)
+              ├── / → Frontend (Nginx, puerto 80 interno) → Angular SPA
+              ├── /api/ → Backend (PocketBase, puerto 8090 interno)
+              └── /_/ → Backend Admin UI
+```
+
+### Cómo se soluciona CORS
+
+Todas las peticiones del frontend viajan al mismo origen (`http://localhost:8090`). El Nginx gateway actúa como **reverse proxy**: las rutas `/api/` y `/_/` se redirigen al backend PocketBase, mientras que `/` sirve la SPA de Angular. Como el navegador ve un único origen, **no se produce ningún error CORS**. No se requiere configuración de CORS en el backend.
+
+### Migraciones automáticas
+
+PocketBase se inicia con el flag `--migrationsDir=/pb_migrations`, lo que ejecuta automáticamente todas las migraciones al arrancar. Las migraciones están versionadas y se montan como volumen Docker:
+
+```yaml
+volumes:
+  - ./backend/pb_migrations:/pb_migrations
+```
+
+---
+
+## Integración Híbrida (TMDB + PocketBase)
+
+FilmStack combina dos fuentes de datos:
+
+1. **PocketBase (SQLite)**: Almacena datos propios de la aplicación — usuarios, backlog de películas, calificaciones, reseñas, watchparties, amigos. Es la fuente de verdad para el estado de la aplicación.
+
+2. **TMDB API**: Proporciona metadatos enriquecidos de películas (título, póster, sinopsis, créditos, géneros). Se consulta mediante el hook `/api/tmdb/*` que actúa como proxy del lado del servidor.
+
+La unificación ocurre en `FilmRepositoryService` mediante un `computed` que combina:
+- Datos de PocketBase (status, rating, review, etc.)
+- Detalles de TMDB (título, póster, año, etc.)
+- Estadísticas de la comunidad (promedio de ratings globales)
+
+El hook de PocketBase (`pb_hooks/tmdb.pb.js`) recibe la API Key desde la variable de entorno `TMDB_API_KEY`, evitando exponerla al frontend.
+
+---
+
+## Formularios y Validaciones
+
+Todos los formularios incluyen validación con feedback visual claro:
+
+| Formulario | Campos validados | Retroalimentación |
+| :--- | :--- | :--- |
+| **Login** | Email (formato), Contraseña (mín. 6 caracteres) | Clase `is-invalid`, mensaje en rojo por campo, alerta de error general |
+| **Perfil** | Nombre (mín. 3 caracteres), Email (formato) | Clase `is-invalid`, mensaje en rojo por campo |
+| **Añadir película** | Calificación (requerida si estado "Vista") | Clase `is-invalid`, mensaje de error en rojo |
+| **Editar película** | Calificación (requerida si estado "Vista") | Clase `is-invalid`, mensaje de error en rojo |
+
+### Manejo de Errores Global
+
+Todos los bloques `catch` en servicios y componentes notifican al usuario mediante el `ToastService`, que muestra notificaciones no obstructivas con tipos success/error/info/warning. Los errores de conexión, credenciales inválidas y fallos de operaciones críticas se comunican siempre al usuario con mensajes amigables.
+
+---
+
+## Funcionalidades
+
+| Función | Descripción |
+| :--- | :--- |
+| **Autenticación** | Login con email/contraseña, manejo de sesión con JWT, detección de cuentas suspendidas |
+| **Búsqueda TMDB** | Buscar películas, filtrar por género/año/rating, ver detalles |
+| **Backlog** | Agregar películas con estado (pendiente/vista/abandonada), calificar con estrellas, escribir reseñas |
+| **Ruleta** | Selección aleatoria de película del backlog para decidir qué ver |
+| **Social** | Gestión de amigos, solicitudes, perfil público |
+| **Watchparty** | Sesiones grupales de visualización con chat en tiempo real y reseñas grupales |
+| **Exportar reseña** | Exportar reseña como imagen PNG para compartir |
+| **Admin** | Gestión de usuarios, roles, suspensión de cuentas |
+
+---
+
+## Variables de Entorno
+
+| Variable | Obligatorio | Descripción |
+| :--- | :---: | :--- |
+| `TMDB_API_KEY` | ✅ | API Key de The Movie Database para búsqueda y metadatos |
+
+Ver `.env.example` para la plantilla.
 
 ---
 
@@ -193,32 +291,14 @@ Las migraciones se ejecutan automáticamente al iniciar PocketBase vía `--migra
 
 ---
 
-## Variables de Entorno
+## Desarrollo local (sin Docker)
 
-| Variable | Obligatorio | Descripción |
-| :--- | :---: | :--- |
-| `TMDB_API_KEY` | ✅ | API Key de The Movie Database para búsqueda y metadatos |
+```bash
+cd frontend
+npm install
+npm start
+```
 
-Ver `.env.example` para la plantilla.
+El servidor de desarrollo estará disponible en **http://localhost:4200**.
 
----
-
-## Formularios y Validación
-
-Todos los formularios incluyen validación con feedback visual:
-
-- **Login**: Validación de email (formato) y contraseña (mínimo 6 caracteres) con clases `is-invalid` y mensajes por campo
-- **Perfil**: Validación de nombre (mínimo 3 caracteres) y email (formato)
-- **Agregar/Editar película**: Validación de calificación (requerida para estado "vista")
-- **Notificaciones**: Sistema de toasts global con tipos success/error/info/warning
-
----
-
-## Manejo de Errores
-
-- Los errores de API se capturan con `try/catch` y se muestran al usuario mediante `ToastService`
-- Errores silenciosos controlados para operaciones no críticas (carga de detalles TMDB, estadísticas)
-- El `AuthGuard` protege rutas redirigiendo a `/login` si no hay sesión válida
-- Al cerrar sesión se limpia el `ActiveSessionService` (sesión de ruleta activa)
-
----
+> **Nota:** Necesitás tener el backend (PocketBase) corriendo por separado para que la app funcione correctamente.

@@ -67,6 +67,7 @@ export class ProfileComponent {
     } catch (err: any) {
       this.message.set(err.message || 'Error al actualizar el perfil.');
       this.messageType.set('danger');
+      this.toast.error(err.message || 'Error al actualizar el perfil.');
     } finally {
       this.isLoading.set(false);
     }

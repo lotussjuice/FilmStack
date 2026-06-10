@@ -17,14 +17,13 @@ routerAdd("GET", "/api/tmdb/search", (e) => {
     }
 
     try {
-        const url = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&language=es-MX&include_adult=false`;
+        const url = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&language=es-MX&include_adult=false&api_key=${token}`;
         console.log("[TMDB] Buscando:", url);
 
         const res = $http.send({
             url: url,
             method: "GET",
             headers: {
-                "Authorization": "Bearer " + token,
                 "Accept": "application/json",
                 "User-Agent": "FilmStack/1.0"
             },
@@ -59,14 +58,13 @@ routerAdd("GET", "/api/tmdb/movie/{id}", (e) => {
     }
 
     try {
-        const url = `https://api.themoviedb.org/3/movie/${id}?language=es-MX&append_to_response=credits,videos`;
+        const url = `https://api.themoviedb.org/3/movie/${id}?language=es-MX&append_to_response=credits,videos&api_key=${token}`;
         console.log("[TMDB] Obteniendo detalles:", url);
 
         const res = $http.send({
             url: url,
             method: "GET",
             headers: {
-                "Authorization": "Bearer " + token,
                 "Accept": "application/json",
                 "User-Agent": "FilmStack/1.0"
             },
@@ -94,12 +92,11 @@ routerAdd("GET", "/api/tmdb/genres", (e) => {
     }
 
     try {
-        const url = `https://api.themoviedb.org/3/genre/movie/list?language=es-MX`;
+        const url = `https://api.themoviedb.org/3/genre/movie/list?language=es-MX&api_key=${token}`;
         const res = $http.send({
             url: url,
             method: "GET",
             headers: {
-                "Authorization": "Bearer " + token,
                 "Accept": "application/json"
             }
         });

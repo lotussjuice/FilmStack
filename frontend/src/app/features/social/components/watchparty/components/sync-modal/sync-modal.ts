@@ -36,12 +36,20 @@ export class SyncModalComponent implements OnInit, OnDestroy {
     return Math.max(0, Math.ceil((VOTING_DURATION_MS - elapsed) / 1000));
   });
 
+  allVoted = computed(() => {
+    const votes = this.syncVoteCount();
+    const total = this.memberCount();
+    return votes.add + votes.discard >= total;
+  });
+
   constructor() {
     effect(() => {
       const rem = this.remainingSeconds();
       const p = this.party();
       const open = this.isOpen();
-      if (open && rem === 0 && p && p.status === 'voting' && this.isHost() && !this.autoResolved) {
+      const allIn = this.allVoted();
+      const expired = rem === 0;
+      if (open && p && p.status === 'voting' && this.isHost() && !this.autoResolved && (allIn || expired)) {
         this.autoResolve();
       }
       if (open && p && p.status === 'voting') {
@@ -76,18 +84,12 @@ export class SyncModalComponent implements OnInit, OnDestroy {
   async accept() {
     this.decision.set('accept');
     await this.wp.syncVote('add');
-    if (this.isHost()) {
-      await this.wp.acceptAndStart();
-    }
     this.accepted.emit();
   }
 
   async decline() {
     this.decision.set('decline');
     await this.wp.syncVote('discard');
-    if (this.isHost()) {
-      await this.wp.declineAndReroll();
-    }
     this.declined.emit();
   }
 
@@ -104,7 +106,11 @@ export class SyncModalComponent implements OnInit, OnDestroy {
     return { add, discard };
   });
 
-  memberCount = computed(() => this.party()?.members.length || 1);
+  memberCount = computed(() => {
+    const p = this.party();
+    if (!p) return 1;
+    return p.confirmedMembers.length + 1;
+  });
 
   posterUrl(): string | null {
     const p = this.party()?.activeMoviePoster;

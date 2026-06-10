@@ -1,11 +1,11 @@
 import { Component, OnInit, inject, ChangeDetectionStrategy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { WatchpartyService } from '../../../../core/services/watchparty.service';
-import { ExportService } from '../../../../core/services/export.service';
-import { AuthService } from '../../../../core/services/auth.service';
-import { WatchParty } from '../../interfaces/social.interface';
-import { ToastService } from '../../../../core/services/toast.service';
+import { WatchpartyService } from '../../../../../../core/services/watchparty.service';
+import { ExportService } from '../../../../../../core/services/export.service';
+import { AuthService } from '../../../../../../core/services/auth.service';
+import { WatchParty } from '../../../../interfaces/social.interface';
+import { ToastService } from '../../../../../../core/services/toast.service';
 
 interface FinishedPartyWithReviews {
   party: WatchParty;
@@ -20,8 +20,8 @@ interface FinishedPartyWithReviews {
   standalone: true,
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './watchparty-history.html',
-  styleUrl: './watchparty-history.css'
+  templateUrl: './watchparty-history-view.html',
+  styleUrl: './watchparty-history-view.css'
 })
 export class WatchpartyHistoryComponent implements OnInit {
   private wp = inject(WatchpartyService);

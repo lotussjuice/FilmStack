@@ -7,8 +7,8 @@ import { UsersComponent } from './features/admin/users/components/users-view/use
 import { ProfileComponent } from './features/profile/components/profile-view/profile-view';
 import { RouletteComponent } from './features/roulette/components/roulette-view/roulette-view';
 import { SocialComponent } from './features/social/components/social-view/social-view';
-import { WatchpartyComponent } from './features/social/components/watchparty/watchparty';
-import { WatchpartyHistoryComponent } from './features/social/components/watchparty-history/watchparty-history';
+import { WatchpartyComponent } from './features/social/components/watchparty/components/watchparty-view/watchparty-view';
+import { WatchpartyHistoryComponent } from './features/social/components/watchparty-history/components/watchparty-history-view/watchparty-history-view';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [

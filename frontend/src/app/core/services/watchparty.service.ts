@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject, DestroyRef } from '@angular/core'
 import { PocketbaseService } from './pocketbase.service';
 import { AuthService } from './auth.service';
 import { ActiveSessionService } from './active-session.service';
+import { ToastService } from './toast.service';
 import { ChatMessage, MovieProposal, WatchParty } from '../../features/social/interfaces/social.interface';
 import PocketBase from 'pocketbase';
 
@@ -9,6 +10,7 @@ interface PartyRecord {
   id: string;
   host: string;
   members: string[] | string;
+  confirmed_members: string[] | string;
   status: 'lobby' | 'voting' | 'watching' | 'finished';
   active_movie: number | null;
   active_movie_tmdb: number | null;
@@ -39,6 +41,7 @@ export class WatchpartyService {
   private pb = inject(PocketbaseService);
   private auth = inject(AuthService);
   private sessionService = inject(ActiveSessionService);
+  private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
   private currentPartyState = signal<WatchParty | null>(null);
@@ -80,9 +83,10 @@ export class WatchpartyService {
       if (records.length > 0) {
         const rec = records[0];
         const members = Array.isArray(rec.members) ? rec.members : [];
+        const confirmedMembers = Array.isArray(rec.confirmed_members) ? rec.confirmed_members : [];
         await this.loadMemberNames([...members, rec.host]);
         const wp = this.toModel(rec);
-        if (wp.host === me.id || localStorage.getItem('wp_accepted_' + wp.id) === 'true') {
+        if (wp.host === me.id || confirmedMembers.includes(me.id)) {
           this.applyParty(wp);
           await this.subscribe(rec.id);
           if (wp.status === 'watching' && wp.activeMovie && me.id !== wp.host) {
@@ -100,7 +104,8 @@ export class WatchpartyService {
         }
       }
     } catch (e) {
-      console.error('Error cargando watchparty activa', e);
+      console.warn('Error cargando watchparty activa', e);
+      this.toast.error('Error al cargar la watchparty activa.');
     }
   }
 
@@ -153,6 +158,7 @@ export class WatchpartyService {
       return wp;
     } catch (e) {
       console.error('Error creando watchparty', e);
+      this.toast.error('Error al crear la watchparty.');
       return null;
     }
   }
@@ -161,9 +167,14 @@ export class WatchpartyService {
     const invite = this.pendingInviteState();
     const me = this.auth.user();
     if (!invite || !me) return;
-    localStorage.setItem('wp_accepted_' + invite.id, 'true');
     try {
       const rec = await this.pb.pb.collection('watchparties').getOne<PartyRecord>(invite.id, { $autoCancel: false });
+      const confirmedMembers = Array.isArray(rec.confirmed_members) ? rec.confirmed_members : [];
+      if (!confirmedMembers.includes(me.id)) {
+        await this.pb.pb.collection('watchparties').update(invite.id, {
+          confirmed_members: [...confirmedMembers, me.id]
+        });
+      }
       const members = Array.isArray(rec.members) ? rec.members : [];
       await this.loadMemberNames([...members, rec.host]);
       const wp = this.toModel(rec);
@@ -270,6 +281,7 @@ export class WatchpartyService {
       await this.persistParty({ members: updatedMembers });
     } catch (e) {
       console.error('Error invitando miembros', e);
+      this.toast.error('Error al invitar miembros.');
     }
   }
 
@@ -514,6 +526,7 @@ export class WatchpartyService {
       this.currentPartyState.set({ ...party, votes: votesMap });
     } catch (e) {
       console.error('Error enviando sync vote', e);
+      this.toast.error('Error al enviar el voto.');
     }
   }
 
@@ -609,6 +622,7 @@ export class WatchpartyService {
       await this.sendSystemMessage(`${me.name} calificó con ${rating}/5`);
     } catch (e) {
       console.error('Error guardando reseña grupal', e);
+      this.toast.error('Error al guardar la reseña grupal.');
     }
   }
 
@@ -634,7 +648,7 @@ export class WatchpartyService {
     if (!me) return [];
     try {
       const records = await this.pb.pb.collection('watchparties').getFullList<PartyRecord>({
-        filter: `(host = "${me.id}" || members ~ "${me.id}") && status = 'finished'`,
+        filter: `(host = "${me.id}" || members ~ "${me.id}" || confirmed_members ~ "${me.id}") && status = 'finished'`,
         sort: '-created',
         $autoCancel: false
       });
@@ -647,7 +661,7 @@ export class WatchpartyService {
       await this.loadMemberNames(Array.from(allIds));
       return records.map(r => this.toModel(r));
     } catch (e) {
-      console.error('Error cargando historial', e);
+      console.warn('Error cargando historial', e);
       return [];
     }
   }
@@ -672,7 +686,7 @@ export class WatchpartyService {
     if (!me) return [];
     try {
       const records = await this.pb.pb.collection('watchparties').getFullList<PartyRecord>({
-        filter: `members ~ "${me.id}" && status = 'finished' && active_movie_tmdb != null`,
+        filter: `(members ~ "${me.id}" || confirmed_members ~ "${me.id}") && status = 'finished' && active_movie_tmdb != null`,
         sort: '-finished_at',
         $autoCancel: false
       });
@@ -703,7 +717,7 @@ export class WatchpartyService {
       });
       return result;
     } catch (e) {
-      console.error('Error cargando grupos', e);
+      console.warn('Error cargando grupos', e);
       return [];
     }
   }
@@ -744,7 +758,7 @@ export class WatchpartyService {
       });
       this.unsubscribeFn = typeof unsub === 'function' ? unsub : () => { try { (unsub as any)?.unsubscribe?.(); } catch (e) {} };
     } catch (e) {
-      console.error('Error subscribiendo a watchparty', e);
+      console.warn('Error subscribiendo a watchparty', e);
     }
   }
 
@@ -776,7 +790,8 @@ export class WatchpartyService {
           const rec = e.record as PartyRecord;
           if (!this.currentPartyState() && rec.is_active && rec.status !== 'finished') {
             const members = Array.isArray(rec.members) ? rec.members : [];
-            if (members.includes(me.id) && rec.host !== me.id) {
+            const confirmedMembers = Array.isArray(rec.confirmed_members) ? rec.confirmed_members : [];
+            if (members.includes(me.id) && rec.host !== me.id && !confirmedMembers.includes(me.id)) {
               const wp = this.toModel(rec);
               if (this.hostNameCache.size === 0 && members.length > 0) {
                 this.loadMemberNames([...members, rec.host]).then(() => {
@@ -792,7 +807,7 @@ export class WatchpartyService {
       });
       this.inviteUnsubscribeFn = typeof unsub === 'function' ? unsub : () => { try { (unsub as any)?.unsubscribe?.(); } catch (e) {} };
     } catch (e) {
-      console.error('Error listening for invites', e);
+      console.warn('Error listening for invites', e);
     }
   }
 
@@ -802,7 +817,7 @@ export class WatchpartyService {
     try {
       await this.pb.pb.collection('watchparties').update(party.id, { chat_messages: JSON.stringify(messages) });
     } catch (e) {
-      console.error('Error persistiendo chat', e);
+      console.warn('Error persistiendo chat', e);
     }
   }
 
@@ -817,7 +832,7 @@ export class WatchpartyService {
     try {
       await this.pb.pb.collection('watchparties').update(party.id, { votes: JSON.stringify(votesMap) });
     } catch (e) {
-      console.error('Error persistiendo propuestas', e);
+      console.warn('Error persistiendo propuestas', e);
     }
   }
 
@@ -827,18 +842,21 @@ export class WatchpartyService {
     try {
       await this.pb.pb.collection('watchparties').update(party.id, data);
     } catch (e) {
-      console.error('Error persistiendo party', e);
+      console.warn('Error persistiendo party', e);
     }
   }
 
   private toModel(r: PartyRecord): WatchParty {
     const membersArr = Array.isArray(r.members) ? r.members : [];
+    const confirmedMembersArr = Array.isArray(r.confirmed_members) ? r.confirmed_members : [];
     return {
       id: r.id,
       host: r.host,
       hostName: this.hostNameCache.get(r.host) || 'Host',
       members: membersArr,
       memberNames: membersArr.map(id => this.memberNamesCache.get(id) || 'Miembro'),
+      confirmedMembers: confirmedMembersArr,
+      confirmedMemberNames: confirmedMembersArr.map(id => this.memberNamesCache.get(id) || 'Miembro'),
       status: r.status,
       activeMovie: r.active_movie_tmdb,
       activeMovieTmdb: r.active_movie_tmdb,

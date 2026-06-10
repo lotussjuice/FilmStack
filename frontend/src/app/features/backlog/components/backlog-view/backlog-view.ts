@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FilmRepositoryService } from '../../../../core/services/film-repository.service';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal';
-import { EditMovieModalComponent } from '../edit-movie-modal/edit-movie-modal';
+import { EditMovieModalComponent } from '../../../../shared/components/edit-movie-modal/edit-movie-modal';
 import { MovieDetailModalComponent } from '../movie-detail-modal/movie-detail-modal';
 import { BacklogCardComponent } from '../backlog-card/backlog-card';
 import { HybridMovie } from '../../../../core/interfaces/movie.interface';

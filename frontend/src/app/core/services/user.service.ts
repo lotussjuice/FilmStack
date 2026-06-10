@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { PocketbaseService } from './pocketbase.service';
+import { ToastService } from './toast.service';
 import { UserSummary } from '../interfaces/user.interface';
 
 export type Role = 'guest' | 'user' | 'admin';
@@ -17,6 +18,7 @@ export interface AppUser {
 })
 export class UserService {
   private pbService = inject(PocketbaseService);
+  private toast = inject(ToastService);
 
   /** Actualiza el perfil del usuario actual */
   async updateProfile(userId: string, data: { name?: string; email?: string }): Promise<void> {
@@ -65,6 +67,7 @@ export class UserService {
       }
     } catch (e: any) {
       console.error('Error fetching users by ids:', e?.message || e);
+      this.toast.error('Error al cargar usuarios.');
     }
     return map;
   }

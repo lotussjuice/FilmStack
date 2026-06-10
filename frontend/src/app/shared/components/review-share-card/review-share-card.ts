@@ -1,6 +1,6 @@
 import { Component, input, computed, ChangeDetectionStrategy, ElementRef, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HybridMovie } from '../../../../core/interfaces/movie.interface';
+import { HybridMovie } from '../../../core/interfaces/movie.interface';
 
 @Component({
   selector: 'app-review-share-card',
@@ -14,7 +14,7 @@ export class ReviewShareCardComponent {
   movie = input.required<HybridMovie>();
   userName = input.required<string>();
 
-  private cardRef = viewChild<ElementRef<HTMLElement>>('card');
+  private cardRef = viewChild<ElementRef<HTMLElement>>('shareCard');
 
   get elementRef(): ElementRef<HTMLElement> {
     const el = this.cardRef()?.nativeElement;

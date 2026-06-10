@@ -35,7 +35,7 @@ export class RouletteComponent {
 
   poolNames = computed<string[]>(() => this.candidates().map(c => c.tmdb_data?.title || 'Sin título'));
 
-  private segmentColors = ['#1A3322', '#2C4F33', '#5C7A60', '#8FA08B', '#0F172A', '#142819', '#10B981', '#F59E0B', '#EF4444', '#7B2D2D', '#3D5B45', '#6B8E5A', '#A0522D'];
+  private segmentColors = ['#0F2315', '#1A3322', '#2C4F33', '#3B6B47', '#5C7A60', '#8FA08B', '#0D2B17', '#163A23', '#244530', '#4A6F50', '#6B886E', '#A0B89C', '#082012'];
 
   wheelGradient = computed<string>(() => {
     const n = this.candidates().length;
@@ -47,7 +47,7 @@ export class RouletteComponent {
       const color = this.segmentColors[i % this.segmentColors.length];
       stops.push(`${color} ${i * angle}deg ${(i + 1) * angle}deg`);
     }
-    return `conic-gradient(from -90deg, ${stops.join(', ')})`;
+    return `conic-gradient(from 0deg, ${stops.join(', ')})`;
   });
 
   labelAngles = computed<number[]>(() => {

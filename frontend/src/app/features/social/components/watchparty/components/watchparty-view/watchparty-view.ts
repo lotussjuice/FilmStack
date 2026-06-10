@@ -1,25 +1,25 @@
 import { Component, inject, signal, ChangeDetectionStrategy, computed, effect, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { WatchpartyService } from '../../../../core/services/watchparty.service';
-import { SocialService } from '../../../../core/services/social.service';
-import { AuthService } from '../../../../core/services/auth.service';
-import { FilmRepositoryService } from '../../../../core/services/film-repository.service';
-import { TmdbService } from '../../../../core/services/tmdb.service';
-import { HybridMovie } from '../../../../core/interfaces/movie.interface';
-import { ChatPanelComponent } from './components/chat-panel/chat-panel';
-import { GroupRouletteComponent } from './components/group-roulette/group-roulette';
-import { SyncModalComponent } from './components/sync-modal/sync-modal';
-import { GroupReviewModalComponent } from './components/group-review-modal/group-review-modal';
-import { EditMovieModalComponent } from '../../../../features/backlog/components/edit-movie-modal/edit-movie-modal';
+import { WatchpartyService } from '../../../../../../core/services/watchparty.service';
+import { SocialService } from '../../../../../../core/services/social.service';
+import { AuthService } from '../../../../../../core/services/auth.service';
+import { FilmRepositoryService } from '../../../../../../core/services/film-repository.service';
+import { TmdbService } from '../../../../../../core/services/tmdb.service';
+import { HybridMovie } from '../../../../../../core/interfaces/movie.interface';
+import { ChatPanelComponent } from '../chat-panel/chat-panel';
+import { GroupRouletteComponent } from '../group-roulette/group-roulette';
+import { SyncModalComponent } from '../sync-modal/sync-modal';
+import { GroupReviewModalComponent } from '../group-review-modal/group-review-modal';
+import { EditMovieModalComponent } from '../../../../../../shared/components/edit-movie-modal/edit-movie-modal';
 
 @Component({
   selector: 'app-watchparty',
   standalone: true,
   imports: [CommonModule, FormsModule, ChatPanelComponent, GroupRouletteComponent, SyncModalComponent, GroupReviewModalComponent, EditMovieModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './watchparty.html',
-  styleUrl: './watchparty.css'
+  templateUrl: './watchparty-view.html',
+  styleUrl: './watchparty-view.css'
 })
 export class WatchpartyComponent implements OnInit {
   wp = inject(WatchpartyService);

@@ -50,7 +50,7 @@
         <div class="animate__animated animate__fadeIn">
           <div class="mb-3">
             <label class="form-label fw-semibold text-dry-sage">Tu Nota</label>
-            <div class="rating-stars d-flex gap-1 fs-3">
+            <div class="rating-stars d-flex gap-1 fs-3" [class.is-invalid]="ratingError()">
               @for (star of [1,2,3,4,5]; track star) {
                 <i
                   class="bi"

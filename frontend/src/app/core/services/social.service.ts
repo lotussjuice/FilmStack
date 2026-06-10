@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, inject, effect, DestroyRef } from '@angular/core';
 import { PocketbaseService } from './pocketbase.service';
 import { AuthService } from './auth.service';
+import { ToastService } from './toast.service';
 import { UserSummary } from '../interfaces/user.interface';
 
 @Injectable({
@@ -9,6 +10,7 @@ import { UserSummary } from '../interfaces/user.interface';
 export class SocialService {
   private pb = inject(PocketbaseService);
   private auth = inject(AuthService);
+  private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
   private friendsState = signal<UserSummary[]>([]);
@@ -62,6 +64,7 @@ export class SocialService {
       }
     } catch (e: any) {
       console.error('Error fetching users by ids:', e?.message || e);
+      this.toast.error('Error al cargar usuarios.');
     }
     return map;
   }
@@ -85,6 +88,7 @@ export class SocialService {
       if (e?.isAbort !== true) {
         console.error('Error cargando amigos:', e?.message || e);
         this.errorState.set('Error cargando amigos');
+        this.toast.error('Error al cargar amigos.');
       }
     }
   }
@@ -112,6 +116,7 @@ export class SocialService {
       if (e?.isAbort !== true) {
         console.error('Error cargando solicitudes:', e?.message || e);
         this.errorState.set('Error cargando solicitudes');
+        this.toast.error('Error al cargar solicitudes.');
       }
     }
   }
@@ -139,6 +144,7 @@ export class SocialService {
         console.error('Error en la busqueda:', e?.message || e);
         this.errorState.set('Error en la busqueda');
         this.searchState.set([]);
+        this.toast.error('Error en la búsqueda.');
       }
     } finally {
       this.loadingState.set(false);
@@ -186,6 +192,7 @@ export class SocialService {
       if (e?.isAbort !== true) {
         console.error('No se pudo enviar la solicitud:', e?.message || e);
         this.errorState.set('No se pudo enviar la solicitud');
+        this.toast.error('No se pudo enviar la solicitud.');
       }
       return false;
     } finally {
@@ -235,6 +242,7 @@ export class SocialService {
       if (e?.isAbort !== true) {
         console.error('No se pudo aceptar la solicitud:', e?.message || e);
         this.errorState.set('No se pudo aceptar la solicitud');
+        this.toast.error('No se pudo aceptar la solicitud.');
       }
       return false;
     } finally {
@@ -270,6 +278,7 @@ export class SocialService {
       if (e?.isAbort !== true) {
         console.error('No se pudo rechazar la solicitud:', e?.message || e);
         this.errorState.set('No se pudo rechazar la solicitud');
+        this.toast.error('No se pudo rechazar la solicitud.');
       }
       return false;
     } finally {
@@ -299,6 +308,7 @@ export class SocialService {
       if (e?.isAbort !== true) {
         console.error('No se pudo eliminar al amigo:', e?.message || e);
         this.errorState.set('No se pudo eliminar al amigo');
+        this.toast.error('No se pudo eliminar al amigo.');
       }
       return false;
     } finally {
@@ -328,6 +338,7 @@ export class SocialService {
       this.userUnsubscribe = typeof unsub === 'function' ? unsub : () => { try { (unsub as any)?.unsubscribe?.(); } catch (e) {} };
     } catch (e: any) {
       console.error('Error subscribiendo a usuario', e?.message || e);
+      this.toast.error('Error al conectar con el servidor.');
     }
   }
 

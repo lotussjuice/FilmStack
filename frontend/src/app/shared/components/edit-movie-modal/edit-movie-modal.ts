@@ -1,10 +1,10 @@
 import { Component, input, output, signal, effect, inject, viewChild, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HybridMovie } from '../../../../core/interfaces/movie.interface';
-import { ExportService } from '../../../../core/services/export.service';
-import { AuthService } from '../../../../core/services/auth.service';
-import { ToastService } from '../../../../core/services/toast.service';
+import { HybridMovie } from '../../../core/interfaces/movie.interface';
+import { ExportService } from '../../../core/services/export.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { ReviewShareCardComponent } from '../review-share-card/review-share-card';
 
 @Component({

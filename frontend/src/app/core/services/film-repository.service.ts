@@ -71,8 +71,7 @@ export class FilmRepositoryService {
       const statsMap = new Map();
       statsList.forEach((s: any) => statsMap.set(s.tmdb_id, s));
       this.statsSignal.set(statsMap);
-    } catch (e) {
-      this.toast.error('Error al cargar estadísticas');
+    } catch {
     }
   }
 
@@ -86,7 +85,7 @@ export class FilmRepositoryService {
           const detail = await this.tmdbService.getMovieDetails(m.tmdb_id);
           currentDetails.set(m.tmdb_id, detail);
         } catch (e) {
-          console.error(`Error al cargar info de TMDB para ${m.tmdb_id}`, e);
+          console.warn(`Error al cargar info de TMDB para ${m.tmdb_id}`, e);
         }
       });
 
