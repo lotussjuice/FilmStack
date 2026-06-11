@@ -19,7 +19,12 @@ routerAdd("POST", "/api/register", (e) => {
     return e.json(400, { code: 400, message: "Formato de correo invalido." });
   }
 
-  const existing = $app.findFirstRecordByData("users", "email", email);
+  let existing;
+  try {
+    existing = $app.findFirstRecordByData("users", "email", email);
+  } catch (_) {
+    existing = null;
+  }
   if (existing) {
     return e.json(400, { code: 400, message: "El correo ya esta registrado." });
   }
@@ -49,8 +54,8 @@ routerAdd("POST", "/api/register", (e) => {
   $app.save(tokenRecord);
 
   const appUrl = $os.getenv("FRONTEND_URL") || "http://localhost:4200";
+  console.log("[Register] FRONTEND_URL:", $os.getenv("FRONTEND_URL"), "-> appUrl:", appUrl);
   const verifyUrl = `${appUrl}/verify-email?token=${token}`;
-  console.log("[Register] Verification URL:", verifyUrl);
 
   try {
     const message = new MailerMessage({

@@ -20,6 +20,8 @@ services:
       - "8068:8090"
     env_file:
       - .env
+    environment:
+      - FRONTEND_URL=http://pacheco.chillan.ubiobio.cl:8067
     volumes:
       - pb_data:/pb_data
       - ./backend/pb_migrations:/pb_migrations

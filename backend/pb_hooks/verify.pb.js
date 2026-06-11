@@ -7,7 +7,12 @@ routerAdd("GET", "/api/verify-email", (e) => {
     return e.json(400, { code: 400, message: "Token requerido." });
   }
 
-  const tokenRecord = $app.findFirstRecordByData("verification_tokens", "token", token);
+  let tokenRecord;
+  try {
+    tokenRecord = $app.findFirstRecordByData("verification_tokens", "token", token);
+  } catch (_) {
+    tokenRecord = null;
+  }
 
   if (!tokenRecord) {
     return e.json(400, { code: 400, message: "Token invalido o ya fue usado." });

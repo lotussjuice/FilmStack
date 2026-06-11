@@ -15,7 +15,12 @@ routerAdd("POST", "/api/reset-password", (e) => {
     return e.json(400, { code: 400, message: "Las contrasenas no coinciden." });
   }
 
-  const tokenRecord = $app.findFirstRecordByData("password_reset_tokens", "token", token);
+  let tokenRecord;
+  try {
+    tokenRecord = $app.findFirstRecordByData("password_reset_tokens", "token", token);
+  } catch (_) {
+    tokenRecord = null;
+  }
 
   if (!tokenRecord) {
     return e.json(400, { code: 400, message: "Token invalido o ya fue usado." });

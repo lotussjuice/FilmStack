@@ -7,7 +7,12 @@ routerAdd("POST", "/api/forgot-password", (e) => {
     return e.json(400, { code: 400, message: "El correo es obligatorio." });
   }
 
-  const user = $app.findFirstRecordByData("users", "email", email);
+  let user;
+  try {
+    user = $app.findFirstRecordByData("users", "email", email);
+  } catch (_) {
+    user = null;
+  }
 
   if (!user) {
   return e.json(200, { message: "Si el correo esta registrado, recibiras un enlace para restablecer tu contrasena." });
@@ -23,8 +28,8 @@ routerAdd("POST", "/api/forgot-password", (e) => {
   $app.save(tokenRecord);
 
   const appUrl = $os.getenv("FRONTEND_URL") || "http://localhost:4200";
+  console.log("[ForgotPassword] FRONTEND_URL:", $os.getenv("FRONTEND_URL"), "-> appUrl:", appUrl);
   const resetUrl = `${appUrl}/reset-password?token=${token}`;
-  console.log("[ForgotPassword] Reset URL:", resetUrl);
 
   try {
     const message = new MailerMessage({
