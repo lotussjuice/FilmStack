@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import PocketBase from 'pocketbase';
 import { Movie } from '../interfaces/movie.interface';
 import { UserSummary } from '../interfaces/user.interface';
@@ -8,9 +9,17 @@ import { UserSummary } from '../interfaces/user.interface';
 })
 export class PocketbaseService {
   private pb: PocketBase;
+  private router = inject(Router);
 
   constructor() {
     this.pb = new PocketBase('/');
+    this.pb.afterSend = (response, data) => {
+      if (response.status === 401) {
+        this.pb.authStore.clear();
+        this.router.navigate(['/login']);
+      }
+      return data;
+    };
   }
 
   collection(name: string) {

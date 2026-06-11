@@ -101,7 +101,7 @@
     <div class="text-center">
       <h5 class="text-dark-green mb-3"><i class="bi bi-hourglass-split me-1"></i> Votacion sincronizada</h5>
       <p class="text-onyx">La ruleta ha elegido. Todos deben aceptar o negar:</p>
-      <h3 class="text-dark-green fw-bold mb-3">{{ party().activeMovieTitle }}</h3>
+      <h3 class="text-dark-green fw-bold mb-3 group-roulette-title">{{ party().activeMovieTitle }}</h3>
       @if (partyPosterUrl(); as url) {
         <img [src]="url" alt="Poster" class="roulette-poster rounded-3 shadow mb-3">
       }
@@ -120,7 +120,7 @@
   } @else if (party().status === 'watching') {
     <div class="text-center">
       <h5 class="text-dark-green mb-3"><i class="bi bi-eye-fill me-1"></i> Viendo ahora</h5>
-      <h3 class="text-onyx fw-bold">{{ party().activeMovieTitle }}</h3>
+      <h3 class="text-onyx fw-bold group-roulette-title">{{ party().activeMovieTitle }}</h3>
       <div class="w-100 d-flex flex-column align-items-center">
         @if (partyPosterUrl(); as url) {
           <div class="mb-3">
@@ -144,7 +144,7 @@
   } @else if (party().status === 'finished') {
     <div class="text-center">
       <h5 class="text-dark-green mb-3"><i class="bi bi-trophy me-1"></i> Sesion finalizada</h5>
-      <p class="text-onyx">Es hora de calificar juntos: <strong>{{ party().activeMovieTitle }}</strong></p>
+      <p class="text-onyx">Es hora de calificar juntos: <strong class="group-roulette-title">{{ party().activeMovieTitle }}</strong></p>
       <button type="button" class="btn btn-primary" (click)="finishReview()">
         <i class="bi bi-star me-1"></i> Abrir reseña grupal
       </button>

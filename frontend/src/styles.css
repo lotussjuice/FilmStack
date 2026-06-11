@@ -317,3 +317,93 @@ h4, h5, h6, .h4, .h5, .h6 {
 
 a { color: var(--color-dark-green); }
 a:hover { color: var(--color-dark-green-light); }
+
+html {
+  overflow-x: hidden;
+}
+
+.main-content {
+  height: auto;
+  min-height: calc(100vh - 120px);
+}
+
+@media (max-width: 991.98px) {
+  .sidebar-desktop {
+    display: none !important;
+  }
+  .main-content {
+    padding: 1rem !important;
+    min-height: calc(100vh - 100px);
+  }
+  .container.py-4 {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .auth-container {
+    margin: 0.5rem;
+    padding: 1.5rem !important;
+    border-radius: 12px;
+  }
+  .modal-container {
+    max-width: 95vw;
+    margin: 0.5rem;
+    padding: 1rem !important;
+  }
+  h1, .display-4 {
+    font-size: 1.75rem !important;
+  }
+  .navbar-brand-title {
+    font-size: 1.25rem !important;
+  }
+  .container.py-4 {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  .row.g-3 {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+  }
+  .row.g-3 > [class*="col-"] {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .btn-lg {
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+.offcanvas.bg-platinum {
+  background-color: var(--color-platinum) !important;
+}
+.offcanvas.bg-platinum .offcanvas-header {
+  background-color: var(--color-platinum);
+}
+.offcanvas.bg-platinum .nav-link {
+  font-family: var(--font-body);
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.word-break {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+.overflow-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-responsive-stack {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

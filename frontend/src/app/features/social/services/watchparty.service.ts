@@ -521,7 +521,7 @@ export class WatchpartyService {
     }
     votesMap['sync_vote'] = { ...votesMap['sync_vote'], [me.id]: vote };
     try {
-      await this.pb.collection('watchparties').update(party.id, { votes: JSON.stringify(votesMap) });
+      await this.pb.collection('watchparties').update(party.id, { votes: JSON.stringify(votesMap) }, { $autoCancel: false });
       this.currentPartyState.set({ ...party, votes: votesMap });
     } catch (e) {
       console.error('Error enviando sync vote', e);
@@ -814,7 +814,7 @@ export class WatchpartyService {
     const party = this.currentPartyState();
     if (!party) return;
     try {
-      await this.pb.collection('watchparties').update(party.id, { chat_messages: JSON.stringify(messages) });
+      await this.pb.collection('watchparties').update(party.id, { chat_messages: JSON.stringify(messages) }, { $autoCancel: false });
     } catch (e) {
       console.warn('Error persistiendo chat', e);
     }
@@ -829,7 +829,7 @@ export class WatchpartyService {
       votesMap[k] = p.votes;
     });
     try {
-      await this.pb.collection('watchparties').update(party.id, { votes: JSON.stringify(votesMap) });
+      await this.pb.collection('watchparties').update(party.id, { votes: JSON.stringify(votesMap) }, { $autoCancel: false });
     } catch (e) {
       console.warn('Error persistiendo propuestas', e);
     }
@@ -839,7 +839,7 @@ export class WatchpartyService {
     const party = this.currentPartyState();
     if (!party) return;
     try {
-      await this.pb.collection('watchparties').update(party.id, data);
+      await this.pb.collection('watchparties').update(party.id, data, { $autoCancel: false });
     } catch (e) {
       console.warn('Error persistiendo party', e);
     }

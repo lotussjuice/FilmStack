@@ -130,7 +130,11 @@ export class FilmRepositoryService {
 
   async getMovieStats(tmdbId: number): Promise<any> {
     try {
-      return await this.pbService.collection('rankings').getOne(tmdbId.toString());
+      const records = await this.pbService.collection('rankings').getFullList({
+        filter: `tmdb_id = ${tmdbId}`,
+        $autoCancel: false,
+      });
+      return records[0] || { avg_rating: 0, total_votes: 0 };
     } catch (e) {
       return { avg_rating: 0, total_votes: 0 };
     }

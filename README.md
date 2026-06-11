@@ -9,7 +9,7 @@ FilmStack es una plataforma web social para la gestion de catalogos cinematograf
 | Capa | Tecnologia |
 | :--- | :--- |
 | **Frontend** | Angular 21 (Standalone) + TypeScript 5.7 + Bootstrap 5 + Signals API |
-| **Backend** | PocketBase 0.25.3 (Go) - API REST + base de datos SQLite |
+| **Backend** | PocketBase 0.28.0 (Go) - API REST + base de datos SQLite |
 | **Proxy** | Nginx (integrados en frontend) |
 | **Contenedores** | Docker Compose |
 | **Fuente de datos** | TMDB API (The Movie Database) |
@@ -79,8 +79,8 @@ Reemplazar `tu_api_key_aqui` por la API Key real obtenida de TMDB. Sin esta vari
 
 ```
 Localhost:4200 (mb-filmstack-frontend-dev | Angular Dev Server con live-reload)
-  |- /api/*  -> proxy.conf.json -> http://backend-dev:8090 (PocketBase)
-  |- /_/*    -> proxy.conf.json -> http://backend-dev:8090 (PocketBase Admin)
+  |- /api/*  -> proxy.conf.json -> http://backend:8090 (PocketBase)
+  |- /_/*    -> proxy.conf.json -> http://backend:8090 (PocketBase Admin)
 
 Localhost:8090 (mb-filmstack-backend-dev | PocketBase directamente)
 ```
@@ -101,8 +101,8 @@ Este comando construye las imagenes y levanta los 2 servicios (frontend en puert
 
 | Servicio (contenedor) | Descripcion | Puerto |
 | :--- | :--- | :--- |
-| `frontend-dev` (`mb-filmstack-frontend-dev`) | Angular Dev Server con live-reload | 4200 |
-| `backend-dev` (`mb-filmstack-backend-dev`) | PocketBase (API + admin + SQLite) | 8090 |
+| `frontend` (`mb-filmstack-frontend-dev`) | Angular Dev Server con live-reload | 4200 |
+| `backend` (`mb-filmstack-backend-dev`) | PocketBase (API + admin + SQLite) | 8090 |
 
 ### Acceso
 
@@ -280,34 +280,67 @@ Para probar la aplicacion inmediatamente:
 3. Ir a "Collections" > "movies" > "New record".
 4. Agregar una pelicula de prueba con los campos requeridos (user_id debe ser el ID de uno de los usuarios creados, tmdb_id puede ser 550, 680, etc.).
 
-### Paso 6: Crear usuario de prueba via terminal (alternativa a la UI)
+### Paso 6: Creacion de usuarios via terminal (alternativa a la UI)
 
-Para crear usuarios directamente sin usar el panel web, ejecutar dentro del contenedor backend:
+PocketBase maneja dos tipos de cuentas separadas:
+
+| Tipo | Coleccion | Acceso |
+| :--- | :--- | :--- |
+| **Superuser** (admin del panel) | `_superusers` | Solo admin panel `/_/` |
+| **Usuario regular** (app) | `users` | App `:8067` o `:4200` |
+
+Un superuser NO puede iniciar sesion en la app, y viceversa. Si necesitas una cuenta admin dentro de la app, debes crear un usuario regular con `role: "admin"`.
+
+#### Crear superuser (panel admin)
 
 **Desarrollo local:**
 ```bash
-docker compose -f docker-compose-dev.yml exec backend-dev \
-  /usr/local/bin/pocketbase admin create "admin@filmstack.com" "1234567890"
+docker compose -f docker-compose-dev.yml exec backend \
+  /usr/local/bin/pocketbase superuser create "admin@filmstack.cl" "test12345678"
 ```
 
 **Produccion (Pacheco):**
 ```bash
 docker compose exec backend \
-  /usr/local/bin/pocketbase admin create "admin@filmstack.com" "1234567890"
+  /usr/local/bin/pocketbase superuser create "admin@filmstack.cl" "test12345678"
 ```
 
-Para crear un usuario regular (no admin) en la coleccion `users` via API local dentro del contenedor:
+La migracion `seed_admin.js` ya crea automaticamente un superuser con email `admin@filmstack.cl` y password `test12345678` al iniciar por primera vez (valores configurables via `ADMIN_EMAIL` y `ADMIN_PASSWORD` en `.env`).
+
+#### Crear usuario regular admin (para la app)
+
+Para tener una cuenta con rol `admin` dentro de la aplicacion (coleccion `users`), usar la API local:
+
+**Desarrollo local:**
+```bash
+docker compose -f docker-compose-dev.yml exec backend \
+  wget -qO- --post-data='{"email":"admin@filmstack.cl","password":"test12345678","passwordConfirm":"test12345678","name":"Admin","role":"admin"}' \
+  --header='Content-Type: application/json' \
+  http://localhost:8090/api/collections/users/records
+```
+
+**Produccion (Pacheco):**
+```bash
+docker compose exec backend \
+  wget -qO- --post-data='{"email":"admin@filmstack.cl","password":"test12345678","passwordConfirm":"test12345678","name":"Admin","role":"admin"}' \
+  --header='Content-Type: application/json' \
+  http://localhost:8090/api/collections/users/records
+```
+
+> Nota: esta API requiere que el superuser haya sido creado primero o que el `createRule` de la coleccion `users` sea publico (lo cual ya esta configurado en las migraciones). Si se ejecuta sin un superuser activo, las reglas de la API pueden bloquear la creacion; una alternativa es ejecutar este comando inmediatamente despues de haber iniciado sesion como superuser via CLI.
+
+#### Crear usuario regular normal (para la app)
 
 ```bash
 # Desarrollo local
-docker compose -f docker-compose-dev.yml exec backend-dev \
-  wget -qO- --post-data='{"email":"test@filmstack.com","password":"1234567890","passwordConfirm":"1234567890","name":"Usuario Test"}' \
+docker compose -f docker-compose-dev.yml exec backend \
+  wget -qO- --post-data='{"email":"test@filmstack.com","password":"12345678","passwordConfirm":"12345678","name":"Usuario Test"}' \
   --header='Content-Type: application/json' \
   http://localhost:8090/api/collections/users/records
 
 # Produccion (Pacheco)
 docker compose exec backend \
-  wget -qO- --post-data='{"email":"test@filmstack.com","password":"1234567890","passwordConfirm":"1234567890","name":"Usuario Test"}' \
+  wget -qO- --post-data='{"email":"test@filmstack.com","password":"12345678","passwordConfirm":"12345678","name":"Usuario Test"}' \
   --header='Content-Type: application/json' \
   http://localhost:8090/api/collections/users/records
 ```

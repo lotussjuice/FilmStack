@@ -94,7 +94,7 @@
         </div>
         <div class="card-body">
           @if (showInviteMore() && isHost()) {
-            <div class="invite-more-panel p-3 bg-white rounded border border-dry-sage mb-3">
+            <div class="invite-more-panel p-3 bg-platinum rounded border border-dry-sage mb-3">
               <h6 class="text-dark-green small fw-bold mb-2">Invitar a mas amigos</h6>
               @if (uninvitedFriends().length > 0) {
                 <div class="input-group input-group-sm mb-2">
@@ -117,7 +117,7 @@
               }
               <div class="d-flex flex-wrap gap-2 mb-2">
                 @for (f of uninvitedFriends(); track f.id) {
-                  <label class="d-flex align-items-center gap-1 p-1 px-2 border rounded" style="cursor: pointer;" [class.bg-light]="inviteSelection()[f.id]">
+                  <label class="d-flex align-items-center gap-1 p-1 px-2 border rounded" style="cursor: pointer;" [class.bg-dry-sage]="inviteSelection()[f.id]">
                     <input type="checkbox" class="form-check-input m-0" [checked]="!!inviteSelection()[f.id]" (change)="toggleInvite(f.id)">
                     <span class="small text-onyx">{{ f.name }}</span>
                   </label>

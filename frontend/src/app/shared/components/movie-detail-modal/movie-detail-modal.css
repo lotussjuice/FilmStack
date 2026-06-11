@@ -58,3 +58,20 @@
         border-left: 1px solid var(--color-dry-sage) !important;
     }
 }
+
+@media (max-width: 575.98px) {
+    .modal-container {
+        margin: 0.5rem;
+        max-height: 98vh;
+    }
+    .modal-container h2 {
+        font-size: 1.2rem;
+    }
+    .modal-body-scroll {
+        padding: 1rem !important;
+    }
+    .modal-body-scroll p {
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+}

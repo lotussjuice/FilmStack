@@ -212,3 +212,32 @@
   background: var(--color-dry-sage);
   transform: translateX(4px);
 }
+
+@media (max-width: 575.98px) {
+  .roulette-stage {
+    width: 220px;
+    height: 220px;
+  }
+  .roulette-wheel {
+    width: 200px;
+    height: 200px;
+    border-width: 8px;
+  }
+  .roulette-wheel .wheel-center {
+    width: 55px;
+    height: 55px;
+    font-size: 1.4rem;
+    border-width: 4px;
+  }
+  .roulette-label-text {
+    font-size: 0.55rem;
+    max-width: 60px;
+  }
+  .candidate-thumb {
+    width: 36px;
+    height: 54px;
+  }
+  .candidate-list {
+    max-height: 250px;
+  }
+}

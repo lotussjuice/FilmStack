@@ -17,7 +17,7 @@
       } @else {
         <div class="message-bubble p-2 mb-2 rounded-3" [class.own]="isOwnMessage(m.userId)">
           <div class="small fw-bold text-dark-green">{{ m.userName }}</div>
-          <div class="text-onyx">{{ m.text }}</div>
+          <div class="text-onyx" style="word-break: break-word; overflow-wrap: break-word;">{{ m.text }}</div>
           @if (m.type === 'proposal' && m.proposal) {
             @if (getFreshProposal(m.proposal); as fresh) {
               <div class="proposal-widget mt-2 p-2 rounded-2">

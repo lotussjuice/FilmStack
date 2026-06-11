@@ -1,5 +1,9 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/components/login/login';
+import { SignupComponent } from './features/auth/components/signup/signup';
+import { ForgotPasswordComponent } from './features/auth/components/forgot-password/forgot-password';
+import { ResetPasswordComponent } from './features/auth/components/reset-password/reset-password';
+import { VerifyEmailComponent } from './features/auth/components/verify-email/verify-email';
 import { SearchComponent } from './features/search/components/search-view/search-view';
 import { BacklogComponent } from './features/backlog/components/backlog-view/backlog-view';
 import { MovieDetailComponent } from './features/movie-detail/components/movie-detail-view/movie-detail-view';
@@ -10,9 +14,15 @@ import { SocialComponent } from './features/social/components/social-view/social
 import { WatchpartyComponent } from './features/social/components/watchparty/components/watchparty-view/watchparty-view';
 import { WatchpartyHistoryComponent } from './features/social/components/watchparty-history/components/watchparty-history-view/watchparty-history-view';
 import { authGuard } from './core/guards/auth.guard';
+import { NotFoundComponent } from './features/error/pages/not-found/not-found';
+import { NotAuthorizedComponent } from './features/error/pages/not-authorized/not-authorized';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'signup', component: SignupComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'verify-email', component: VerifyEmailComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'search', component: SearchComponent, canActivate: [authGuard] },
   { path: 'backlog', component: BacklogComponent, canActivate: [authGuard] },
   { path: 'roulette', component: RouletteComponent, canActivate: [authGuard] },
@@ -22,6 +32,8 @@ export const routes: Routes = [
   { path: 'movie/:movieId', component: MovieDetailComponent, canActivate: [authGuard] },
   { path: 'admin/users', component: UsersComponent, canActivate: [authGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+  { path: '404', component: NotFoundComponent },
+  { path: '403', component: NotAuthorizedComponent },
   { path: '', redirectTo: 'search', pathMatch: 'full' },
-  { path: '**', redirectTo: 'search' }
+  { path: '**', component: NotFoundComponent }
 ];

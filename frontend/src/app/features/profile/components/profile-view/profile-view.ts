@@ -20,10 +20,21 @@ export class ProfileComponent {
   email = signal(this.auth.user()?.email || '');
   nameTouched = signal(false);
   emailTouched = signal(false);
-  
+
   isLoading = signal(false);
   message = signal('');
   messageType = signal<'success' | 'danger'>('success');
+
+  showPasswordForm = signal(false);
+  oldPassword = signal('');
+  oldPasswordTouched = signal(false);
+  newPassword = signal('');
+  newPasswordTouched = signal(false);
+  newPasswordConfirm = signal('');
+  newPasswordConfirmTouched = signal(false);
+  isChangingPassword = signal(false);
+  passwordMessage = signal('');
+  passwordMessageType = signal<'success' | 'danger'>('success');
 
   nameError = computed(() => {
     if (!this.nameTouched()) return '';
@@ -37,7 +48,28 @@ export class ProfileComponent {
     if (!this.emailTouched()) return '';
     const v = this.email();
     if (!v) return 'El correo es obligatorio.';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Formato de correo inválido.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Formato de correo invalido.';
+    return '';
+  });
+
+  oldPasswordError = computed(() => {
+    if (!this.oldPasswordTouched()) return '';
+    if (!this.oldPassword()) return 'La contrasena actual es obligatoria.';
+    return '';
+  });
+
+  newPasswordError = computed(() => {
+    if (!this.newPasswordTouched()) return '';
+    const v = this.newPassword();
+    if (!v) return 'La nueva contrasena es obligatoria.';
+    if (v.length < 8) return 'Minimo 8 caracteres.';
+    return '';
+  });
+
+  newPasswordConfirmError = computed(() => {
+    if (!this.newPasswordConfirmTouched()) return '';
+    if (!this.newPasswordConfirm()) return 'Confirma la contrasena.';
+    if (this.newPassword() !== this.newPasswordConfirm()) return 'Las contrasenas no coinciden.';
     return '';
   });
 
@@ -58,11 +90,11 @@ export class ProfileComponent {
         name: this.name(),
         email: this.email()
       });
-      
+
       this.message.set('Perfil actualizado correctamente.');
       this.messageType.set('success');
       this.toast.success('Perfil actualizado correctamente.');
-      
+
       await this.userService.authRefresh();
     } catch (err: any) {
       this.message.set(err.message || 'Error al actualizar el perfil.');
@@ -73,6 +105,47 @@ export class ProfileComponent {
     }
   }
 
-  onNameBlur() { this.nameTouched.set(true); }
-  onEmailBlur() { this.emailTouched.set(true); }
+  async onChangePassword() {
+    this.oldPasswordTouched.set(true);
+    this.newPasswordTouched.set(true);
+    this.newPasswordConfirmTouched.set(true);
+
+    if (this.oldPasswordError() || this.newPasswordError() || this.newPasswordConfirmError()) return;
+
+    this.isChangingPassword.set(true);
+    this.passwordMessage.set('');
+
+    try {
+      await this.auth.changePassword(this.oldPassword(), this.newPassword(), this.newPasswordConfirm());
+      this.passwordMessage.set('Contrasena cambiada exitosamente.');
+      this.passwordMessageType.set('success');
+      this.toast.success('Contrasena cambiada exitosamente.');
+      this.oldPassword.set('');
+      this.newPassword.set('');
+      this.newPasswordConfirm.set('');
+      this.oldPasswordTouched.set(false);
+      this.newPasswordTouched.set(false);
+      this.newPasswordConfirmTouched.set(false);
+    } catch (err: any) {
+      this.passwordMessage.set(err.error?.message || err.message || 'Error al cambiar la contrasena.');
+      this.passwordMessageType.set('danger');
+    } finally {
+      this.isChangingPassword.set(false);
+    }
+  }
+
+  togglePasswordForm() {
+    this.showPasswordForm.update(v => !v);
+    if (!this.showPasswordForm()) {
+      this.passwordMessage.set('');
+    }
+  }
+
+  onBlur(field: string) {
+    if (field === 'name') this.nameTouched.set(true);
+    if (field === 'email') this.emailTouched.set(true);
+    if (field === 'oldPassword') this.oldPasswordTouched.set(true);
+    if (field === 'newPassword') this.newPasswordTouched.set(true);
+    if (field === 'newPasswordConfirm') this.newPasswordConfirmTouched.set(true);
+  }
 }

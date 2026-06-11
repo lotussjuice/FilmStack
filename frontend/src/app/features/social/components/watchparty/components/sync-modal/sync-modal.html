@@ -13,7 +13,7 @@
         @if (posterUrl(); as url) {
           <img [src]="url" alt="Poster" class="sync-poster rounded-3 shadow mb-2">
         }
-        <h4 class="text-onyx fw-bold m-0">{{ party()!.activeMovieTitle }}</h4>
+        <h4 class="text-onyx fw-bold m-0" style="word-break: break-word; overflow-wrap: break-word;">{{ party()!.activeMovieTitle }}</h4>
       </div>
 
       <div class="mb-3 px-3">

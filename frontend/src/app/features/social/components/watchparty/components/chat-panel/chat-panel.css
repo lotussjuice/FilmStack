@@ -9,6 +9,8 @@
   background: var(--color-dry-sage);
   border: 1px solid var(--color-dry-sage);
   max-width: 90%;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .message-bubble.own {

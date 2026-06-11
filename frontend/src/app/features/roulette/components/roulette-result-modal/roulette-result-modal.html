@@ -17,7 +17,7 @@
           }
         </div>
         <div class="col-12 col-md-7">
-          <h2 class="text-dark-green fw-bold mb-2">{{ movie()!.tmdb_data?.title }}</h2>
+          <h2 class="text-dark-green fw-bold mb-2 roulette-result-title">{{ movie()!.tmdb_data?.title }}</h2>
           <div class="d-flex gap-2 align-items-center mb-3">
             @if (year()) {
               <span class="badge bg-dry-sage text-onyx">{{ year() }}</span>
@@ -29,7 +29,7 @@
             }
           </div>
           @if (movie()!.tmdb_data?.overview) {
-            <p class="text-onyx small mb-0" style="max-height: 140px; overflow-y: auto;">
+            <p class="text-onyx small mb-0 roulette-result-overview" style="max-height: 140px; overflow-y: auto;">
               {{ movie()!.tmdb_data?.overview }}
             </p>
           }

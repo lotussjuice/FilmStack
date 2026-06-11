@@ -4,8 +4,8 @@
       <div class="card shadow-sm border-platinum bg-white">
         <div class="card-body p-4 p-md-5">
           <h2 class="mb-4 fw-bold text-primary"><i class="bi bi-person-circle me-2"></i>Mi Perfil</h2>
-          
-          <p class="text-grey-olive mb-4">Administra tu información personal de FilmStack.</p>
+
+          <p class="text-grey-olive mb-4">Administra tu informacion personal de FilmStack.</p>
 
           @if (message()) {
             <div class="alert mb-4" [class.alert-success]="messageType() === 'success'" [class.alert-danger]="messageType() === 'danger'">
@@ -15,22 +15,21 @@
           }
 
           <form (ngSubmit)="onUpdateProfile()">
-            <!-- Nombre -->
             <div class="mb-4">
               <label for="name" class="form-label text-grey-olive small text-uppercase fw-bold">Nombre Completo</label>
               <div class="input-group">
                 <span class="input-group-text bg-white border-platinum text-grey-olive">
                   <i class="bi bi-person"></i>
                 </span>
-                <input 
-                  type="text" 
-                  id="name" 
+                <input
+                  type="text"
+                  id="name"
                   class="form-control border-platinum"
                   [class.is-invalid]="nameError()"
-                  [ngModel]="name()" 
-                  (ngModelChange)="name.set($event)" 
-                  (blur)="onNameBlur()"
-                  name="name" 
+                  [ngModel]="name()"
+                  (ngModelChange)="name.set($event)"
+                  (blur)="onBlur('name')"
+                  name="name"
                   required>
               </div>
               @if (nameError()) {
@@ -40,22 +39,21 @@
               }
             </div>
 
-            <!-- Email -->
             <div class="mb-5">
-              <label for="email" class="form-label text-grey-olive small text-uppercase fw-bold">Correo Electrónico</label>
+              <label for="email" class="form-label text-grey-olive small text-uppercase fw-bold">Correo Electronico</label>
               <div class="input-group">
                 <span class="input-group-text bg-white border-platinum text-grey-olive">
                   <i class="bi bi-envelope"></i>
                 </span>
-                <input 
-                  type="email" 
-                  id="email" 
+                <input
+                  type="email"
+                  id="email"
                   class="form-control border-platinum"
                   [class.is-invalid]="emailError()"
-                  [ngModel]="email()" 
-                  (ngModelChange)="email.set($event)" 
-                  (blur)="onEmailBlur()"
-                  name="email" 
+                  [ngModel]="email()"
+                  (ngModelChange)="email.set($event)"
+                  (blur)="onBlur('email')"
+                  name="email"
                   required>
               </div>
               @if (emailError()) {
@@ -73,6 +71,112 @@
               }
             </button>
           </form>
+
+          <hr class="my-5">
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold text-onyx mb-0 fs-5"><i class="bi bi-shield-lock me-2"></i>Contrasena</h3>
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="togglePasswordForm()">
+              @if (showPasswordForm()) {
+                <i class="bi bi-chevron-up me-1"></i> Cerrar
+              } @else {
+                <i class="bi bi-chevron-down me-1"></i> Cambiar
+              }
+            </button>
+          </div>
+
+          @if (showPasswordForm()) {
+            @if (passwordMessage()) {
+              <div class="alert mb-4" [class.alert-success]="passwordMessageType() === 'success'" [class.alert-danger]="passwordMessageType() === 'danger'">
+                <i class="bi" [class.bi-check-circle-fill]="passwordMessageType() === 'success'" [class.bi-exclamation-triangle-fill]="passwordMessageType() === 'danger'"></i>
+                {{ passwordMessage() }}
+              </div>
+            }
+
+            <form (ngSubmit)="onChangePassword()">
+              <div class="mb-3">
+                <label for="oldPassword" class="form-label text-grey-olive small text-uppercase fw-bold">Contrasena Actual</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white border-platinum text-grey-olive">
+                    <i class="bi bi-lock"></i>
+                  </span>
+                  <input
+                    type="password"
+                    id="oldPassword"
+                    class="form-control border-platinum"
+                    [class.is-invalid]="oldPasswordError()"
+                    [ngModel]="oldPassword()"
+                    (ngModelChange)="oldPassword.set($event)"
+                    (blur)="onBlur('oldPassword')"
+                    name="oldPassword"
+                    required>
+                </div>
+                @if (oldPasswordError()) {
+                  <div class="invalid-feedback d-block">
+                    <i class="bi bi-exclamation-circle me-1"></i>{{ oldPasswordError() }}
+                  </div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label for="newPassword" class="form-label text-grey-olive small text-uppercase fw-bold">Nueva Contrasena</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white border-platinum text-grey-olive">
+                    <i class="bi bi-lock-fill"></i>
+                  </span>
+                  <input
+                    type="password"
+                    id="newPassword"
+                    class="form-control border-platinum"
+                    [class.is-invalid]="newPasswordError()"
+                    placeholder="Minimo 8 caracteres"
+                    [ngModel]="newPassword()"
+                    (ngModelChange)="newPassword.set($event)"
+                    (blur)="onBlur('newPassword')"
+                    name="newPassword"
+                    required>
+                </div>
+                @if (newPasswordError()) {
+                  <div class="invalid-feedback d-block">
+                    <i class="bi bi-exclamation-circle me-1"></i>{{ newPasswordError() }}
+                  </div>
+                }
+              </div>
+
+              <div class="mb-4">
+                <label for="newPasswordConfirm" class="form-label text-grey-olive small text-uppercase fw-bold">Confirmar Nueva Contrasena</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white border-platinum text-grey-olive">
+                    <i class="bi bi-lock-fill"></i>
+                  </span>
+                  <input
+                    type="password"
+                    id="newPasswordConfirm"
+                    class="form-control border-platinum"
+                    [class.is-invalid]="newPasswordConfirmError()"
+                    placeholder="Repite la contrasena"
+                    [ngModel]="newPasswordConfirm()"
+                    (ngModelChange)="newPasswordConfirm.set($event)"
+                    (blur)="onBlur('newPasswordConfirm')"
+                    name="newPasswordConfirm"
+                    required>
+                </div>
+                @if (newPasswordConfirmError()) {
+                  <div class="invalid-feedback d-block">
+                    <i class="bi bi-exclamation-circle me-1"></i>{{ newPasswordConfirmError() }}
+                  </div>
+                }
+              </div>
+
+              <button type="submit" class="btn btn-warning w-100 fw-bold shadow-sm" [disabled]="isChangingPassword()">
+                @if (isChangingPassword()) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span> Cambiando...
+                } @else {
+                  Cambiar Contrasena <i class="bi bi-arrow-right ms-2"></i>
+                }
+              </button>
+            </form>
+          }
         </div>
       </div>
     </div>

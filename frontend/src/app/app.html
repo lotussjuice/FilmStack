@@ -1,7 +1,10 @@
-@if (auth.isAuthenticated()) {
+@if (auth.isAuthenticated() && !isErrorRoute()) {
   <div class="d-flex flex-column min-vh-100 bg-platinum text-onyx">
     <nav class="navbar navbar-expand-lg navbar-light bg-platinum border-bottom border-dry-sage shadow-sm">
       <div class="container-fluid">
+        <button class="btn btn-outline-primary border-0 d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-label="Menu">
+          <i class="bi bi-list fs-4"></i>
+        </button>
         <a class="navbar-brand d-flex align-items-center text-dark-green" routerLink="/">
           <i class="bi bi-film fs-3 text-dark-green me-2"></i>
           <span class="navbar-brand-title text-dark-green">FilmStack</span>
@@ -10,21 +13,21 @@
           <div class="dropdown">
             <button class="btn btn-outline-primary dropdown-toggle border-0" type="button" data-bs-toggle="dropdown">
               <i class="bi bi-person-circle me-1"></i>
-              {{ auth.user()?.name || 'Usuario' }}
+              <span class="d-none d-md-inline">{{ auth.user()?.name || 'Usuario' }}</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow border-0">
               <li><a class="dropdown-item py-2" routerLink="/profile"><i class="bi bi-person me-2"></i>Mi Perfil</a></li>
-              <li><a class="dropdown-item py-2" href="#"><i class="bi bi-gear me-2"></i>Ajustes</a></li>
+              <li><a class="dropdown-item py-2 disabled text-muted" href="javascript:void(0)"><i class="bi bi-gear me-2"></i>Ajustes</a></li>
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item py-2 text-status-red fw-bold" href="javascript:void(0)" (click)="auth.logout()"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</a></li>
+              <li><a class="dropdown-item py-2 text-status-red fw-bold" href="javascript:void(0)" (click)="auth.logout()"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesion</a></li>
             </ul>
           </div>
         </div>
       </div>
     </nav>
 
-    <div class="container-fluid flex-grow-1 d-flex p-0">
-      <div class="bg-platinum border-end border-dry-sage flex-shrink-0 shadow-sm" style="width: 250px;">
+    <div class="container-fluid flex-grow-1 d-flex p-0" style="min-height: 0;">
+      <div class="bg-platinum border-end border-dry-sage flex-shrink-0 shadow-sm d-none d-lg-block sidebar-desktop" style="width: 250px;">
         <div class="d-flex flex-column p-3 h-100">
           <ul class="nav nav-pills flex-column mb-auto">
             <li class="nav-item">
@@ -74,7 +77,7 @@
               <li>
                 <a routerLink="/admin/users" routerLinkActive="active" class="nav-link text-dark-green mb-2">
                   <i class="bi bi-people me-2"></i>
-                  Gestión de Usuarios
+                  Gestion de Usuarios
                 </a>
               </li>
             }
@@ -82,7 +85,71 @@
         </div>
       </div>
 
-      <main class="flex-grow-1 overflow-auto bg-platinum p-4" style="height: calc(100vh - 57px - 57px);">
+      <div class="offcanvas offcanvas-start d-lg-none bg-platinum" id="sidebarOffcanvas" data-bs-scroll="true">
+        <div class="offcanvas-header border-bottom border-dry-sage">
+          <h5 class="offcanvas-title text-dark-green fw-bold">
+            <i class="bi bi-film me-2"></i>FilmStack
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+        </div>
+        <div class="offcanvas-body p-3">
+          <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+              <a routerLink="/search" routerLinkActive="active" class="nav-link text-onyx mb-2" (click)="closeSidebar()">
+                <i class="bi bi-search me-2"></i>
+                Buscar
+              </a>
+            </li>
+
+            @if (auth.role() !== 'guest') {
+              <li>
+                <a routerLink="/backlog" routerLinkActive="active" class="nav-link text-onyx mb-2" (click)="closeSidebar()">
+                  <i class="bi bi-collection-play me-2"></i>
+                  Mi Backlog
+                </a>
+              </li>
+              <li>
+                <a routerLink="/roulette" routerLinkActive="active" class="nav-link text-onyx mb-2" (click)="closeSidebar()">
+                  <i class="bi bi-dice-5 me-2"></i>
+                  Ruleta
+                </a>
+              </li>
+              <li>
+                <a routerLink="/watchparty" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link text-onyx mb-2" (click)="closeSidebar()">
+                  <i class="bi bi-broadcast me-2"></i>
+                  Watchparty
+                </a>
+              </li>
+              <li>
+                <a routerLink="/watchparty/history" routerLinkActive="active" class="nav-link text-onyx mb-2 ms-3" (click)="closeSidebar()">
+                  <i class="bi bi-journal-album me-2"></i>
+                  Historial
+                </a>
+              </li>
+              <li>
+                <a routerLink="/social" routerLinkActive="active" class="nav-link text-onyx mb-2" (click)="closeSidebar()">
+                  <i class="bi bi-people-fill me-2"></i>
+                  Social
+                </a>
+              </li>
+            }
+
+            @if (auth.isAdmin()) {
+              <li class="mt-4">
+                <span class="text-dry-sage small text-uppercase fw-bold ps-3 mb-2 d-block">Admin</span>
+              </li>
+              <li>
+                <a routerLink="/admin/users" routerLinkActive="active" class="nav-link text-dark-green mb-2" (click)="closeSidebar()">
+                  <i class="bi bi-people me-2"></i>
+                  Gestion de Usuarios
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      <main class="flex-grow-1 overflow-auto bg-platinum p-3 p-md-4 main-content">
         <app-active-session-banner class="d-block mb-3"></app-active-session-banner>
         <router-outlet></router-outlet>
       </main>
@@ -90,7 +157,7 @@
 
     <footer class="bg-platinum border-top border-dry-sage mt-auto py-3">
       <div class="container-fluid text-center">
-        <span class="text-dry-sage small">FilmStack &copy; 2026 - Plataforma Académica</span>
+        <span class="text-dry-sage small">FilmStack &copy; 2026 - Plataforma Academica</span>
       </div>
     </footer>
   </div>
