@@ -97,6 +97,13 @@
   color: var(--color-status-yellow);
 }
 
+.share-stars .star.half {
+  background: linear-gradient(90deg, var(--color-status-yellow) 50%, var(--color-dry-sage) 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .big-stars .star {
   color: var(--color-dry-sage);
   font-size: 2rem;
@@ -104,6 +111,13 @@
 
 .big-stars .star.filled {
   color: var(--color-status-yellow);
+}
+
+.big-stars .star.half {
+  background: linear-gradient(90deg, var(--color-status-yellow) 50%, var(--color-dry-sage) 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .share-stars .rating-number {

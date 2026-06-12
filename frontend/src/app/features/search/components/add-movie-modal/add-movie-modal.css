@@ -17,11 +17,17 @@
     overflow-y: auto;
 }
 
-.rating-stars i {
-    transition: transform 0.2s;
+.star-wrapper {
+    display: inline-block;
+    cursor: pointer;
 }
 
-.rating-stars i:hover {
+.star-wrapper i {
+    transition: transform 0.2s;
+    pointer-events: none;
+}
+
+.star-wrapper:hover i {
     transform: scale(1.2);
 }
 

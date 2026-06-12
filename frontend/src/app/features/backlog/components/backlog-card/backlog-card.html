@@ -31,7 +31,11 @@
     @if (movie().status === 'watched' && movie().rating) {
       <div class="mb-2 text-status-yellow small">
         @for (star of [1,2,3,4,5]; track star) {
-          <i class="bi" [class.bi-star-fill]="star <= movie().rating" [class.bi-star]="star > movie().rating"></i>
+          <i class="bi"
+            [class.bi-star-fill]="movie().rating >= star"
+            [class.bi-star-half]="movie().rating >= star - 0.5 && movie().rating < star"
+            [class.bi-star]="movie().rating < star - 0.5">
+          </i>
         }
       </div>
     }

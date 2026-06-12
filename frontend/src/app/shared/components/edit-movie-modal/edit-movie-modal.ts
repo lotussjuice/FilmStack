@@ -69,7 +69,16 @@ export class EditMovieModalComponent {
     this.cancel.emit();
   }
 
-  setRating(val: number) {
+  setRating(star: number, event?: MouseEvent) {
+    let val = star;
+    if (event) {
+      const target = event.currentTarget as HTMLElement;
+      const rect = target.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      if (x < rect.width / 2) {
+        val = star - 0.5;
+      }
+    }
     this.rating.set(val);
     this.ratingTouched.set(true);
   }

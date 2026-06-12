@@ -1,0 +1,13 @@
+.star-wrapper {
+    display: inline-block;
+    cursor: pointer;
+}
+
+.star-wrapper i {
+    transition: transform 0.2s;
+    pointer-events: none;
+}
+
+.star-wrapper:hover i {
+    transform: scale(1.2);
+}

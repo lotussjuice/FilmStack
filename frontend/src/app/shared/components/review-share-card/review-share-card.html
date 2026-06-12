@@ -19,8 +19,8 @@
 
       @if (hasReviewText()) {
         <div class="share-stars">
-          @for (filled of ratingStars(); track $index) {
-            <span class="star" [class.filled]="filled">★</span>
+          @for (state of ratingStars(); track $index) {
+            <span class="star" [class.filled]="state === 'full'" [class.half]="state === 'half'">★</span>
           }
           <span class="rating-number">{{ movie().rating || 0 }}/5</span>
         </div>
@@ -31,8 +31,8 @@
           <div class="big-rating">{{ movie().rating || 0 }}</div>
           <div class="big-rating-max">/ 5</div>
           <div class="big-stars mt-2">
-            @for (filled of ratingStars(); track $index) {
-              <span class="star" [class.filled]="filled">★</span>
+            @for (state of ratingStars(); track $index) {
+              <span class="star" [class.filled]="state === 'full'" [class.half]="state === 'half'">★</span>
             }
           </div>
         </div>

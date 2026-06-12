@@ -29,7 +29,12 @@ export class ReviewShareCardComponent {
 
   ratingStars = computed(() => {
     const rating = this.movie().rating || 0;
-    return Array.from({ length: 5 }, (_, i) => i < rating);
+    return Array.from({ length: 5 }, (_, i) => {
+      const starNum = i + 1;
+      if (rating >= starNum) return 'full';
+      if (rating >= starNum - 0.5) return 'half';
+      return 'empty';
+    });
   });
 
   year = computed(() => {

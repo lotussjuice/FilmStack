@@ -27,10 +27,19 @@ export class MovieDetailComponent {
     }
   }
 
-  async updateRating(newRating: number) {
+  async updateRating(star: number, event?: MouseEvent) {
+    let val = star;
+    if (event) {
+      const target = event.currentTarget as HTMLElement;
+      const rect = target.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      if (x < rect.width / 2) {
+        val = star - 0.5;
+      }
+    }
     const current = this.movieData();
     if (current) {
-      await this.repo.updateMovieRating(current.id, newRating);
+      await this.repo.updateMovieRating(current.id, val);
     }
   }
 }

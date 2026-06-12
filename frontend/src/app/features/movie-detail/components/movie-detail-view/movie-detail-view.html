@@ -35,11 +35,13 @@
                 <label class="form-label small text-muted text-uppercase mb-1 d-block">Calificación</label>
                 <div class="text-warning fs-4 cursor-pointer">
                   @for (star of [1,2,3,4,5]; track star) {
-                    <i class="bi" 
-                       [class.bi-star-fill]="star <= movie.rating" 
-                       [class.bi-star]="star > movie.rating"
-                       (click)="updateRating(star)"
-                       role="button"></i>
+                    <span class="star-wrapper" (click)="updateRating(star, $event)">
+                      <i class="bi"
+                         [class.bi-star-fill]="movie.rating >= star"
+                         [class.bi-star-half]="movie.rating >= star - 0.5 && movie.rating < star"
+                         [class.bi-star]="movie.rating < star - 0.5">
+                      </i>
+                    </span>
                   }
                 </div>
               </div>

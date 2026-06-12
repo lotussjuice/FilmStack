@@ -46,14 +46,15 @@
             <label class="form-label fw-semibold text-dry-sage">Tu Nota</label>
             <div class="rating-stars d-flex gap-1 fs-3" [class.is-invalid]="ratingError()">
               @for (star of [1,2,3,4,5]; track star) {
-                <i class="bi"
-                  [class.bi-star-fill]="rating() >= star"
-                  [class.bi-star]="rating() < star"
-                  [class.text-status-yellow]="rating() >= star"
-                  [class.text-muted]="rating() < star"
-                  (click)="setRating(star)"
-                  style="cursor: pointer;">
-                </i>
+                <span class="star-wrapper" (click)="setRating(star, $event)">
+                  <i class="bi"
+                    [class.bi-star-fill]="rating() >= star"
+                    [class.bi-star-half]="rating() >= star - 0.5 && rating() < star"
+                    [class.bi-star]="rating() < star - 0.5"
+                    [class.text-status-yellow]="rating() >= star - 0.5"
+                    [class.text-muted]="rating() < star - 0.5">
+                  </i>
+                </span>
               }
             </div>
             @if (ratingError()) {

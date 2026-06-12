@@ -90,8 +90,17 @@ export class GroupReviewModalComponent implements OnInit, OnDestroy {
     this.refreshAvg();
   }
 
-  setRating(v: number) {
-    this.rating.set(v);
+  setRating(star: number, event?: MouseEvent) {
+    let val = star;
+    if (event) {
+      const target = event.currentTarget as HTMLElement;
+      const rect = target.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      if (x < rect.width / 2) {
+        val = star - 0.5;
+      }
+    }
+    this.rating.set(val);
   }
 
   async onClose() {
