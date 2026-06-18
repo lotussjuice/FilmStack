@@ -1,0 +1,136 @@
+<div class="stats-view">
+  @if (isLoading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-dry-sage" role="status"></div>
+    </div>
+  } @else {
+    <div class="mb-4">
+      <h3 class="fw-bold text-onyx mb-1"><i class="bi bi-bar-chart me-2 text-dark-green"></i>Mis Estadisticas</h3>
+      <p class="text-dry-sage mb-0">Analisis completo de tu actividad cinematografica</p>
+    </div>
+
+    @if (stats()) {
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="metric-card rounded-3 p-3 text-center">
+            <div class="metric-icon text-dark-green mb-2"><i class="bi bi-collection-play"></i></div>
+            <div class="metric-value text-dark-green">{{ stats()!.total }}</div>
+            <div class="metric-label text-dry-sage small">Total en coleccion</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="metric-card rounded-3 p-3 text-center">
+            <div class="metric-icon text-status-green mb-2"><i class="bi bi-eye"></i></div>
+            <div class="metric-value text-status-green">{{ stats()!.watched }}</div>
+            <div class="metric-label text-dry-sage small">Vistas</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="metric-card rounded-3 p-3 text-center">
+            <div class="metric-icon text-status-yellow mb-2"><i class="bi bi-clock"></i></div>
+            <div class="metric-value text-status-yellow">{{ stats()!.pending }}</div>
+            <div class="metric-label text-dry-sage small">Pendientes</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="metric-card rounded-3 p-3 text-center">
+            <div class="metric-icon text-primary mb-2"><i class="bi bi-clock-history"></i></div>
+            <div class="metric-value text-primary">{{ totalHours() }}h</div>
+            <div class="metric-label text-dry-sage small">Tiempo estimado</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-12 col-md-6">
+          <div class="chart-card rounded-3 p-4">
+            <h6 class="fw-bold text-onyx mb-3"><i class="bi bi-pie-chart me-2 text-dark-green"></i>Generos favoritos</h6>
+            @if (genreDistribution().length > 0) {
+              <div class="genre-bars">
+                @for (genre of genreDistribution(); track genre.name) {
+                  <div class="genre-row d-flex align-items-center mb-2">
+                    <span class="genre-name text-onyx small" style="width: 100px;">{{ genre.name }}</span>
+                    <div class="genre-bar-track flex-grow-1 rounded-pill overflow-hidden" style="height: 12px;">
+                      <div class="genre-bar-fill rounded-pill" [style.width]="getBarWidth(genre.pct)"></div>
+                    </div>
+                    <span class="genre-pct text-dry-sage small ms-2" style="width: 35px; text-align: right;">{{ genre.pct }}%</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="text-dry-sage small mb-0">No hay datos suficientes.</p>
+            }
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <div class="chart-card rounded-3 p-4">
+            <h6 class="fw-bold text-onyx mb-3"><i class="bi bi-calendar3 me-2 text-status-yellow"></i>Por decada</h6>
+            @if (decadeDistribution().length > 0) {
+              <div class="decade-bars">
+                @for (decade of decadeDistribution(); track decade.decade) {
+                  <div class="decade-row d-flex align-items-center mb-2">
+                    <span class="decade-label text-onyx small" style="width: 50px;">{{ decade.decade }}</span>
+                    <div class="decade-bar-track flex-grow-1 rounded-pill overflow-hidden" style="height: 14px;">
+                      <div class="decade-bar-fill rounded-pill" [style.width]="getDecadeBarWidth(decade.pct)"></div>
+                    </div>
+                    <span class="decade-count text-dry-sage small ms-2" style="width: 25px; text-align: right;">{{ decade.count }}</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="text-dry-sage small mb-0">No hay datos suficientes.</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-12 col-md-6">
+          <div class="chart-card rounded-3 p-4">
+            <h6 class="fw-bold text-onyx mb-3"><i class="bi bi-graph-up me-2 text-status-red"></i>Evolucion mensual</h6>
+            @if (monthlyEvolution().length > 0) {
+              <div class="monthly-chart d-flex align-items-end gap-2" style="height: 120px;">
+                @for (month of monthlyEvolution(); track month.month) {
+                  <div class="month-col flex-grow-1 d-flex flex-column align-items-center h-100 justify-content-end">
+                    <span class="month-count text-onyx small fw-bold mb-1">{{ month.count }}</span>
+                    <div class="month-bar rounded-top" [style.height.%]="getMonthBarHeight(month.count)"></div>
+                    <span class="month-label text-dry-sage small mt-1">{{ month.month }}</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="text-dry-sage small mb-0">No hay datos suficientes.</p>
+            }
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <div class="chart-card rounded-3 p-4">
+            <h6 class="fw-bold text-onyx mb-3"><i class="bi bi-star me-2 text-status-yellow"></i>Resumen</h6>
+            <ul class="list-unstyled mb-0">
+              <li class="d-flex justify-content-between py-2 border-bottom border-dry-sage">
+                <span class="text-dry-sage">Puntuacion promedio:</span>
+                <span class="fw-bold text-status-yellow">
+                  <i class="bi bi-star-fill"></i> {{ stats()!.avgRating | number:'1.1-1' }}
+                </span>
+              </li>
+              <li class="d-flex justify-content-between py-2 border-bottom border-dry-sage">
+                <span class="text-dry-sage">Peliculas calificadas:</span>
+                <span class="fw-bold text-onyx">{{ stats()!.totalRated }}</span>
+              </li>
+              <li class="d-flex justify-content-between py-2 border-bottom border-dry-sage">
+                <span class="text-dry-sage">Favoritas:</span>
+                <span class="fw-bold text-status-red">{{ stats()!.favorites }}</span>
+              </li>
+              <li class="d-flex justify-content-between py-2">
+                <span class="text-dry-sage">Descartadas:</span>
+                <span class="fw-bold text-dry-sage">{{ stats()!.dropped }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

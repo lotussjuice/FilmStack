@@ -1,0 +1,56 @@
+.metric-card {
+  background: var(--color-platinum);
+  border: 1px solid var(--color-dry-sage);
+  transition: all 0.2s;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.metric-icon {
+  font-size: 1.5rem;
+}
+
+.metric-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.chart-card {
+  background: var(--color-platinum);
+  border: 1px solid var(--color-dry-sage);
+  min-height: 200px;
+}
+
+.genre-bar-track {
+  background: rgba(139, 154, 119, 0.15);
+}
+
+.genre-bar-fill {
+  background: linear-gradient(90deg, var(--color-dark-green), var(--color-primary));
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.decade-bar-track {
+  background: rgba(139, 154, 119, 0.15);
+}
+
+.decade-bar-fill {
+  background: linear-gradient(90deg, var(--color-status-yellow), #e6c84a);
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.month-bar {
+  background: linear-gradient(180deg, var(--color-status-red), #c0392b);
+  width: 100%;
+  min-height: 4px;
+  transition: height 0.5s ease;
+}
+
+.month-col {
+  min-width: 0;
+}
