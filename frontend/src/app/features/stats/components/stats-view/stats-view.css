@@ -25,27 +25,27 @@
 }
 
 .genre-bar-track {
-  background: rgba(139, 154, 119, 0.15);
+  background: #dce0d3;
 }
 
 .genre-bar-fill {
-  background: linear-gradient(90deg, var(--color-dark-green), var(--color-primary));
+  background: var(--color-dark-green);
   height: 100%;
   transition: width 0.5s ease;
 }
 
 .decade-bar-track {
-  background: rgba(139, 154, 119, 0.15);
+  background: #dce0d3;
 }
 
 .decade-bar-fill {
-  background: linear-gradient(90deg, var(--color-status-yellow), #e6c84a);
+  background: var(--color-status-yellow);
   height: 100%;
   transition: width 0.5s ease;
 }
 
 .month-bar {
-  background: linear-gradient(180deg, var(--color-status-red), #c0392b);
+  background: var(--color-status-red);
   width: 100%;
   min-height: 4px;
   transition: height 0.5s ease;

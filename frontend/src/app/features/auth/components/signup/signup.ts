@@ -63,7 +63,7 @@ export class SignupComponent {
 
   constructor() {
     if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/search']);
+      this.router.navigate(['/home']);
     }
   }
 

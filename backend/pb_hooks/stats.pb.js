@@ -127,7 +127,7 @@ routerAdd("GET", "/api/stats/home", (e) => {
       movies = $app.findRecordsByFilter(
         "movies",
         "user_id = {:userId}",
-        "-updated",
+        "-created",
         0, 0,
         { userId }
       );
@@ -147,16 +147,16 @@ routerAdd("GET", "/api/stats/home", (e) => {
     let lastWatched = null;
     if (watched.length > 0) {
       const sorted = [...watched].sort((a, b) => {
-        const ua = String(a.get("updated") || "");
-        const ub = String(b.get("updated") || "");
-        return ub.localeCompare(ua);
+        const ca = String(a.get("created") || "");
+        const cb = String(b.get("created") || "");
+        return cb.localeCompare(ca);
       });
       const last = sorted[0];
       lastWatched = {
         tmdb_id: last.get("tmdb_id"),
         rating: last.get("rating"),
         review: last.get("review"),
-        updated: last.get("updated"),
+        created: last.get("created"),
       };
     }
 

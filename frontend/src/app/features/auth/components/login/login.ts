@@ -42,7 +42,7 @@ export class LoginComponent {
 
   constructor() {
     if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/search']);
+      this.router.navigate(['/home']);
     }
   }
 
@@ -57,8 +57,8 @@ export class LoginComponent {
 
     try {
       await this.authService.login(this.email(), this.password());
-      this.toast.success('Inicio de sesión exitoso. ¡Bienvenido!');
-      this.router.navigate(['/search']);
+      this.toast.success('Inicio de sesion exitoso. Bienvenido!');
+      this.router.navigate(['/home']);
     } catch (err: any) {
       this.errorMessage.set(err.message || 'Credenciales incorrectas o cuenta suspendida.');
     } finally {

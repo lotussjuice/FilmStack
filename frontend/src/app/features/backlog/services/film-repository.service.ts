@@ -51,8 +51,9 @@ export class FilmRepositoryService {
       this.moviesSignal.set(movies);
       this.loadTmdbDetails(movies);
       this.loadStats();
+      this.backfillMovieReviews(movies);
     } catch (error) {
-      this.toast.error('Error al cargar películas');
+      this.toast.error('Error al cargar peliculas');
     }
   }
 
@@ -196,6 +197,27 @@ export class FilmRepositoryService {
       });
       for (const r of existing) {
         await this.pbService.collection('movie_reviews').delete(r.id);
+      }
+    } catch {}
+  }
+
+  private async backfillMovieReviews(movies: Movie[]) {
+    const user = this.auth.user();
+    if (!user) return;
+    const rated = movies.filter(m => m.user_id === user.id && m.rating > 0);
+    if (rated.length === 0) return;
+
+    try {
+      const existing = await this.pbService.collection('movie_reviews').getFullList({
+        filter: `user = "${user.id}"`,
+        $autoCancel: false
+      });
+      const existingTmdbIds = new Set(existing.map((r: any) => r.tmdb_id));
+
+      for (const m of rated) {
+        if (!existingTmdbIds.has(m.tmdb_id)) {
+          this.syncMovieReview(m.tmdb_id, m.rating, m.review || '');
+        }
       }
     } catch {}
   }

@@ -15,28 +15,28 @@
           <div class="metric-card rounded-3 p-3 text-center">
             <div class="metric-icon text-dark-green mb-2"><i class="bi bi-collection-play"></i></div>
             <div class="metric-value text-dark-green">{{ stats()!.total }}</div>
-            <div class="metric-label text-dry-sage small">Total en coleccion</div>
+            <div class="metric-label text-onyx small">Total en coleccion</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
           <div class="metric-card rounded-3 p-3 text-center">
             <div class="metric-icon text-status-green mb-2"><i class="bi bi-eye"></i></div>
             <div class="metric-value text-status-green">{{ stats()!.watched }}</div>
-            <div class="metric-label text-dry-sage small">Vistas</div>
+            <div class="metric-label text-onyx small">Vistas</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
           <div class="metric-card rounded-3 p-3 text-center">
             <div class="metric-icon text-status-yellow mb-2"><i class="bi bi-clock"></i></div>
             <div class="metric-value text-status-yellow">{{ stats()!.pending }}</div>
-            <div class="metric-label text-dry-sage small">Pendientes</div>
+            <div class="metric-label text-onyx small">Pendientes</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
           <div class="metric-card rounded-3 p-3 text-center">
             <div class="metric-icon text-primary mb-2"><i class="bi bi-clock-history"></i></div>
             <div class="metric-value text-primary">{{ totalHours() }}h</div>
-            <div class="metric-label text-dry-sage small">Tiempo estimado</div>
+            <div class="metric-label text-onyx small">Tiempo estimado</div>
           </div>
         </div>
       </div>
@@ -53,7 +53,7 @@
                     <div class="genre-bar-track flex-grow-1 rounded-pill overflow-hidden" style="height: 12px;">
                       <div class="genre-bar-fill rounded-pill" [style.width]="getBarWidth(genre.pct)"></div>
                     </div>
-                    <span class="genre-pct text-dry-sage small ms-2" style="width: 35px; text-align: right;">{{ genre.pct }}%</span>
+                    <span class="genre-pct text-onyx small fw-bold ms-2" style="width: 35px; text-align: right;">{{ genre.pct }}%</span>
                   </div>
                 }
               </div>
@@ -74,7 +74,7 @@
                     <div class="decade-bar-track flex-grow-1 rounded-pill overflow-hidden" style="height: 14px;">
                       <div class="decade-bar-fill rounded-pill" [style.width]="getDecadeBarWidth(decade.pct)"></div>
                     </div>
-                    <span class="decade-count text-dry-sage small ms-2" style="width: 25px; text-align: right;">{{ decade.count }}</span>
+                    <span class="decade-count text-onyx small fw-bold ms-2" style="width: 25px; text-align: right;">{{ decade.count }}</span>
                   </div>
                 }
               </div>
@@ -95,7 +95,7 @@
                   <div class="month-col flex-grow-1 d-flex flex-column align-items-center h-100 justify-content-end">
                     <span class="month-count text-onyx small fw-bold mb-1">{{ month.count }}</span>
                     <div class="month-bar rounded-top" [style.height.%]="getMonthBarHeight(month.count)"></div>
-                    <span class="month-label text-dry-sage small mt-1">{{ month.month }}</span>
+                    <span class="month-label text-onyx small mt-1">{{ month.month }}</span>
                   </div>
                 }
               </div>
@@ -110,22 +110,22 @@
             <h6 class="fw-bold text-onyx mb-3"><i class="bi bi-star me-2 text-status-yellow"></i>Resumen</h6>
             <ul class="list-unstyled mb-0">
               <li class="d-flex justify-content-between py-2 border-bottom border-dry-sage">
-                <span class="text-dry-sage">Puntuacion promedio:</span>
+                <span class="text-onyx">Puntuacion promedio:</span>
                 <span class="fw-bold text-status-yellow">
                   <i class="bi bi-star-fill"></i> {{ stats()!.avgRating | number:'1.1-1' }}
                 </span>
               </li>
               <li class="d-flex justify-content-between py-2 border-bottom border-dry-sage">
-                <span class="text-dry-sage">Peliculas calificadas:</span>
+                <span class="text-onyx">Peliculas calificadas:</span>
                 <span class="fw-bold text-onyx">{{ stats()!.totalRated }}</span>
               </li>
               <li class="d-flex justify-content-between py-2 border-bottom border-dry-sage">
-                <span class="text-dry-sage">Favoritas:</span>
+                <span class="text-onyx">Favoritas:</span>
                 <span class="fw-bold text-status-red">{{ stats()!.favorites }}</span>
               </li>
               <li class="d-flex justify-content-between py-2">
-                <span class="text-dry-sage">Descartadas:</span>
-                <span class="fw-bold text-dry-sage">{{ stats()!.dropped }}</span>
+                <span class="text-onyx">Descartadas:</span>
+                <span class="fw-bold text-onyx">{{ stats()!.dropped }}</span>
               </li>
             </ul>
           </div>
