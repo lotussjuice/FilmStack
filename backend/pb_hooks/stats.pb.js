@@ -28,6 +28,23 @@ routerAdd("GET", "/api/stats/user", (e) => {
 
   const tmdbIds = watched.map((m) => m.get("tmdb_id")).filter((id) => id > 0);
 
+  const monthNames = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  const monthlyMap = {};
+  for (const m of movies) {
+    const created = m.get("created");
+    if (!created) continue;
+    const d = new Date(created);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthlyMap[key] = (monthlyMap[key] || 0) + 1;
+  }
+  const monthlyEvolution = Object.entries(monthlyMap)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .slice(-12)
+    .map(([key, count]) => {
+      const [y, mo] = key.split("-");
+      return { month: monthNames[parseInt(mo) - 1], count };
+    });
+
   return e.json(200, {
     total: movies.length,
     watched: watched.length,
@@ -37,6 +54,7 @@ routerAdd("GET", "/api/stats/user", (e) => {
     avgRating: avgRating,
     totalRated: ratings.length,
     tmdb_ids: tmdbIds,
+    monthly_evolution: monthlyEvolution,
   });
 });
 

@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { WatchpartyService } from '../../../../services/watchparty.service';
 import { FilmRepositoryService } from '../../../../../backlog/services/film-repository.service';
 import { AuthService } from '../../../../../auth/services/auth.service';
+import { PocketbaseService } from '../../../../../../core/services/pocketbase.service';
 
 @Component({
   selector: 'app-group-review-modal',
@@ -18,6 +19,7 @@ export class GroupReviewModalComponent implements OnInit, OnDestroy {
   private wp = inject(WatchpartyService);
   private repo = inject(FilmRepositoryService);
   private auth = inject(AuthService);
+  private pb = inject(PocketbaseService);
 
   isOpen = input.required<boolean>();
   party = input<WatchParty | null>(null);
@@ -82,6 +84,32 @@ export class GroupReviewModalComponent implements OnInit, OnDestroy {
         }
       } catch (e) {
         console.error('Error guardando en backlog personal', e);
+      }
+    }
+
+    // Sync to movie_reviews
+    if (p && p.activeMovie) {
+      const user = this.auth.user();
+      if (user) {
+        try {
+          const existing = await this.pb.collection('movie_reviews').getFullList({
+            filter: `tmdb_id = ${p.activeMovie} && user = "${user.id}"`,
+            $autoCancel: false
+          });
+          const payload = {
+            tmdb_id: p.activeMovie,
+            user: user.id,
+            user_name: user['name'] || 'Usuario',
+            rating: r,
+            review_text: rev,
+            source: 'watchparty'
+          };
+          if (existing.length > 0) {
+            await this.pb.collection('movie_reviews').update(existing[0].id, payload, { $autoCancel: false });
+          } else {
+            await this.pb.collection('movie_reviews').create(payload, { $autoCancel: false });
+          }
+        } catch {}
       }
     }
 

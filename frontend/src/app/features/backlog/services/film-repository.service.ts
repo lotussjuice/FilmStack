@@ -104,6 +104,9 @@ export class FilmRepositoryService {
       const created = await this.pbService.addMovie(newMovie);
       this.moviesSignal.update(movies => [...movies, created]);
       this.loadTmdbDetails([created]);
+      if ((options['rating'] || 0) > 0 || options['review']) {
+        this.syncMovieReview(tmdbId, options['rating'] || 0, options['review'] || '');
+      }
     } catch (error) {
       this.toast.error('Error al añadir película al backlog');
     }
@@ -115,6 +118,12 @@ export class FilmRepositoryService {
       this.moviesSignal.update(movies => 
         movies.map(m => m.id === id ? { ...m, ...updated } : m)
       );
+      if (data['rating'] !== undefined || data['review'] !== undefined) {
+        const movie = this.moviesSignal().find(m => m.id === id);
+        if (movie) {
+          this.syncMovieReview(movie.tmdb_id, data['rating'] ?? movie.rating, data['review'] ?? movie.review ?? '');
+        }
+      }
     } catch (error) {
       this.toast.error('Error al actualizar película');
     }
@@ -142,10 +151,52 @@ export class FilmRepositoryService {
 
   async removeMovie(id: string) {
     try {
+      const movie = this.moviesSignal().find(m => m.id === id);
       await this.pbService.deleteMovie(id);
       this.moviesSignal.update(movies => movies.filter(m => m.id !== id));
+      if (movie) {
+        this.deleteMovieReview(movie.tmdb_id);
+      }
     } catch (error) {
       this.toast.error('Error al eliminar película');
     }
+  }
+
+  private async syncMovieReview(tmdbId: number, rating: number, reviewText: string) {
+    const user = this.auth.user();
+    if (!user) return;
+    try {
+      const existing = await this.pbService.collection('movie_reviews').getFullList({
+        filter: `tmdb_id = ${tmdbId} && user = "${user.id}"`,
+        $autoCancel: false
+      });
+      const payload = {
+        tmdb_id: tmdbId,
+        user: user.id,
+        user_name: user['name'] || 'Usuario',
+        rating,
+        review_text: reviewText,
+        source: 'backlog'
+      };
+      if (existing.length > 0) {
+        await this.pbService.collection('movie_reviews').update(existing[0].id, payload, { $autoCancel: false });
+      } else {
+        await this.pbService.collection('movie_reviews').create(payload, { $autoCancel: false });
+      }
+    } catch {}
+  }
+
+  private async deleteMovieReview(tmdbId: number) {
+    const user = this.auth.user();
+    if (!user) return;
+    try {
+      const existing = await this.pbService.collection('movie_reviews').getFullList({
+        filter: `tmdb_id = ${tmdbId} && user = "${user.id}"`,
+        $autoCancel: false
+      });
+      for (const r of existing) {
+        await this.pbService.collection('movie_reviews').delete(r.id);
+      }
+    } catch {}
   }
 }

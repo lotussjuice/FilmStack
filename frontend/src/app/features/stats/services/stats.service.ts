@@ -10,6 +10,7 @@ export interface UserStats {
   avgRating: number;
   totalRated: number;
   tmdb_ids: number[];
+  monthly_evolution: { month: string; count: number }[];
 }
 
 export interface HomeData {

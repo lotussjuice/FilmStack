@@ -22,7 +22,16 @@ export class RecommendationsService {
     const userTmdbIds = stats?.tmdb_ids || [];
     const rows: RecommendationRow[] = [];
 
-    const genrePrefs = await this.getTopGenres(userTmdbIds);
+    const trending = await this.getTrending(userTmdbIds);
+    if (trending.length > 0) {
+      rows.push({
+        title: 'Tendencias de la semana',
+        subtitle: 'Películas con mayor actividad y repercusión ahora',
+        movies: trending
+      });
+    }
+
+    const genrePrefs = this.getTopGenresFromCache(userTmdbIds);
     if (genrePrefs.length > 0) {
       const genreMovies = await this.discoverByGenres(genrePrefs[0].id, userTmdbIds);
       if (genreMovies.length > 0) {
@@ -97,20 +106,24 @@ export class RecommendationsService {
     }
   }
 
-  private async getTopGenres(tmdbIds: number[]): Promise<{ id: number; name: string; count: number }[]> {
+  private getTopGenresFromCache(tmdbIds: number[]): { id: number; name: string; count: number }[] {
     const genreMap = new Map<number, { name: string; count: number }>();
-    for (const id of tmdbIds.slice(0, 50)) {
-      try {
-        const details = await this.tmdb.getMovieDetails(id);
-        if (details?.genres) {
-          for (const g of details.genres) {
-            const existing = genreMap.get(g.id) || { name: g.name, count: 0 };
-            existing.count++;
-            genreMap.set(g.id, existing);
-          }
+    const detailsCache = new Map<number, any>();
+    this.repo.hybridMovies().forEach(m => {
+      if (m.tmdb_data) detailsCache.set(m.tmdb_id, m.tmdb_data);
+    });
+
+    for (const id of tmdbIds) {
+      const details = detailsCache.get(id);
+      if (details?.genres) {
+        for (const g of details.genres) {
+          const existing = genreMap.get(g.id) || { name: g.name, count: 0 };
+          existing.count++;
+          genreMap.set(g.id, existing);
         }
-      } catch {}
+      }
     }
+
     return Array.from(genreMap.entries())
       .map(([id, data]) => ({ id, name: data.name, count: data.count }))
       .sort((a, b) => b.count - a.count)
@@ -119,9 +132,14 @@ export class RecommendationsService {
 
   private getPreferredDecade(tmdbIds: number[]): number | null {
     const decades: Record<number, number> = {};
-    for (const id of tmdbIds.slice(0, 50)) {
-      const movie = this.repo.hybridMovies().find(m => m.tmdb_id === id);
-      const year = movie?.tmdb_data?.release_date ? new Date(movie.tmdb_data.release_date).getFullYear() : 0;
+    const detailsCache = new Map<number, any>();
+    this.repo.hybridMovies().forEach(m => {
+      if (m.tmdb_data) detailsCache.set(m.tmdb_id, m.tmdb_data);
+    });
+
+    for (const id of tmdbIds) {
+      const details = detailsCache.get(id);
+      const year = details?.release_date ? new Date(details.release_date).getFullYear() : 0;
       if (year > 0) {
         const decade = Math.floor(year / 10) * 10;
         decades[decade] = (decades[decade] || 0) + 1;
@@ -133,13 +151,12 @@ export class RecommendationsService {
 
   private async discoverByGenres(genreId: number, excludeIds: number[]): Promise<any[]> {
     try {
-      const res = await fetch(`/api/tmdb/discover?genres=${genreId}&sort_by=vote_average.desc&vote_gte=6&page=1`, {
+      const res = await fetch(`/api/tmdb/discover?genres=${genreId}&sort_by=vote_average.desc&vote_gte=6&vote_count_gte=50&page=1`, {
         headers: { Authorization: `Bearer ${this.pb.authStore.token}` }
       });
       if (!res.ok) return [];
       const data = await res.json();
-      const results = data.results || [];
-      return results
+      return (data.results || [])
         .filter((m: any) => !excludeIds.includes(m.id) && m.poster_path)
         .slice(0, 20);
     } catch {
@@ -149,7 +166,7 @@ export class RecommendationsService {
 
   private async discoverByDecade(decade: number, excludeIds: number[]): Promise<any[]> {
     try {
-      const res = await fetch(`/api/tmdb/discover?year_gte=${decade}&year_lte=${decade + 9}&sort_by=vote_average.desc&vote_gte=6&page=1`, {
+      const res = await fetch(`/api/tmdb/discover?year_gte=${decade}&year_lte=${decade + 9}&sort_by=vote_average.desc&vote_gte=6&vote_count_gte=50&page=1`, {
         headers: { Authorization: `Bearer ${this.pb.authStore.token}` }
       });
       if (!res.ok) return [];
@@ -164,7 +181,7 @@ export class RecommendationsService {
 
   private async discoverTopRated(excludeIds: number[]): Promise<any[]> {
     try {
-      const res = await fetch(`/api/tmdb/discover?sort_by=vote_average.desc&vote_gte=7.5&page=1`, {
+      const res = await fetch(`/api/tmdb/discover?sort_by=vote_average.desc&vote_gte=7.5&vote_count_gte=200&page=1`, {
         headers: { Authorization: `Bearer ${this.pb.authStore.token}` }
       });
       if (!res.ok) return [];
@@ -182,7 +199,22 @@ export class RecommendationsService {
     const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
     const gte = threeMonthsAgo.toISOString().split('T')[0];
     try {
-      const res = await fetch(`/api/tmdb/discover?sort_by=popularity.desc&year_gte=${gte.substring(0, 4)}&page=1`, {
+      const res = await fetch(`/api/tmdb/discover?sort_by=popularity.desc&year_gte=${gte.substring(0, 4)}&vote_count_gte=30&page=1`, {
+        headers: { Authorization: `Bearer ${this.pb.authStore.token}` }
+      });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return (data.results || [])
+        .filter((m: any) => !excludeIds.includes(m.id) && m.poster_path)
+        .slice(0, 20);
+    } catch {
+      return [];
+    }
+  }
+
+  private async getTrending(excludeIds: number[]): Promise<any[]> {
+    try {
+      const res = await fetch('/api/tmdb/trending?time_window=week&page=1', {
         headers: { Authorization: `Bearer ${this.pb.authStore.token}` }
       });
       if (!res.ok) return [];
@@ -224,18 +256,21 @@ export class RecommendationsService {
   }
 
   private async getActorRecommendations(excludeIds: number[]): Promise<any[]> {
+    const detailsCache = new Map<number, any>();
+    this.repo.hybridMovies().forEach(m => {
+      if (m.tmdb_data) detailsCache.set(m.tmdb_id, m.tmdb_data);
+    });
+
     const actorMap = new Map<number, { name: string; count: number }>();
-    for (const id of excludeIds.slice(0, 30)) {
-      try {
-        const details = await this.tmdb.getMovieDetails(id);
-        if (details?.credits?.cast) {
-          for (const actor of details.credits.cast.slice(0, 5)) {
-            const existing = actorMap.get(actor.id) || { name: actor.name, count: 0 };
-            existing.count++;
-            actorMap.set(actor.id, existing);
-          }
+    for (const id of excludeIds) {
+      const details = detailsCache.get(id);
+      if (details?.credits?.cast) {
+        for (const actor of details.credits.cast.slice(0, 5)) {
+          const existing = actorMap.get(actor.id) || { name: actor.name, count: 0 };
+          existing.count++;
+          actorMap.set(actor.id, existing);
         }
-      } catch {}
+      }
     }
 
     const topActors = Array.from(actorMap.entries())

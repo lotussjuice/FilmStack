@@ -17,7 +17,9 @@ export class MovieDetailComponent {
   movieId = input.required<string>();
 
   movieData = computed(() => {
-    return this.repo.hybridMovies().find(m => m.id === this.movieId());
+    const id = this.movieId();
+    const numId = Number(id);
+    return this.repo.hybridMovies().find(m => m.id === id || (numId && m.tmdb_id === numId));
   });
 
   async updateStatus(newStatus: 'pending' | 'watched' | 'dropped') {
