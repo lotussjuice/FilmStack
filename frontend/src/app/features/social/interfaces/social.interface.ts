@@ -30,6 +30,17 @@ export interface MovieProposal {
   status: 'voting' | 'added' | 'rejected' | 'expired';
 }
 
+export interface ChatMessageRecord {
+  id: string;
+  party_id: string;
+  user_id: string;
+  user_name: string;
+  text: string;
+  type: 'text' | 'proposal' | 'system';
+  proposal_data?: any;
+  created: string;
+}
+
 export interface WatchParty {
   id: string;
   host: string;
@@ -46,7 +57,6 @@ export interface WatchParty {
   startedAt: string;
   finishedAt: string;
   votingStartedAt: string;
-  chatMessages: ChatMessage[];
   votes: { [proposalId: string]: MovieProposal['votes'] };
   spinPool: number[];
   isActive: boolean;

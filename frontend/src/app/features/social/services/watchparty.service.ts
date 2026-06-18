@@ -3,7 +3,7 @@ import { PocketbaseService } from '../../../core/services/pocketbase.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { ActiveSessionService } from '../../roulette/services/active-session.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { ChatMessage, MovieProposal, WatchParty } from '../interfaces/social.interface';
+import { ChatMessage, ChatMessageRecord, MovieProposal, WatchParty } from '../interfaces/social.interface';
 
 interface PartyRecord {
   id: string;
@@ -18,7 +18,6 @@ interface PartyRecord {
   started_at: string;
   finished_at: string;
   voting_started_at: string;
-  chat_messages: string;
   votes: string;
   spin_pool: string;
   is_active: boolean;
@@ -50,8 +49,10 @@ export class WatchpartyService {
   private hostNameCache = new Map<string, string>();
   private memberNamesCache = new Map<string, string>();
   private unsubscribeFn: (() => void) | null = null;
+  private chatUnsubscribeFn: (() => void) | null = null;
   private inviteUnsubscribeFn: (() => void) | null = null;
   private proposalTimers = new Map<string, any>();
+  private proposalRecordMap = new Map<string, string>();
 
   readonly currentParty = computed(() => this.currentPartyState());
   readonly pendingInvite = computed(() => this.pendingInviteState());
@@ -110,16 +111,6 @@ export class WatchpartyService {
 
   private applyParty(wp: WatchParty) {
     this.currentPartyState.set(wp);
-    this.messagesState.set(wp.chatMessages || []);
-    const extractedProposals: MovieProposal[] = (wp.chatMessages || [])
-      .filter(m => m.type === 'proposal' && m.proposal)
-      .map(m => {
-        const p = m.proposal!;
-        const k = this.proposalKey(p);
-        if (wp.votes && wp.votes[k]) { p.votes = wp.votes[k]; }
-        return p;
-      });
-    this.proposalsState.set(extractedProposals);
   }
 
   private rescheduleProposalTimers(proposals: MovieProposal[]) {
@@ -146,7 +137,6 @@ export class WatchpartyService {
         started_at: new Date().toISOString(),
         finished_at: '',
         voting_started_at: '',
-        chat_messages: '[]',
         votes: '{}',
         spin_pool: '[]',
         is_active: true
@@ -236,39 +226,40 @@ export class WatchpartyService {
     this.proposalsState.set([]);
     this.proposalTimers.forEach(t => clearTimeout(t));
     this.proposalTimers.clear();
+    this.proposalRecordMap.clear();
   }
 
   async sendMessage(text: string): Promise<void> {
     const me = this.auth.user();
     const party = this.currentPartyState();
     if (!me || !party || !text.trim()) return;
-    const msg: ChatMessage = {
-      id: this.generateId(),
-      userId: me.id,
-      userName: me.name,
-      text: text.trim(),
-      createdAt: new Date().toISOString(),
-      type: 'text'
-    };
-    const updated = [...this.messagesState(), msg];
-    this.messagesState.set(updated);
-    await this.persistChat(updated);
+    try {
+      await this.pb.collection('chat_messages').create({
+        party_id: party.id,
+        user_id: me.id,
+        user_name: me.name,
+        text: text.trim(),
+        type: 'text'
+      }, { $autoCancel: false });
+    } catch (e) {
+      console.warn('Error enviando mensaje', e);
+    }
   }
 
   async sendSystemMessage(text: string): Promise<void> {
     const party = this.currentPartyState();
     if (!party) return;
-    const msg: ChatMessage = {
-      id: this.generateId(),
-      userId: 'system',
-      userName: 'Sistema',
-      text,
-      createdAt: new Date().toISOString(),
-      type: 'system'
-    };
-    const updated = [...this.messagesState(), msg];
-    this.messagesState.set(updated);
-    await this.persistChat(updated);
+    try {
+      await this.pb.collection('chat_messages').create({
+        party_id: party.id,
+        user_id: 'system',
+        user_name: 'Sistema',
+        text,
+        type: 'system'
+      }, { $autoCancel: false });
+    } catch (e) {
+      console.warn('Error enviando mensaje del sistema', e);
+    }
   }
 
   async inviteMembers(newMemberIds: string[]): Promise<void> {
@@ -312,19 +303,21 @@ export class WatchpartyService {
     };
     const updated = [...this.proposalsState(), proposal];
     this.proposalsState.set(updated);
-    await this.persistProposals(updated);
-    const msg: ChatMessage = {
-      id: this.generateId(),
-      userId: me.id,
-      userName: me.name,
-      text: `propuso "${title}"`,
-      createdAt: new Date().toISOString(),
-      type: 'proposal',
-      proposal
-    };
-    const messages = [...this.messagesState(), msg];
-    this.messagesState.set(messages);
-    await this.persistChat(messages);
+
+    try {
+      const record = await this.pb.collection('chat_messages').create({
+        party_id: party.id,
+        user_id: me.id,
+        user_name: me.name,
+        text: `propuso "${title}"`,
+        type: 'proposal',
+        proposal_data: JSON.stringify(proposal)
+      }, { $autoCancel: false });
+      this.proposalRecordMap.set(this.proposalKey(proposal), record.id);
+    } catch (e) {
+      console.warn('Error creando propuesta', e);
+    }
+
     this.scheduleProposalExpiry(proposal);
   }
 
@@ -340,7 +333,9 @@ export class WatchpartyService {
     const newList = [...all];
     newList[idx] = { ...target };
     this.proposalsState.set(newList);
-    await this.persistProposals(newList);
+
+    await this.updateProposalInChat(target);
+
     this.checkProposalResult(newList[idx]);
   }
 
@@ -369,7 +364,7 @@ export class WatchpartyService {
     if (target.status !== 'voting') return;
     target.status = 'expired';
     this.proposalsState.set([...all]);
-    await this.persistProposals(this.proposalsState());
+    await this.updateProposalInChat(target);
     await this.checkProposalResult(target, true);
   }
 
@@ -417,26 +412,31 @@ export class WatchpartyService {
     }
 
     if (statusChanged) {
-      this.syncProposalStatusToChat(p, statusChanged);
-      await this.persistChat(this.messagesState());
+      this.syncProposalStatusLocally(p, statusChanged);
     }
-    await this.persistProposals([...this.proposalsState()]);
   }
 
-  private syncProposalStatusToChat(p: MovieProposal, newStatus: MovieProposal['status']) {
+  private async updateProposalInChat(p: MovieProposal): Promise<void> {
     const key = this.proposalKey(p);
-    const updated = this.messagesState().map(m => {
-      if (m.type === 'proposal' && m.proposal && this.proposalKey(m.proposal) === key) {
-        return { ...m, proposal: { ...m.proposal, status: newStatus } };
-      }
-      return m;
-    });
-    this.messagesState.set(updated);
+    const recordId = this.proposalRecordMap.get(key);
+    if (!recordId) return;
+    try {
+      await this.pb.collection('chat_messages').update(recordId, {
+        proposal_data: JSON.stringify(p)
+      }, { $autoCancel: false });
+    } catch (e) {
+      console.warn('Error actualizando propuesta en chat', e);
+    }
+  }
 
+  private syncProposalStatusLocally(p: MovieProposal, newStatus: MovieProposal['status']) {
+    const key = this.proposalKey(p);
+    p.status = newStatus;
     const updatedProposals = this.proposalsState().map(prop =>
       this.proposalKey(prop) === key ? { ...prop, status: newStatus } : prop
     );
     this.proposalsState.set(updatedProposals);
+    this.updateProposalInChat(p);
   }
 
   async removeFromSpinPool(tmdbId: number): Promise<void> {
@@ -726,6 +726,11 @@ export class WatchpartyService {
       try { this.unsubscribeFn(); } catch (e) {}
       this.unsubscribeFn = null;
     }
+    if (this.chatUnsubscribeFn) {
+      try { this.chatUnsubscribeFn(); } catch (e) {}
+      this.chatUnsubscribeFn = null;
+    }
+
     try {
       const unsub = await this.pb.collection('watchparties').subscribe(partyId, (e: any) => {
         if (e.action === 'update' || e.action === 'create') {
@@ -758,6 +763,75 @@ export class WatchpartyService {
       this.unsubscribeFn = typeof unsub === 'function' ? unsub : () => { try { (unsub as any)?.unsubscribe?.(); } catch (e) {} };
     } catch (e) {
       console.warn('Error subscribiendo a watchparty', e);
+    }
+
+    try {
+      const chatUnsub = await this.pb.collection('chat_messages').subscribe('*', (e: any) => {
+        const record = e.record;
+        if (!record || record.party_id !== partyId) return;
+        this.handleChatRealtime(e);
+      });
+      this.chatUnsubscribeFn = typeof chatUnsub === 'function' ? chatUnsub : () => { try { (chatUnsub as any)?.unsubscribe?.(); } catch (e) {} };
+    } catch (e) {
+      console.warn('Error subscribiendo a chat_messages', e);
+    }
+
+    await this.loadChatMessages(partyId);
+  }
+
+  private async loadChatMessages(partyId: string): Promise<void> {
+    try {
+      const records = await this.pb.collection('chat_messages').getFullList<ChatMessageRecord>({
+        filter: `party_id = "${partyId}"`,
+        sort: 'created',
+        $autoCancel: false
+      });
+      const messages: ChatMessage[] = [];
+      const proposals: MovieProposal[] = [];
+      this.proposalRecordMap.clear();
+
+      for (const r of records) {
+        const msg = this.recordToChatMessage(r);
+        messages.push(msg);
+        if (msg.type === 'proposal' && msg.proposal) {
+          proposals.push(msg.proposal);
+          this.proposalRecordMap.set(this.proposalKey(msg.proposal), r.id);
+        }
+      }
+
+      this.messagesState.set(messages);
+      this.proposalsState.set(proposals);
+      this.rescheduleProposalTimers(proposals);
+    } catch (e) {
+      console.warn('Error cargando mensajes del chat', e);
+    }
+  }
+
+  private handleChatRealtime(e: any): void {
+    const record = e.record as ChatMessageRecord;
+    if (!record) return;
+
+    if (e.action === 'create') {
+      const msg = this.recordToChatMessage(record);
+      this.messagesState.update(msgs => [...msgs, msg]);
+      if (msg.type === 'proposal' && msg.proposal) {
+        this.proposalsState.update(props => [...props, msg.proposal!]);
+        this.proposalRecordMap.set(this.proposalKey(msg.proposal!), record.id);
+      }
+    } else if (e.action === 'update') {
+      const msg = this.recordToChatMessage(record);
+      this.messagesState.update(msgs => msgs.map(m => m.id === msg.id ? msg : m));
+      if (msg.type === 'proposal' && msg.proposal) {
+        this.proposalsState.update(props => props.map(p =>
+          this.proposalKey(p) === this.proposalKey(msg.proposal!) ? msg.proposal! : p
+        ));
+      }
+    } else if (e.action === 'delete') {
+      const msgId = record.id;
+      this.messagesState.update(msgs => msgs.filter(m => m.id !== msgId));
+      this.proposalsState.update(props =>
+        props.filter(p => this.proposalRecordMap.get(this.proposalKey(p)) !== msgId)
+      );
     }
   }
 
@@ -810,31 +884,6 @@ export class WatchpartyService {
     }
   }
 
-  private async persistChat(messages: ChatMessage[]): Promise<void> {
-    const party = this.currentPartyState();
-    if (!party) return;
-    try {
-      await this.pb.collection('watchparties').update(party.id, { chat_messages: JSON.stringify(messages) }, { $autoCancel: false });
-    } catch (e) {
-      console.warn('Error persistiendo chat', e);
-    }
-  }
-
-  private async persistProposals(proposals: MovieProposal[]): Promise<void> {
-    const party = this.currentPartyState();
-    if (!party) return;
-    const votesMap: { [k: string]: any } = { ...(party.votes || {}) };
-    proposals.forEach(p => {
-      const k = this.proposalKey(p);
-      votesMap[k] = p.votes;
-    });
-    try {
-      await this.pb.collection('watchparties').update(party.id, { votes: JSON.stringify(votesMap) }, { $autoCancel: false });
-    } catch (e) {
-      console.warn('Error persistiendo propuestas', e);
-    }
-  }
-
   private async persistParty(data: Partial<PartyRecord>): Promise<void> {
     const party = this.currentPartyState();
     if (!party) return;
@@ -864,7 +913,6 @@ export class WatchpartyService {
       startedAt: r.started_at,
       finishedAt: r.finished_at,
       votingStartedAt: r.voting_started_at || '',
-      chatMessages: parseJsonField<ChatMessage[]>(r.chat_messages, []),
       votes: parseJsonField<{ [key: string]: MovieProposal['votes'] }>(r.votes, {}),
       spinPool: parseJsonField<number[]>(r.spin_pool, []),
       isActive: r.is_active,
@@ -872,8 +920,24 @@ export class WatchpartyService {
     };
   }
 
-  private generateId(): string {
-    return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  private recordToChatMessage(r: ChatMessageRecord): ChatMessage {
+    let proposal: MovieProposal | undefined;
+    if (r.proposal_data) {
+      try {
+        proposal = typeof r.proposal_data === 'string'
+          ? JSON.parse(r.proposal_data)
+          : r.proposal_data;
+      } catch { proposal = undefined; }
+    }
+    return {
+      id: r.id,
+      userId: r.user_id,
+      userName: r.user_name,
+      text: r.text,
+      createdAt: r.created,
+      type: r.type,
+      proposal
+    };
   }
 
   private cleanup() {
@@ -881,7 +945,12 @@ export class WatchpartyService {
       try { this.unsubscribeFn(); } catch (e) {}
       this.unsubscribeFn = null;
     }
+    if (this.chatUnsubscribeFn) {
+      try { this.chatUnsubscribeFn(); } catch (e) {}
+      this.chatUnsubscribeFn = null;
+    }
     this.proposalTimers.forEach(t => clearTimeout(t));
     this.proposalTimers.clear();
+    this.proposalRecordMap.clear();
   }
 }

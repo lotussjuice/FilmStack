@@ -1,0 +1,18 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1050;
+}
+
+.modal-container {
+    width: 100%;
+    max-width: 450px;
+    margin: 1rem;
+    background: var(--color-platinum);
+    color: var(--color-onyx);
+}
