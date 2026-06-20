@@ -1,13 +1,126 @@
+.movie-detail-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.detail-card {
+  background: var(--color-platinum);
+  border: 1px solid var(--color-dry-sage);
+  overflow: hidden;
+}
+
+.detail-backdrop {
+  max-height: 280px;
+  object-fit: cover;
+  filter: brightness(0.6);
+}
+
+.movie-backdrop-overlay {
+  background: linear-gradient(transparent, var(--color-overlay-on-image));
+}
+
+.detail-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.detail-body::-webkit-scrollbar-thumb {
+  background: var(--color-dry-sage);
+  border-radius: 10px;
+}
+
+.cast-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.cast-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-dry-sage);
+  border-radius: 10px;
+}
+
+.line-height-base {
+  line-height: 1.6;
+}
+
+.tabs-bar {
+  background: var(--color-platinum);
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-dry-sage);
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-btn:hover {
+  color: var(--color-onyx);
+  background: rgba(139, 154, 119, 0.1);
+}
+
+.tab-btn.active {
+  color: var(--color-onyx);
+  border-bottom-color: var(--color-primary);
+}
+
+.review-card {
+  background: rgba(139, 154, 119, 0.08);
+  border: 1px solid var(--color-dry-sage);
+  transition: all 0.2s;
+}
+
+.review-card:hover {
+  background: rgba(139, 154, 119, 0.15);
+}
+
+.friend-review {
+  background: rgba(215, 191, 88, 0.08);
+  border-color: var(--color-status-yellow);
+}
+
+.review-avatar {
+  width: 36px;
+  height: 36px;
+  font-size: 0.85rem;
+}
+
 .star-wrapper {
-    display: inline-block;
-    cursor: pointer;
+  display: inline-block;
+  cursor: pointer;
 }
 
 .star-wrapper i {
-    transition: transform 0.2s;
-    pointer-events: none;
+  transition: transform 0.2s;
+  pointer-events: none;
 }
 
 .star-wrapper:hover i {
-    transform: scale(1.2);
+  transform: scale(1.2);
+}
+
+.detail-actions {
+  background: var(--color-platinum);
+}
+
+@media (min-width: 768px) {
+  .border-start-md {
+    border-left: 1px solid var(--color-dry-sage) !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .detail-backdrop {
+    max-height: 180px;
+  }
+  .detail-body {
+    padding: 1rem !important;
+  }
+  .detail-body p {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
 }

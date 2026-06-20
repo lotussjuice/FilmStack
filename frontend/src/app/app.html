@@ -186,7 +186,7 @@
       </div>
 
       <main class="flex-grow-1 overflow-auto bg-platinum p-3 p-md-4 main-content">
-        <app-active-session-banner class="d-block mb-3"></app-active-session-banner>
+        <app-active-session-banner class="d-block mb-3" (finishRequested)="onFinishSession($event)"></app-active-session-banner>
         <router-outlet></router-outlet>
       </main>
     </div>
@@ -202,3 +202,12 @@
 }
 
 <app-toast-container></app-toast-container>
+
+@if (isEditModalOpen() && editMovie()) {
+  <app-edit-movie-modal
+    [isOpen]="isEditModalOpen()"
+    [movie]="editMovie()!"
+    (save)="onSaveEdit($event)"
+    (cancel)="onCancelEdit()">
+  </app-edit-movie-modal>
+}

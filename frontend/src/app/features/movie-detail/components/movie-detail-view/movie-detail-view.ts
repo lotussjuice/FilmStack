@@ -1,27 +1,36 @@
-import { Component, input, computed, inject, signal, OnInit, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input, computed, inject, signal, effect } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FilmRepositoryService } from '../../../backlog/services/film-repository.service';
 import { TmdbService } from '../../../../core/services/tmdb.service';
+import { ActiveSessionService } from '../../../roulette/services/active-session.service';
+import { MovieReviewsService, MovieReview } from '../../../reviews/services/movie-reviews.service';
 import { RuntimePipe } from '../../../../shared/pipes/runtime.pipe';
+import { SafePipe } from '../../../../shared/pipes/safe.pipe';
 
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RuntimePipe],
+  imports: [CommonModule, FormsModule, RuntimePipe, SafePipe],
   templateUrl: './movie-detail-view.html',
   styleUrl: './movie-detail-view.css'
 })
-export class MovieDetailComponent implements OnInit {
+export class MovieDetailComponent {
   private repo = inject(FilmRepositoryService);
   private tmdb = inject(TmdbService);
   private router = inject(Router);
+  private location = inject(Location);
+  private sessionService = inject(ActiveSessionService);
+  private reviewsService = inject(MovieReviewsService);
 
   movieId = input.required<string>();
 
   tmdbMovie = signal<any>(null);
   isLoadingTmdb = signal(false);
+  activeTab = signal<'info' | 'reviews'>('info');
+  reviews = signal<MovieReview[]>([]);
+  reviewsLoading = signal(false);
 
   movieData = computed(() => {
     const id = this.movieId();
@@ -29,13 +38,28 @@ export class MovieDetailComponent implements OnInit {
     return this.repo.hybridMovies().find(m => m.id === id || (numId && m.tmdb_id === numId));
   });
 
-  displayMovie = computed(() => {
+  currentMovie = computed(() => {
     const local = this.movieData();
-    if (local) return { source: 'local' as const, data: local };
-    const external = this.tmdbMovie();
-    if (external) return { source: 'tmdb' as const, data: external };
-    return null;
+    if (local?.tmdb_data) return local.tmdb_data;
+    return this.tmdbMovie();
   });
+
+  isInBacklog = computed(() => !!this.movieData());
+
+  isWatching = computed(() => {
+    const m = this.currentMovie();
+    if (!m) return false;
+    const s = this.sessionService.session();
+    return !!s && s.tmdbId === m.id;
+  });
+
+  mainTrailer = computed(() => {
+    const m = this.currentMovie();
+    const videos = m?.videos?.results || [];
+    return videos.find((v: any) => v.site === 'YouTube' && v.type === 'Trailer') || videos[0];
+  });
+
+  stats = computed(() => this.movieData()?.stats || null);
 
   constructor() {
     effect(() => {
@@ -46,8 +70,6 @@ export class MovieDetailComponent implements OnInit {
       }
     });
   }
-
-  ngOnInit() {}
 
   private async fetchFromTmdb(id: string) {
     const numId = Number(id);
@@ -63,10 +85,29 @@ export class MovieDetailComponent implements OnInit {
   }
 
   async addToBacklog() {
-    const m = this.tmdbMovie();
+    const m = this.currentMovie();
     if (!m) return;
     await this.repo.addMovieToBacklog(m.id, { status: 'pending' });
-    this.router.navigate(['/backlog']);
+  }
+
+  async startWatching() {
+    const m = this.currentMovie();
+    if (!m) return;
+    if (!this.isInBacklog()) {
+      await this.repo.addMovieToBacklog(m.id, { status: 'watched' });
+    } else {
+      const local = this.movieData();
+      if (local) {
+        await this.repo.updateMovieStatus(local.id, 'watched');
+      }
+    }
+    this.sessionService.start({
+      tmdbId: m.id,
+      title: m.title,
+      posterPath: m.poster_path,
+      year: m.release_date ? new Date(m.release_date).getFullYear().toString() : '',
+      source: 'direct'
+    });
   }
 
   async updateStatus(newStatus: 'pending' | 'watched' | 'dropped') {
@@ -90,5 +131,46 @@ export class MovieDetailComponent implements OnInit {
     if (current) {
       await this.repo.updateMovieRating(current.id, val);
     }
+  }
+
+  goBack() {
+    this.location.back();
+  }
+
+  switchTab(tab: 'info' | 'reviews') {
+    this.activeTab.set(tab);
+    if (tab === 'reviews') {
+      this.loadReviews();
+    }
+  }
+
+  private async loadReviews() {
+    const m = this.currentMovie();
+    if (!m) return;
+    this.reviewsLoading.set(true);
+    const data = await this.reviewsService.getReviewsForMovie(m.id);
+    this.reviews.set(data);
+    this.reviewsLoading.set(false);
+  }
+
+  getFriendReviews(): MovieReview[] {
+    return this.reviews().filter(r => r.is_friend);
+  }
+
+  getOtherReviews(): MovieReview[] {
+    return this.reviews().filter(r => !r.is_friend);
+  }
+
+  getStarArray(rating: number): ('full' | 'half' | 'empty')[] {
+    return Array.from({ length: 5 }, (_, i) => {
+      const star = i + 1;
+      if (rating >= star) return 'full';
+      if (rating >= star - 0.5) return 'half';
+      return 'empty';
+    });
+  }
+
+  getProfileImage(path: string | null) {
+    return path ? `https://image.tmdb.org/t/p/w200${path}` : 'assets/no-profile.png';
   }
 }
