@@ -275,6 +275,14 @@ h4, h5, h6, .h4, .h5, .h6 {
   overflow: hidden;
 }
 
+.text-truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
 .border-dashed { border-style: dashed !important; }
 
 .btn-group .btn.active {
@@ -406,4 +414,24 @@ html {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.marquee-text {
+  display: inline-block;
+  animation: none;
+}
+
+.marquee-container:hover .marquee-text {
+  animation: marquee-scroll 8s linear infinite;
+}
+
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
 }

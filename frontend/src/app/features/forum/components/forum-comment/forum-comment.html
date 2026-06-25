@@ -1,0 +1,100 @@
+<div class="forum-comment" [style.paddingLeft.px]="indentPx">
+  <div class="card bg-platinum border-dry-sage comment-card">
+    <div class="card-body py-2 px-3">
+      <div class="d-flex justify-content-between align-items-start mb-1">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <span class="small fw-semibold text-onyx">
+            <i class="bi bi-person-circle me-1"></i>{{ authorName }}
+          </span>
+          <span class="small text-dry-sage">
+            <i class="bi bi-clock me-1"></i>{{ relativeTime }}
+          </span>
+          @if (comment().edited) {
+            <span class="badge bg-light small">Editado</span>
+          }
+          @if (comment().deleted) {
+            <span class="badge bg-light text-dry-sage small">Eliminado</span>
+          }
+        </div>
+        @if (isOwnComment() && !comment().deleted) {
+          <div class="d-flex gap-1">
+            <button class="btn btn-sm btn-link p-0 text-dry-sage" (click)="startEdit()" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-link p-0 text-dry-sage" (click)="requestDelete()" title="Eliminar">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        }
+      </div>
+
+      @if (comment().parent) {
+        <div class="small text-dry-sage mb-1">
+          <i class="bi bi-arrow-return-right me-1"></i>Respondiendo a
+          <span class="fw-semibold">@{{ getCommentAuthorName(comment()) }}</span>
+        </div>
+      }
+
+      @if (comment().deleted) {
+        <p class="text-dry-sage fst-italic small mb-1">El usuario ha eliminado esta respuesta</p>
+      } @else if (editing()) {
+        <textarea class="form-control form-control-sm mb-1" rows="2" [(ngModel)]="editText"></textarea>
+        <div class="d-flex gap-1">
+          <button class="btn btn-sm btn-primary" (click)="saveEdit()">Guardar</button>
+          <button class="btn btn-sm btn-light border-dry-sage" (click)="cancelEdit()">Cancelar</button>
+        </div>
+      } @else {
+        <p class="card-text text-onyx small mb-1" style="white-space: pre-wrap; word-break: break-word;">{{ comment().content }}</p>
+      }
+
+      @if (!comment().deleted) {
+        <div class="d-flex align-items-center gap-2 mt-1">
+          <button class="btn btn-sm btn-link p-0 vote-btn" [class.voted]="comment().user_vote === 'upvote'"
+            (click)="vote('upvote')" title="Upvote">
+            <i class="bi bi-hand-thumbs-up"></i>
+          </button>
+          <span class="small fw-bold">{{ comment().upvotes - comment().downvotes }}</span>
+          <button class="btn btn-sm btn-link p-0 vote-btn" [class.voted]="comment().user_vote === 'downvote'"
+            (click)="vote('downvote')" title="Downvote">
+            <i class="bi bi-hand-thumbs-down"></i>
+          </button>
+          <button class="btn btn-sm btn-link p-0 text-dry-sage ms-1" (click)="toggleReplyForm()" title="Responder">
+            <i class="bi bi-reply"></i>
+          </button>
+        </div>
+
+        @if (showReplyForm()) {
+          <div class="mt-2 ps-3 border-start border-dry-sage">
+            <textarea class="form-control form-control-sm mb-1" rows="2"
+              [(ngModel)]="replyText" placeholder="Escribe tu respuesta..."></textarea>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-primary" [disabled]="!replyText().trim()"
+                (click)="submitReply()">
+                <i class="bi bi-send me-1"></i>Enviar
+              </button>
+              <button class="btn btn-sm btn-light border-dry-sage" (click)="toggleReplyForm()">Cancelar</button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  @if (comment().children && comment().children!.length > 0) {
+    <div class="d-flex flex-column gap-1 mt-1">
+      @for (child of comment().children; track child.id) {
+        <app-forum-comment
+          [comment]="child"
+          [threadId]="threadId()"
+          (commentAdded)="commentAdded.emit()"></app-forum-comment>
+      }
+    </div>
+  }
+</div>
+
+@if (showDeleteConfirm()) {
+  <app-forum-confirm-delete
+    message="&iquest;Est&aacute;s seguro de eliminar este comentario? Se reemplazar&aacute; el contenido."
+    (confirm)="confirmDelete()"
+    (cancel)="cancelDelete()"></app-forum-confirm-delete>
+}

@@ -1,0 +1,44 @@
+<a [routerLink]="['/forum', thread().id]" class="text-decoration-none">
+  <div class="card bg-platinum border-dry-sage shadow-sm forum-card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start gap-3">
+        <div class="flex-grow-1 min-width-0">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="small text-dry-sage">
+              <i class="bi bi-person-circle me-1"></i>{{ authorName }}
+            </span>
+            <span class="small text-dry-sage">
+              <i class="bi bi-clock me-1"></i>{{ relativeTime }}
+            </span>
+            @if (thread().edited) {
+              <span class="badge bg-light small">Editado</span>
+            }
+            @if (!thread().is_public) {
+              <i class="bi bi-lock-fill text-dry-sage small" title="Solo amigos"></i>
+            }
+          </div>
+          <h6 class="card-title fw-bold text-onyx mb-1 text-truncate">{{ thread().deleted ? 'Entrada eliminada' : thread().title }}</h6>
+          @if (!thread().deleted) {
+            <p class="card-text text-onyx small mb-0 text-truncate-3">{{ previewText }}</p>
+          } @else {
+            <p class="card-text text-dry-sage small mb-0 fst-italic">{{ previewText }}</p>
+          }
+        </div>
+        <div class="d-flex flex-column align-items-center gap-1 flex-shrink-0 ps-2">
+          <button class="btn btn-sm btn-link p-0 vote-btn" [class.voted]="thread().user_vote === 'upvote'"
+            (click)="vote('upvote', $event)" title="Upvote">
+            <i class="bi bi-hand-thumbs-up fs-6"></i>
+          </button>
+          <span class="small fw-bold">{{ thread().upvotes - thread().downvotes }}</span>
+          <button class="btn btn-sm btn-link p-0 vote-btn" [class.voted]="thread().user_vote === 'downvote'"
+            (click)="vote('downvote', $event)" title="Downvote">
+            <i class="bi bi-hand-thumbs-down fs-6"></i>
+          </button>
+          <span class="small text-dry-sage mt-1">
+            <i class="bi bi-chat me-1"></i>{{ thread().comment_count }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</a>

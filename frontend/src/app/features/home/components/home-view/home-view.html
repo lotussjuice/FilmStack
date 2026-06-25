@@ -12,27 +12,27 @@
     @if (homeData()?.summary) {
       <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-          <div class="stat-card rounded-3 p-3 text-center">
-            <div class="stat-value text-dark-green">{{ homeData()!.summary.total }}</div>
-            <div class="stat-label text-dry-sage small">Total</div>
+          <div class="stat-card rounded-3 p-3 text-center" [style.borderBottomColor]="'var(--color-dark-green)'">
+            <div class="stat-value text-platinum">{{ homeData()!.summary.total }}</div>
+            <div class="stat-label text-platinum">Total</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="stat-card rounded-3 p-3 text-center">
-            <div class="stat-value text-status-green">{{ homeData()!.summary.watched }}</div>
-            <div class="stat-label text-dry-sage small">Vistas</div>
+          <div class="stat-card rounded-3 p-3 text-center" [style.borderBottomColor]="'var(--color-status-green)'">
+            <div class="stat-value text-platinum">{{ homeData()!.summary.watched }}</div>
+            <div class="stat-label text-platinum">Vistas</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="stat-card rounded-3 p-3 text-center">
-            <div class="stat-value text-status-yellow">{{ homeData()!.summary.pending }}</div>
-            <div class="stat-label text-dry-sage small">Pendientes</div>
+          <div class="stat-card rounded-3 p-3 text-center" [style.borderBottomColor]="'var(--color-status-yellow)'">
+            <div class="stat-value text-platinum">{{ homeData()!.summary.pending }}</div>
+            <div class="stat-label text-platinum">Pendientes</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="stat-card rounded-3 p-3 text-center">
-            <div class="stat-value text-status-red">{{ homeData()!.summary.favorites }}</div>
-            <div class="stat-label text-dry-sage small">Favoritas</div>
+          <div class="stat-card rounded-3 p-3 text-center" [style.borderBottomColor]="'var(--color-status-red)'">
+            <div class="stat-value text-platinum">{{ homeData()!.summary.favorites }}</div>
+            <div class="stat-label text-platinum">Favoritas</div>
           </div>
         </div>
       </div>

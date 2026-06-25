@@ -1,0 +1,28 @@
+.forum-card {
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+.forum-card:hover {
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.15) !important;
+  transform: translateY(-1px);
+}
+.min-width-0 {
+  min-width: 0;
+}
+.text-truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+.vote-btn {
+  color: var(--color-dry-sage);
+  font-size: 0.85rem;
+  line-height: 1;
+}
+.vote-btn:hover {
+  color: var(--color-dark-green);
+}
+.vote-btn.voted {
+  color: var(--color-dark-green);
+}

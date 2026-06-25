@@ -1,0 +1,17 @@
+.forum-comment {
+  position: relative;
+}
+.comment-card {
+  border-left: 2px solid var(--color-dry-sage);
+}
+.vote-btn {
+  color: var(--color-dry-sage);
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+.vote-btn:hover {
+  color: var(--color-dark-green);
+}
+.vote-btn.voted {
+  color: var(--color-dark-green);
+}

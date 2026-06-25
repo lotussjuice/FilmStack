@@ -39,11 +39,17 @@
                     [value]="user.role"
                     (change)="updateRole(user.id, roleSelect.value)"
                     #roleSelect
-                    [disabled]="user.deleted">
+                    [disabled]="user.deleted || !canChangeRole(user)"
+                    [title]="isCurrentUser(user) ? 'No puedes cambiar tu propio rol' : user.role === 'admin' ? 'No se puede cambiar el rol de otro administrador' : ''">
                     <option value="guest">Guest</option>
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                   </select>
+                  @if (isCurrentUser(user)) {
+                    <small class="text-dry-sage d-block mt-1"><i class="bi bi-info-circle me-1"></i>Tu</small>
+                  } @else if (user.role === 'admin') {
+                    <small class="text-dry-sage d-block mt-1"><i class="bi bi-shield-lock me-1"></i>Admin</small>
+                  }
                 </td>
                 <td>
                   @if (user.deleted) {

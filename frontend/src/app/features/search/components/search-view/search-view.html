@@ -82,7 +82,9 @@
             </div>
           }
           <div class="card-body d-flex flex-column" (click)="$event.stopPropagation()">
-            <h6 class="card-title text-truncate fw-bold mb-1 text-dark-green" [title]="movie.title">{{ movie.title }}</h6>
+            <div class="marquee-container mb-1">
+              <h6 class="card-title fw-bold text-dark-green marquee-text">{{ movie.title }}</h6>
+            </div>
             <div class="d-flex justify-content-between align-items-center mb-3">
               <span class="small text-dry-sage">{{ movie.release_date | date:'y' }}</span>
               @if (movie.vote_average) {

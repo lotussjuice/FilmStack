@@ -1,0 +1,10 @@
+.vote-btn {
+  color: var(--color-dry-sage);
+  text-decoration: none;
+}
+.vote-btn:hover {
+  color: var(--color-dark-green);
+}
+.vote-btn.voted {
+  color: var(--color-dark-green);
+}

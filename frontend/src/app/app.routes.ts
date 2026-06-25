@@ -19,6 +19,8 @@ import { RecommendationsComponent } from './features/recommendations/components/
 import { authGuard } from './core/guards/auth.guard';
 import { NotFoundComponent } from './features/error/pages/not-found/not-found';
 import { NotAuthorizedComponent } from './features/error/pages/not-authorized/not-authorized';
+import { ForumViewComponent } from './features/forum/components/forum-view/forum-view';
+import { ForumThreadDetailComponent } from './features/forum/components/forum-thread-detail/forum-thread-detail';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -37,6 +39,8 @@ export const routes: Routes = [
   { path: 'watchparty/history', component: WatchpartyHistoryComponent, canActivate: [authGuard] },
   { path: 'movie/:movieId', component: MovieDetailComponent, canActivate: [authGuard] },
   { path: 'admin/users', component: UsersComponent, canActivate: [authGuard] },
+  { path: 'forum', component: ForumViewComponent, canActivate: [authGuard] },
+  { path: 'forum/:threadId', component: ForumThreadDetailComponent, canActivate: [authGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: '404', component: NotFoundComponent },
   { path: '403', component: NotAuthorizedComponent },

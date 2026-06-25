@@ -12,31 +12,31 @@
     @if (stats()) {
       <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-          <div class="metric-card rounded-3 p-3 text-center">
-            <div class="metric-icon text-dark-green mb-2"><i class="bi bi-collection-play"></i></div>
-            <div class="metric-value text-dark-green">{{ stats()!.total }}</div>
-            <div class="metric-label text-onyx small">Total en coleccion</div>
+          <div class="metric-card rounded-3 p-3 text-center" [style.borderBottomColor]="'var(--color-dark-green)'">
+            <div class="metric-icon text-platinum mb-2"><i class="bi bi-collection-play"></i></div>
+            <div class="metric-value text-platinum">{{ stats()!.total }}</div>
+            <div class="metric-label text-platinum">Total en coleccion</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="metric-card rounded-3 p-3 text-center">
-            <div class="metric-icon text-status-green mb-2"><i class="bi bi-eye"></i></div>
-            <div class="metric-value text-status-green">{{ stats()!.watched }}</div>
-            <div class="metric-label text-onyx small">Vistas</div>
+          <div class="metric-card rounded-3 p-3 text-center" [style.borderBottomColor]="'var(--color-status-green)'">
+            <div class="metric-icon text-platinum mb-2"><i class="bi bi-eye"></i></div>
+            <div class="metric-value text-platinum">{{ stats()!.watched }}</div>
+            <div class="metric-label text-platinum">Vistas</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="metric-card rounded-3 p-3 text-center">
-            <div class="metric-icon text-status-yellow mb-2"><i class="bi bi-clock"></i></div>
-            <div class="metric-value text-status-yellow">{{ stats()!.pending }}</div>
-            <div class="metric-label text-onyx small">Pendientes</div>
+          <div class="metric-card rounded-3 p-3 text-center" [style.borderBottomColor]="'var(--color-status-yellow)'">
+            <div class="metric-icon text-platinum mb-2"><i class="bi bi-clock"></i></div>
+            <div class="metric-value text-platinum">{{ stats()!.pending }}</div>
+            <div class="metric-label text-platinum">Pendientes</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="metric-card rounded-3 p-3 text-center">
-            <div class="metric-icon text-primary mb-2"><i class="bi bi-clock-history"></i></div>
-            <div class="metric-value text-primary">{{ totalHours() }}h</div>
-            <div class="metric-label text-onyx small">Tiempo estimado</div>
+          <div class="metric-card rounded-3 p-3 text-center" [style.borderBottomColor]="'var(--color-status-red)'">
+            <div class="metric-icon text-platinum mb-2"><i class="bi bi-clock-history"></i></div>
+            <div class="metric-value text-platinum">{{ totalHours() }}h</div>
+            <div class="metric-label text-platinum">Tiempo estimado</div>
           </div>
         </div>
       </div>

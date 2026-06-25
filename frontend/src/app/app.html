@@ -86,6 +86,12 @@
                   Social
                 </a>
               </li>
+              <li>
+                <a routerLink="/forum" routerLinkActive="active" class="nav-link text-onyx mb-2">
+                  <i class="bi bi-chat-dots-fill me-2"></i>
+                  Foro
+                </a>
+              </li>
             }
 
             @if (auth.isAdmin()) {
@@ -166,6 +172,12 @@
                 <a routerLink="/social" routerLinkActive="active" class="nav-link text-onyx mb-2" (click)="closeSidebar()">
                   <i class="bi bi-people-fill me-2"></i>
                   Social
+                </a>
+              </li>
+              <li>
+                <a routerLink="/forum" routerLinkActive="active" class="nav-link text-onyx mb-2" (click)="closeSidebar()">
+                  <i class="bi bi-chat-dots-fill me-2"></i>
+                  Foro
                 </a>
               </li>
             }

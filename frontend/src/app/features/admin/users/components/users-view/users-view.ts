@@ -1,6 +1,7 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../../../profile/services/user.service';
+import { AuthService } from '../../../../auth/services/auth.service';
 import { ToastService } from '../../../../../core/services/toast.service';
 import { ConfirmModalComponent } from '../../../../../shared/components/confirm-modal/confirm-modal';
 import { User } from '../../../../../core/interfaces/user.interface';
@@ -14,6 +15,7 @@ import { User } from '../../../../../core/interfaces/user.interface';
 })
 export class UsersComponent implements OnInit {
   private userService = inject(UserService);
+  private auth = inject(AuthService);
   private toast = inject(ToastService);
   
   users = signal<User[]>([]);
@@ -69,5 +71,13 @@ export class UsersComponent implements OnInit {
   closeModal() {
     this.isModalOpen.set(false);
     this.targetUser.set(null);
+  }
+
+  isCurrentUser(user: User): boolean {
+    return user.id === this.auth.user()?.id;
+  }
+
+  canChangeRole(user: User): boolean {
+    return !this.isCurrentUser(user) && user.role !== 'admin';
   }
 }
