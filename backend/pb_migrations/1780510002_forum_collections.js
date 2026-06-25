@@ -44,11 +44,6 @@ migrate((app) => {
         maxSelect: 1,
     }));
     comments.fields.add(new RelationField({
-        name: "parent",
-        collectionId: comments.id,
-        maxSelect: 1,
-    }));
-    comments.fields.add(new RelationField({
         name: "author",
         required: true,
         collectionId: "_pb_users_auth_",
@@ -72,6 +67,14 @@ migrate((app) => {
 
     app.save(comments);
 
+    const savedComments = app.findCollectionByNameOrId("forum_comments");
+    savedComments.fields.add(new RelationField({
+        name: "parent",
+        collectionId: savedComments.id,
+        maxSelect: 1,
+    }));
+    app.save(savedComments);
+
     const votes = new Collection({
         name: "forum_votes",
         type: "base",
@@ -84,7 +87,7 @@ migrate((app) => {
     }));
     votes.fields.add(new RelationField({
         name: "comment",
-        collectionId: comments.id,
+        collectionId: savedComments.id,
         maxSelect: 1,
     }));
     votes.fields.add(new RelationField({
