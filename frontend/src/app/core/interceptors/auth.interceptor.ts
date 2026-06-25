@@ -3,11 +3,20 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { ToastService } from '../services/toast.service';
+import { PocketbaseService } from '../services/pocketbase.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const toast = inject(ToastService);
-  return next(req).pipe(
+  const pb = inject(PocketbaseService);
+
+  const token = pb.authStore.token;
+  let authReq = req;
+  if (token) {
+    authReq = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
+  }
+
+  return next(authReq).pipe(
     catchError((error) => {
       if (error instanceof HttpErrorResponse) {
         switch (error.status) {

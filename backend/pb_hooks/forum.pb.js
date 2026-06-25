@@ -20,30 +20,22 @@ function getSortField(sort) {
   }
 }
 
-function parseQuery(url) {
-  const params = {};
-  const idx = url.indexOf("?");
-  if (idx === -1) return params;
-  const qs = url.substring(idx + 1);
-  for (const part of qs.split("&")) {
-    if (!part) continue;
-    const [k, v] = part.split("=").map(s => decodeURIComponent(s || ""));
-    params[k] = v;
-  }
-  return params;
-}
-
-function stripHtml(str) {
-  return str.replace(/<[^>]*>/g, "");
-}
-
 routerAdd("GET", "/api/forum/threads", (e) => {
-  const query = parseQuery(e.request.url);
-  const page = parseInt(query.page || "0");
-  const perPage = Math.min(parseInt(query.perPage || "20"), 50);
-  const sort = query.sort || "created";
-  const order = query.order || "desc";
-  const visibility = query.visibility || "all";
+  const params = {};
+  const qidx = e.request.url.indexOf("?");
+  if (qidx !== -1) {
+    const qs = e.request.url.substring(qidx + 1);
+    for (const part of qs.split("&")) {
+      if (!part) continue;
+      const [k, v] = part.split("=").map(s => decodeURIComponent(s || ""));
+      params[k] = v;
+    }
+  }
+  const page = parseInt(params.page || "0");
+  const perPage = Math.min(parseInt(params.perPage || "20"), 50);
+  const sort = params.sort || "created";
+  const order = params.order || "desc";
+  const visibility = params.visibility || "all";
   const auth = e.auth;
 
   const friendIds = getFriendIds(auth);
