@@ -206,42 +206,72 @@
 
       <div class="p-3 border-top border-dry-sage detail-actions">
         @if (isInBacklog()) {
-          <div class="row g-2 align-items-center">
-            <div class="col-auto">
-              <label class="small text-dry-sage text-uppercase fw-bold mb-0 me-2">Estado:</label>
-            </div>
-            <div class="col-auto">
-              <select class="form-select form-select-sm" [ngModel]="movieData()!.status" (ngModelChange)="updateStatus($event)">
-                <option value="pending">Pendiente</option>
-                <option value="watched">Vista</option>
-                <option value="dropped">Abandonada</option>
-              </select>
-            </div>
-            <div class="col-auto">
-              <div class="d-flex align-items-center gap-1">
-                @for (star of [1,2,3,4,5]; track star) {
-                  <span class="star-wrapper" (click)="updateRating(star, $event)">
-                    <i class="bi"
-                       [class.bi-star-fill]="movieData()!.rating >= star"
-                       [class.bi-star-half]="movieData()!.rating >= star - 0.5 && movieData()!.rating < star"
-                       [class.bi-star]="movieData()!.rating < star - 0.5">
-                    </i>
+          @if (movieData()!.status === 'watched') {
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-status-green text-onyx"><i class="bi bi-check-circle me-1"></i>Vista</span>
+                @if (movieData()!.rating) {
+                  <div class="d-flex align-items-center gap-1 text-status-yellow small">
+                    @for (star of [1,2,3,4,5]; track star) {
+                      <i class="bi"
+                         [class.bi-star-fill]="movieData()!.rating >= star"
+                         [class.bi-star-half]="movieData()!.rating >= star - 0.5 && movieData()!.rating < star"
+                         [class.bi-star]="movieData()!.rating < star - 0.5">
+                      </i>
+                    }
+                  </div>
+                }
+              </div>
+              <div>
+                @if (isWatching()) {
+                  <span class="badge bg-status-green text-onyx p-2">
+                    <i class="bi bi-eye-fill me-1"></i> Viendo ahora
                   </span>
+                } @else {
+                  <button class="btn btn-success btn-sm fw-bold" (click)="startWatching()">
+                    <i class="bi bi-play-fill me-1"></i> Empezar a ver
+                  </button>
                 }
               </div>
             </div>
-            <div class="col text-end">
-              @if (isWatching()) {
-                <span class="badge bg-status-green text-onyx p-2">
-                  <i class="bi bi-eye-fill me-1"></i> Viendo ahora
-                </span>
-              } @else {
-                <button class="btn btn-success btn-sm fw-bold" (click)="startWatching()">
-                  <i class="bi bi-play-fill me-1"></i> Empezar a ver
-                </button>
-              }
+          } @else {
+            <div class="row g-2 align-items-center">
+              <div class="col-auto">
+                <label class="small text-dry-sage text-uppercase fw-bold mb-0 me-2">Estado:</label>
+              </div>
+              <div class="col-auto">
+                <select class="form-select form-select-sm" [ngModel]="movieData()!.status" (ngModelChange)="updateStatus($event)">
+                  <option value="pending">Pendiente</option>
+                  <option value="watched">Vista</option>
+                  <option value="dropped">Abandonada</option>
+                </select>
+              </div>
+              <div class="col-auto">
+                <div class="d-flex align-items-center gap-1">
+                  @for (star of [1,2,3,4,5]; track star) {
+                    <span class="star-wrapper" (click)="updateRating(star, $event)">
+                      <i class="bi"
+                         [class.bi-star-fill]="movieData()!.rating >= star"
+                         [class.bi-star-half]="movieData()!.rating >= star - 0.5 && movieData()!.rating < star"
+                         [class.bi-star]="movieData()!.rating < star - 0.5">
+                      </i>
+                    </span>
+                  }
+                </div>
+              </div>
+              <div class="col text-end">
+                @if (isWatching()) {
+                  <span class="badge bg-status-green text-onyx p-2">
+                    <i class="bi bi-eye-fill me-1"></i> Viendo ahora
+                  </span>
+                } @else {
+                  <button class="btn btn-success btn-sm fw-bold" (click)="startWatching()">
+                    <i class="bi bi-play-fill me-1"></i> Empezar a ver
+                  </button>
+                }
+              </div>
             </div>
-          </div>
+          }
         } @else {
           <div class="d-flex gap-2">
             <button class="btn btn-primary flex-grow-1" (click)="addToBacklog()">

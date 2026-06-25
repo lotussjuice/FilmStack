@@ -48,14 +48,14 @@
       </p>
     }
 
-    <div class="mt-auto d-flex flex-wrap gap-2 pt-2">
-      <button class="btn btn-light btn-sm flex-grow-1 text-onyx" (click)="onInfoClick($event)">
+    <div class="mt-auto d-flex gap-2 pt-2">
+      <button class="btn btn-light btn-sm text-onyx" (click)="onInfoClick($event)">
         <i class="bi bi-info-circle"></i> Info
       </button>
-      <button class="btn btn-outline-primary btn-sm flex-grow-1" (click)="onEditClick($event)">
+      <button class="btn btn-outline-primary btn-sm" (click)="onEditClick($event)">
         <i class="bi bi-pencil"></i> Editar
       </button>
-      <button class="btn btn-outline-danger btn-sm" (click)="onDeleteClick($event)" title="Eliminar">
+      <button class="btn btn-outline-danger btn-sm ms-auto" (click)="onDeleteClick($event)" title="Eliminar">
         <i class="bi bi-trash"></i>
       </button>
     </div>
