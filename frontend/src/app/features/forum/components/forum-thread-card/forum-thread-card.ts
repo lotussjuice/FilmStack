@@ -17,7 +17,7 @@ export class ForumThreadCardComponent {
   private forum = inject(ForumService);
 
   get authorName(): string {
-    return this.forum.getCachedUserName(this.thread().author_id);
+    return this.thread().author_name || 'Usuario';
   }
 
   get relativeTime(): string {
@@ -36,9 +36,11 @@ export class ForumThreadCardComponent {
     const thread = this.thread();
     const res = await this.forum.vote(thread.id, null, type);
     if (res) {
-      thread.upvotes = res.upvotes;
-      thread.downvotes = res.downvotes;
-      thread.user_vote = thread.user_vote === type ? null : type;
+      this.forum.updateThreadInList(thread.id, {
+        upvotes: res.upvotes,
+        downvotes: res.downvotes,
+        user_vote: thread.user_vote === type ? null : type,
+      });
     }
   }
 }

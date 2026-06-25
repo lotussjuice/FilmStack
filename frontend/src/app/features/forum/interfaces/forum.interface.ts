@@ -3,6 +3,7 @@ export interface ForumThread {
   title: string;
   content: string;
   author_id: string;
+  author_name: string;
   is_public: boolean;
   upvotes: number;
   downvotes: number;
@@ -19,6 +20,8 @@ export interface ForumComment {
   thread: string;
   parent: string | null;
   author_id: string;
+  author_name: string;
+  parent_author_name: string | null;
   content: string;
   upvotes: number;
   downvotes: number;

@@ -8,13 +8,6 @@
 .min-width-0 {
   min-width: 0;
 }
-.text-truncate-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  word-break: break-word;
-}
 .vote-btn {
   color: var(--color-dry-sage);
   font-size: 0.85rem;

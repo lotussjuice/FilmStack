@@ -36,7 +36,7 @@ export class ForumThreadDetailComponent implements OnInit {
 
   get authorName(): string {
     const t = this.thread();
-    return t ? this.forum.getCachedUserName(t.author_id) : '';
+    return t ? (t.author_name || 'Usuario') : '';
   }
 
   get relativeTime(): string {
@@ -59,9 +59,11 @@ export class ForumThreadDetailComponent implements OnInit {
     if (!t) return;
     const res = await this.forum.vote(t.id, null, type);
     if (res) {
-      t.upvotes = res.upvotes;
-      t.downvotes = res.downvotes;
-      t.user_vote = t.user_vote === type ? null : type;
+      this.forum.updateCurrentThread({
+        upvotes: res.upvotes,
+        downvotes: res.downvotes,
+        user_vote: t.user_vote === type ? null : type,
+      });
     }
   }
 

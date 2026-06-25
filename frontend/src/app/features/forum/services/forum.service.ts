@@ -70,6 +70,36 @@ export class ForumService {
     this.errorState.set('');
   }
 
+  updateThreadInList(threadId: string, changes: Partial<ForumThread>): void {
+    this.threadsState.update(list =>
+      list.map(t => t.id === threadId ? { ...t, ...changes } : t)
+    );
+  }
+
+  updateCommentVote(commentId: string, changes: Partial<ForumComment>): void {
+    this.commentsState.update(tree =>
+      this.applyCommentChanges(tree, commentId, changes)
+    );
+  }
+
+  updateCurrentThread(changes: Partial<ForumThread>): void {
+    this.currentThreadState.update(cur =>
+      cur ? { ...cur, ...changes } : cur
+    );
+  }
+
+  private applyCommentChanges(tree: ForumComment[], commentId: string, changes: Partial<ForumComment>): ForumComment[] {
+    return tree.map(c => {
+      if (c.id === commentId) {
+        return { ...c, ...changes };
+      }
+      if (c.children && c.children.length > 0) {
+        return { ...c, children: this.applyCommentChanges(c.children, commentId, changes) };
+      }
+      return c;
+    });
+  }
+
   async loadThreads(page: number = 0): Promise<void> {
     this.loadingState.set(true);
     this.errorState.set('');

@@ -27,7 +27,7 @@ export class ForumCommentComponent {
   showDeleteConfirm = signal(false);
 
   get authorName(): string {
-    return this.forum.getCachedUserName(this.comment().author_id);
+    return this.comment().author_name || 'Usuario';
   }
 
   get relativeTime(): string {
@@ -40,7 +40,7 @@ export class ForumCommentComponent {
   }
 
   get parentAuthorName(): string {
-    return this.forum.getCachedUserName(this.comment().author_id);
+    return this.comment().parent_author_name || 'Usuario';
   }
 
   isOwnComment(): boolean {
@@ -48,17 +48,15 @@ export class ForumCommentComponent {
     return !!user && this.comment().author_id === user.id;
   }
 
-  getCommentAuthorName(comment: ForumComment): string {
-    return this.forum.getCachedUserName(comment.author_id);
-  }
-
   async vote(type: 'upvote' | 'downvote'): Promise<void> {
     const c = this.comment();
     const res = await this.forum.vote(null, c.id, type);
     if (res) {
-      c.upvotes = res.upvotes;
-      c.downvotes = res.downvotes;
-      c.user_vote = c.user_vote === type ? null : type;
+      this.forum.updateCommentVote(c.id, {
+        upvotes: res.upvotes,
+        downvotes: res.downvotes,
+        user_vote: c.user_vote === type ? null : type,
+      });
     }
   }
 
