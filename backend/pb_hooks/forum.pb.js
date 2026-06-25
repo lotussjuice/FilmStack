@@ -1,6 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-function getFriendIds(auth) {
+const getFriendIds = function(auth) {
   let friendIds = [];
   if (!auth) return friendIds;
   try {
@@ -9,16 +9,16 @@ function getFriendIds(auth) {
     friendIds = Array.isArray(raw) ? raw : [];
   } catch (err) {}
   return friendIds;
-}
+};
 
-function getSortField(sort) {
+const getSortField = function(sort) {
   switch (sort) {
     case "activity": return "last_activity_at";
     case "comments": return "comment_count";
     case "created":
     default: return "created";
   }
-}
+};
 
 routerAdd("GET", "/api/forum/threads", (e) => {
   const query = e.request.url.query();
@@ -37,13 +37,12 @@ routerAdd("GET", "/api/forum/threads", (e) => {
   let all = [];
 
   try {
-    const col = $app.findCollectionByNameOrId("forum_threads");
     let filter = `deleted != true`;
 
     if (visibility === "public") {
       filter += ` && is_public = true`;
     } else if (visibility === "friends" && userId) {
-      const friendList = friendIds.map(id => `"${id}"`).join(",");
+      const friendList = friendIds.map(function(id) { return `"${id}"`; }).join(",");
       if (friendList.length > 0) {
         filter += ` && (author = "${userId}" || author in [${friendList}])`;
       } else {
@@ -51,7 +50,7 @@ routerAdd("GET", "/api/forum/threads", (e) => {
       }
     } else {
       if (userId) {
-        const friendList = friendIds.map(id => `"${id}"`).join(",");
+        const friendList = friendIds.map(function(id) { return `"${id}"`; }).join(",");
         if (friendList.length > 0) {
           filter += ` && (is_public = true || author = "${userId}" || author in [${friendList}])`;
         } else {
@@ -62,29 +61,31 @@ routerAdd("GET", "/api/forum/threads", (e) => {
       }
     }
 
-    all = $app.findRecordsByFilter(col, filter, sortStr, 1000, 0);
+    all = $app.findRecordsByFilter("forum_threads", filter, sortStr, 1000, 0);
   } catch (err) {
+    console.error("[forum] load threads:", err.toString());
     return e.json(500, { code: 500, message: "Error al cargar hilos." });
   }
 
   const total = all.length;
   const start = page * perPage;
   const paged = all.slice(start, start + perPage);
-  const threadIds = paged.map(r => r.get("id"));
+  const threadIds = paged.map(function(r) { return r.get("id"); });
 
   let userVotes = [];
   if (auth && threadIds.length > 0) {
     try {
-      const voteCol = $app.findCollectionByNameOrId("forum_votes");
-      const idsFilter = threadIds.map(id => `"${id}"`).join(",");
-      const votes = $app.findRecordsByFilter(voteCol, `thread in [${idsFilter}] && user = "${userId}"`, "", 100, 0);
-      userVotes = votes.map(v => ({ thread: v.get("thread"), type: v.get("vote_type") }));
-    } catch (err) {}
+      const idsFilter = threadIds.map(function(id) { return `"${id}"`; }).join(",");
+      const votes = $app.findRecordsByFilter("forum_votes", `thread in [${idsFilter}] && user = "${userId}"`, "", 100, 0);
+      userVotes = votes.map(function(v) { return { thread: v.get("thread"), type: v.get("vote_type") }; });
+    } catch (err) {
+      console.error("[forum] load votes:", err.toString());
+    }
   }
 
-  const result = paged.map((r) => {
+  const result = paged.map(function(r) {
     const authorId = r.get("author");
-    const vote = userVotes.find(v => v.thread === r.id);
+    const vote = userVotes.find(function(v) { return v.thread === r.id; });
     return {
       id: r.get("id"),
       title: r.get("title"),
@@ -104,9 +105,9 @@ routerAdd("GET", "/api/forum/threads", (e) => {
 
   return e.json(200, {
     threads: result,
-    total,
-    page,
-    perPage,
+    total: total,
+    page: page,
+    perPage: perPage,
     totalPages: Math.ceil(total / perPage),
   });
 });
@@ -118,8 +119,7 @@ routerAdd("GET", "/api/forum/threads/{id}", (e) => {
   const friendIds = getFriendIds(auth);
 
   try {
-    const col = $app.findCollectionByNameOrId("forum_threads");
-    const thread = $app.findRecordById(col, id);
+    const thread = $app.findRecordById("forum_threads", id);
     if (!thread) return e.json(404, { code: 404, message: "Hilo no encontrado." });
 
     const isPublic = thread.get("is_public");
@@ -132,8 +132,7 @@ routerAdd("GET", "/api/forum/threads/{id}", (e) => {
     let userVote = null;
     if (auth) {
       try {
-        const voteCol = $app.findCollectionByNameOrId("forum_votes");
-        const votes = $app.findRecordsByFilter(voteCol, `thread = "${id}" && user = "${userId}"`, "", 1, 0);
+        const votes = $app.findRecordsByFilter("forum_votes", `thread = "${id}" && user = "${userId}"`, "", 1, 0);
         if (votes.length > 0) userVote = votes[0].get("vote_type");
       } catch (err) {}
     }
@@ -154,25 +153,23 @@ routerAdd("GET", "/api/forum/threads/{id}", (e) => {
       user_vote: userVote,
     };
 
-    const commentCol = $app.findCollectionByNameOrId("forum_comments");
-    const comments = $app.findRecordsByFilter(commentCol, `thread = "${id}"`, "created", 1000, 0);
+    const comments = $app.findRecordsByFilter("forum_comments", `thread = "${id}"`, "created", 1000, 0);
 
     let commentVotes = [];
     if (auth) {
       try {
-        const voteCol = $app.findCollectionByNameOrId("forum_votes");
-        const commentIds = comments.map(c => `"${c.id}"`).join(",");
+        const commentIds = comments.map(function(c) { return `"${c.id}"`; });
         if (commentIds.length > 0) {
-          const votes = $app.findRecordsByFilter(voteCol, `comment in [${commentIds}] && user = "${userId}"`, "", 100, 0);
-          commentVotes = votes.map(v => ({ comment: v.get("comment"), type: v.get("vote_type") }));
+          const votes = $app.findRecordsByFilter("forum_votes", `comment in [${commentIds.join(",")}] && user = "${userId}"`, "", 100, 0);
+          commentVotes = votes.map(function(v) { return { comment: v.get("comment"), type: v.get("vote_type") }; });
         }
       } catch (err) {}
     }
 
-    const commentData = comments.map((c) => {
+    const commentData = comments.map(function(c) {
       const cAuthorId = c.get("author");
       const parentId = c.get("parent");
-      const vote = commentVotes.find(v => v.comment === c.id);
+      const vote = commentVotes.find(function(v) { return v.comment === c.id; });
       return {
         id: c.get("id"),
         thread: c.get("thread"),
@@ -191,6 +188,7 @@ routerAdd("GET", "/api/forum/threads/{id}", (e) => {
 
     return e.json(200, { thread: threadData, comments: commentData });
   } catch (err) {
+    console.error("[forum] load thread detail:", err.toString());
     return e.json(500, { code: 500, message: "Error al cargar el hilo." });
   }
 });
@@ -209,22 +207,22 @@ routerAdd("POST", "/api/forum/threads", (e) => {
 
   try {
     const col = $app.findCollectionByNameOrId("forum_threads");
-    const record = new Record(col, {
-      title,
-      content,
-      author: auth.get("id"),
-      is_public: isPublic,
-      upvotes: 0,
-      downvotes: 0,
-      comment_count: 0,
-      last_activity_at: new Date().toISOString(),
-      edited: false,
-      deleted: false,
-    });
+    const record = new Record(col);
+    record.set("title", title);
+    record.set("content", content);
+    record.set("author", auth.get("id"));
+    record.set("is_public", isPublic);
+    record.set("upvotes", 0);
+    record.set("downvotes", 0);
+    record.set("comment_count", 0);
+    record.set("last_activity_at", new Date().toISOString());
+    record.set("edited", false);
+    record.set("deleted", false);
 
     const saved = $app.save(record);
     return e.json(201, { id: saved.get("id") });
   } catch (err) {
+    console.error("[forum] create thread:", err.toString());
     return e.json(500, { code: 500, message: "Error al crear el hilo." });
   }
 });
@@ -238,8 +236,7 @@ routerAdd("PATCH", "/api/forum/threads/{id}", (e) => {
   const userId = auth.get("id");
 
   try {
-    const col = $app.findCollectionByNameOrId("forum_threads");
-    const record = $app.findRecordById(col, id);
+    const record = $app.findRecordById("forum_threads", id);
     if (!record) return e.json(404, { code: 404, message: "Hilo no encontrado." });
     if (record.get("author") !== userId) {
       return e.json(403, { code: 403, message: "No eres el autor de este hilo." });
@@ -253,6 +250,7 @@ routerAdd("PATCH", "/api/forum/threads/{id}", (e) => {
     $app.save(record);
     return e.json(200, { id: record.get("id") });
   } catch (err) {
+    console.error("[forum] edit thread:", err.toString());
     return e.json(500, { code: 500, message: "Error al editar el hilo." });
   }
 });
@@ -265,8 +263,7 @@ routerAdd("POST", "/api/forum/threads/{id}/delete", (e) => {
   const userId = auth.get("id");
 
   try {
-    const col = $app.findCollectionByNameOrId("forum_threads");
-    const record = $app.findRecordById(col, id);
+    const record = $app.findRecordById("forum_threads", id);
     if (!record) return e.json(404, { code: 404, message: "Hilo no encontrado." });
     if (record.get("author") !== userId) {
       return e.json(403, { code: 403, message: "No eres el autor de este hilo." });
@@ -277,6 +274,7 @@ routerAdd("POST", "/api/forum/threads/{id}/delete", (e) => {
     $app.save(record);
     return e.json(200, { id: record.get("id") });
   } catch (err) {
+    console.error("[forum] delete thread:", err.toString());
     return e.json(500, { code: 500, message: "Error al eliminar el hilo." });
   }
 });
@@ -294,31 +292,28 @@ routerAdd("POST", "/api/forum/comments", (e) => {
   if (!content) return e.json(400, { code: 400, message: "El contenido es requerido." });
 
   try {
-    const threadCol = $app.findCollectionByNameOrId("forum_threads");
-    const thread = $app.findRecordById(threadCol, threadId);
+    const thread = $app.findRecordById("forum_threads", threadId);
     if (!thread) return e.json(404, { code: 404, message: "Hilo no encontrado." });
 
     let depth = 0;
     if (parentId) {
-      const commentCol = $app.findCollectionByNameOrId("forum_comments");
-      const parent = $app.findRecordById(commentCol, parentId);
+      const parent = $app.findRecordById("forum_comments", parentId);
       if (parent) {
         depth = (parent.get("depth") || 0) + 1;
       }
     }
 
-    const commentCol = $app.findCollectionByNameOrId("forum_comments");
-    const record = new Record(commentCol, {
-      thread: threadId,
-      parent: parentId,
-      author: auth.get("id"),
-      content,
-      upvotes: 0,
-      downvotes: 0,
-      depth,
-      edited: false,
-      deleted: false,
-    });
+    const col = $app.findCollectionByNameOrId("forum_comments");
+    const record = new Record(col);
+    record.set("thread", threadId);
+    record.set("parent", parentId);
+    record.set("author", auth.get("id"));
+    record.set("content", content);
+    record.set("upvotes", 0);
+    record.set("downvotes", 0);
+    record.set("depth", depth);
+    record.set("edited", false);
+    record.set("deleted", false);
 
     const saved = $app.save(record);
 
@@ -328,6 +323,7 @@ routerAdd("POST", "/api/forum/comments", (e) => {
 
     return e.json(201, { id: saved.get("id") });
   } catch (err) {
+    console.error("[forum] create comment:", err.toString());
     return e.json(500, { code: 500, message: "Error al crear el comentario." });
   }
 });
@@ -341,8 +337,7 @@ routerAdd("PATCH", "/api/forum/comments/{id}", (e) => {
   const userId = auth.get("id");
 
   try {
-    const col = $app.findCollectionByNameOrId("forum_comments");
-    const record = $app.findRecordById(col, id);
+    const record = $app.findRecordById("forum_comments", id);
     if (!record) return e.json(404, { code: 404, message: "Comentario no encontrado." });
     if (record.get("author") !== userId) {
       return e.json(403, { code: 403, message: "No eres el autor de este comentario." });
@@ -354,6 +349,7 @@ routerAdd("PATCH", "/api/forum/comments/{id}", (e) => {
     $app.save(record);
     return e.json(200, { id: record.get("id") });
   } catch (err) {
+    console.error("[forum] edit comment:", err.toString());
     return e.json(500, { code: 500, message: "Error al editar el comentario." });
   }
 });
@@ -366,8 +362,7 @@ routerAdd("POST", "/api/forum/comments/{id}/delete", (e) => {
   const userId = auth.get("id");
 
   try {
-    const col = $app.findCollectionByNameOrId("forum_comments");
-    const record = $app.findRecordById(col, id);
+    const record = $app.findRecordById("forum_comments", id);
     if (!record) return e.json(404, { code: 404, message: "Comentario no encontrado." });
     if (record.get("author") !== userId) {
       return e.json(403, { code: 403, message: "No eres el autor de este comentario." });
@@ -378,6 +373,7 @@ routerAdd("POST", "/api/forum/comments/{id}/delete", (e) => {
     $app.save(record);
     return e.json(200, { id: record.get("id") });
   } catch (err) {
+    console.error("[forum] delete comment:", err.toString());
     return e.json(500, { code: 500, message: "Error al eliminar el comentario." });
   }
 });
@@ -395,7 +391,7 @@ routerAdd("POST", "/api/forum/vote", (e) => {
   if (!threadId && !commentId) {
     return e.json(400, { code: 400, message: "Se requiere un hilo o comentario." });
   }
-  if (!voteType || !["upvote", "downvote"].includes(voteType)) {
+  if (!voteType || (voteType !== "upvote" && voteType !== "downvote")) {
     return e.json(400, { code: 400, message: "Tipo de voto invalido." });
   }
 
@@ -404,16 +400,14 @@ routerAdd("POST", "/api/forum/vote", (e) => {
   }
 
   try {
-    const voteCol = $app.findCollectionByNameOrId("forum_votes");
     let filter = `user = "${userId}"`;
     if (threadId) filter += ` && thread = "${threadId}"`;
     if (commentId) filter += ` && comment = "${commentId}"`;
 
-    const existing = $app.findRecordsByFilter(voteCol, filter, "", 1, 0);
+    const existing = $app.findRecordsByFilter("forum_votes", filter, "", 1, 0);
     const targetColName = threadId ? "forum_threads" : "forum_comments";
     const targetId = threadId || commentId;
-    const targetCol = $app.findCollectionByNameOrId(targetColName);
-    const target = $app.findRecordById(targetCol, targetId);
+    const target = $app.findRecordById(targetColName, targetId);
     if (!target) return e.json(404, { code: 404, message: "Objetivo no encontrado." });
 
     const currentUpvotes = target.get("upvotes") || 0;
@@ -446,12 +440,12 @@ routerAdd("POST", "/api/forum/vote", (e) => {
         return e.json(200, { action: "changed", upvotes: target.get("upvotes"), downvotes: target.get("downvotes") });
       }
     } else {
-      const newVote = new Record(voteCol, {
-        thread: threadId,
-        comment: commentId,
-        user: userId,
-        vote_type: voteType,
-      });
+      const voteCol = $app.findCollectionByNameOrId("forum_votes");
+      const newVote = new Record(voteCol);
+      newVote.set("thread", threadId);
+      newVote.set("comment", commentId);
+      newVote.set("user", userId);
+      newVote.set("vote_type", voteType);
       $app.save(newVote);
       if (voteType === "upvote") {
         target.set("upvotes", currentUpvotes + 1);
@@ -462,6 +456,7 @@ routerAdd("POST", "/api/forum/vote", (e) => {
       return e.json(200, { action: "created", upvotes: target.get("upvotes"), downvotes: target.get("downvotes") });
     }
   } catch (err) {
+    console.error("[forum] vote:", err.toString());
     return e.json(500, { code: 500, message: "Error al procesar el voto." });
   }
 });
