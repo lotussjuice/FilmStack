@@ -21,21 +21,12 @@ function getSortField(sort) {
 }
 
 routerAdd("GET", "/api/forum/threads", (e) => {
-  const params = {};
-  const qidx = e.request.url.indexOf("?");
-  if (qidx !== -1) {
-    const qs = e.request.url.substring(qidx + 1);
-    for (const part of qs.split("&")) {
-      if (!part) continue;
-      const [k, v] = part.split("=").map(s => decodeURIComponent(s || ""));
-      params[k] = v;
-    }
-  }
-  const page = parseInt(params.page || "0");
-  const perPage = Math.min(parseInt(params.perPage || "20"), 50);
-  const sort = params.sort || "created";
-  const order = params.order || "desc";
-  const visibility = params.visibility || "all";
+  const query = e.request.url.query();
+  const page = parseInt(query.get("page") || "0");
+  const perPage = Math.min(parseInt(query.get("perPage") || "20"), 50);
+  const sort = query.get("sort") || "created";
+  const order = query.get("order") || "desc";
+  const visibility = query.get("visibility") || "all";
   const auth = e.auth;
 
   const friendIds = getFriendIds(auth);
@@ -208,7 +199,7 @@ routerAdd("POST", "/api/forum/threads", (e) => {
   const auth = e.auth;
   if (!auth) return e.json(401, { code: 401, message: "No autenticado." });
 
-  const body = e.request.body;
+  const body = e.requestInfo().body;
   const title = (body.title || "").trim();
   const content = (body.content || "").trim();
   const isPublic = body.is_public !== false;
@@ -243,7 +234,7 @@ routerAdd("PATCH", "/api/forum/threads/{id}", (e) => {
   if (!auth) return e.json(401, { code: 401, message: "No autenticado." });
 
   const id = e.request.pathValue("id");
-  const body = e.request.body;
+  const body = e.requestInfo().body;
   const userId = auth.get("id");
 
   try {
@@ -294,7 +285,7 @@ routerAdd("POST", "/api/forum/comments", (e) => {
   const auth = e.auth;
   if (!auth) return e.json(401, { code: 401, message: "No autenticado." });
 
-  const body = e.request.body;
+  const body = e.requestInfo().body;
   const threadId = body.thread;
   const content = (body.content || "").trim();
   const parentId = body.parent || null;
@@ -346,7 +337,7 @@ routerAdd("PATCH", "/api/forum/comments/{id}", (e) => {
   if (!auth) return e.json(401, { code: 401, message: "No autenticado." });
 
   const id = e.request.pathValue("id");
-  const body = e.request.body;
+  const body = e.requestInfo().body;
   const userId = auth.get("id");
 
   try {
@@ -395,7 +386,7 @@ routerAdd("POST", "/api/forum/vote", (e) => {
   const auth = e.auth;
   if (!auth) return e.json(401, { code: 401, message: "No autenticado." });
 
-  const body = e.request.body;
+  const body = e.requestInfo().body;
   const threadId = body.thread || null;
   const commentId = body.comment || null;
   const voteType = body.vote_type;
