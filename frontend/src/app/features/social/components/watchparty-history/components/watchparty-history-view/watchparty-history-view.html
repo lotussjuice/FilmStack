@@ -1,0 +1,276 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-dry-sage pb-3 flex-wrap gap-2">
+    <div>
+      <h2 class="text-dark-green fw-bold m-0"><i class="bi bi-journal-album me-2"></i>Historial de Watchparties</h2>
+      <p class="text-dry-sage m-0 small">Revive las sesiones grupales de las cuales formaste parte y consulta sus calificaciones.</p>
+    </div>
+    @if (!isLoading() && parties().length > 0) {
+      <div class="d-flex gap-2 flex-wrap">
+        <div class="stat-pill">
+          <i class="bi bi-collection-play me-1"></i> {{ visibleSessions() }} / {{ totalSessions() }} <span class="text-dry-sage small">sesiones</span>
+        </div>
+        @if (overallAvg() > 0) {
+          <div class="stat-pill">
+            <i class="bi bi-star-fill me-1"></i> {{ overallAvg() | number:'1.1-1' }} <span class="text-dry-sage small">promedio</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  @if (!isLoading() && parties().length > 0) {
+    <div class="card bg-platinum border-dry-sage shadow-sm mb-4">
+      <div class="card-body p-3">
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-5">
+            <label class="form-label small fw-bold text-dry-sage text-uppercase mb-1" for="histSearch">
+              <i class="bi bi-search me-1"></i>Buscar por nombre
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-platinum border-dry-sage text-dry-sage">
+                <i class="bi bi-film"></i>
+              </span>
+              <input
+                id="histSearch"
+                type="text"
+                class="form-control bg-platinum border-dry-sage"
+                placeholder="Titulo de la pelicula..."
+                [value]="searchName()"
+                (input)="onNameChange($any($event.target).value)">
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label small fw-bold text-dry-sage text-uppercase mb-1" for="histFrom">
+              <i class="bi bi-calendar-event me-1"></i>Desde
+            </label>
+            <input
+              id="histFrom"
+              type="date"
+              class="form-control bg-platinum border-dry-sage"
+              [value]="dateFrom()"
+              [max]="dateTo() || null"
+              (input)="onDateFromChange($any($event.target).value)">
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label small fw-bold text-dry-sage text-uppercase mb-1" for="histTo">
+              <i class="bi bi-calendar-event me-1"></i>Hasta
+            </label>
+            <input
+              id="histTo"
+              type="date"
+              class="form-control bg-platinum border-dry-sage"
+              [value]="dateTo()"
+              [min]="dateFrom() || null"
+              (input)="onDateToChange($any($event.target).value)">
+          </div>
+          <div class="col-12 col-md-1 d-grid">
+            @if (hasActiveFilters()) {
+              <button type="button" class="btn btn-outline-secondary" (click)="clearFilters()" title="Limpiar filtros">
+                <i class="bi bi-x-circle"></i>
+              </button>
+            } @else {
+              <button type="button" class="btn btn-light" disabled title="Sin filtros">
+                <i class="bi bi-funnel"></i>
+              </button>
+            }
+          </div>
+        </div>
+        @if (hasActiveFilters()) {
+          <div class="mt-2 small text-dry-sage">
+            <i class="bi bi-funnel-fill me-1"></i>
+            @if (searchName().trim()) {
+              <span class="badge bg-dark-green text-platinum me-1">Nombre: "{{ searchName() }}"</span>
+            }
+            @if (dateFrom()) {
+              <span class="badge bg-dark-green text-platinum me-1">Desde: {{ dateFrom() }}</span>
+            }
+            @if (dateTo()) {
+              <span class="badge bg-dark-green text-platinum me-1">Hasta: {{ dateTo() }}</span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-dark-green" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-dry-sage mt-2">Cargando tu historial de cine...</p>
+    </div>
+  } @else if (parties().length === 0) {
+    <div class="card bg-platinum border-dry-sage p-5 text-center shadow-sm">
+      <i class="bi bi-collection-play text-dry-sage" style="font-size: 3rem;"></i>
+      <h4 class="text-onyx fw-bold mt-3">Aún no has completado ninguna Watchparty</h4>
+      <p class="text-dry-sage">Cuando completes una sesión grupal con tus amigos y realicen la reseña grupal, aparecerá aquí.</p>
+    </div>
+  } @else if (filteredParties().length === 0) {
+    <div class="card bg-platinum border-dry-sage p-5 text-center shadow-sm">
+      <i class="bi bi-funnel text-dry-sage" style="font-size: 3rem;"></i>
+      <h4 class="text-onyx fw-bold mt-3">No hay sesiones que coincidan</h4>
+      <p class="text-dry-sage">Prueba ajustando los filtros o limpiandolos para ver todo el historial.</p>
+      <button type="button" class="btn btn-outline-primary mt-2" (click)="clearFilters()">
+        <i class="bi bi-x-circle me-1"></i> Limpiar filtros
+      </button>
+    </div>
+  } @else {
+    <div class="row g-4">
+      @for (item of filteredParties(); track item.party.id) {
+        <div class="col-12">
+          <div class="card bg-platinum border-dry-sage shadow-sm rounded-4 overflow-hidden position-relative">
+            <div class="row g-0">
+              <div class="col-12 col-md-3 bg-dark-green d-flex align-items-center justify-content-center" style="max-height: 280px; overflow: hidden;">
+                <img [src]="getPosterUrl(item.party.activeMoviePoster)" alt="Poster" class="w-100 h-100 object-fit-cover" crossorigin="anonymous">
+              </div>
+              <div class="col-12 col-md-9 p-4 d-flex flex-column justify-content-between">
+                <div>
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                      <h3 class="text-onyx fw-bold m-0">{{ item.party.activeMovieTitle }}</h3>
+                      <span class="text-dry-sage small"><i class="bi bi-calendar-event me-1"></i>{{ item.party.finishedAt | date:'dd MMM yyyy, HH:mm' }}</span>
+                    </div>
+                    <div class="text-end">
+                      <div class="d-flex align-items-center gap-1">
+                        @for (state of getRatingStarStates(item.avgRating); track $index) {
+                          @if (state === 'full') {
+                            <i class="bi bi-star-fill text-status-yellow" style="font-size: 1.25rem;"></i>
+                          } @else if (state === 'half') {
+                            <i class="bi bi-star-half text-status-yellow" style="font-size: 1.25rem;"></i>
+                          } @else {
+                            <i class="bi bi-star text-status-yellow" style="font-size: 1.25rem; opacity: 0.35;"></i>
+                          }
+                        }
+                      </div>
+                      <span class="small fw-bold text-onyx">Promedio: {{ item.avgRating | number:'1.1-1' }}/5</span>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <span class="small text-dry-sage fw-bold text-uppercase d-block mb-1">Integrantes:</span>
+                    <div class="d-flex flex-wrap gap-1 align-items-center">
+                      <span class="badge bg-dark-green text-platinum px-2 py-1"><i class="bi bi-person-badge me-1"></i>Host: {{ item.party.hostName }}</span>
+                      @for (name of item.party.memberNames; track $index) {
+                        @if (name !== item.party.hostName) {
+                          <span class="badge bg-dry-sage text-onyx px-2 py-1">{{ name }}</span>
+                        }
+                      }
+                    </div>
+                  </div>
+
+                  @if (item.reviews.length > 0) {
+                    <button type="button" class="btn btn-sm btn-outline-primary mb-2" (click)="toggleExpand(item)">
+                      <i class="bi" [class.bi-chevron-down]="!item.expanded" [class.bi-chevron-up]="item.expanded"></i>
+                      {{ item.expanded ? 'Ocultar reseñas individuales' : 'Ver reseñas individuales (' + item.reviews.length + ')' }}
+                    </button>
+
+                    @if (item.expanded) {
+                      <div class="p-3 bg-white rounded-3 border border-dry-sage mt-2 animate__animated animate__fadeIn">
+                        <h6 class="text-dark-green fw-bold border-bottom pb-1 mb-2">Calificaciones del Grupo:</h6>
+                        @for (rev of item.reviews; track rev.id) {
+                          <div class="review-row py-2 border-bottom border-light d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1 pe-3">
+                              <span class="fw-bold text-onyx small">{{ rev.user_name }}</span>
+                              @if (rev.review) {
+                                <p class="text-dry-sage small mb-0 font-italic">"{{ rev.review }}"</p>
+                              }
+                            </div>
+                            <span class="badge bg-status-yellow text-onyx"><i class="bi bi-star-fill me-1"></i>{{ rev.rating }}/5</span>
+                          </div>
+                        }
+                      </div>
+                    }
+                  } @else {
+                    <p class="text-muted small italic">No hay reseñas para esta Watchparty.</p>
+                  }
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                  <button type="button" class="btn btn-primary" (click)="exportParty(item, exportCard)">
+                    <i class="bi bi-file-earmark-image me-1"></i> Exportar a Imágen
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Invisible share card container used solely for image generation -->
+            <div class="share-card-wrapper" style="position: absolute; left: -9999px; top: -9999px;">
+              <div class="share-card" #exportCard style="width: 720px; background: var(--color-platinum); border: 4px solid var(--color-dark-green); border-radius: 18px; padding: 24px; display: flex; gap: 20px; font-family: var(--font-body); color: var(--color-onyx);">
+                <div style="width: 200px; flex-shrink: 0; background: var(--color-dark-green); border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 300px;">
+                  <img [src]="getPosterUrl(item.party.activeMoviePoster)" alt="Poster" style="width: 100%; height: 100%; object-fit: cover;" crossorigin="anonymous">
+                </div>
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                  <div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                      <span style="background: var(--color-dry-sage); color: var(--color-onyx); padding: 4px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: bold;">
+                        {{ item.party.finishedAt | date:'dd MMM yyyy' }}
+                      </span>
+                      <span style="font-size: 1.1rem; font-weight: bold; color: var(--color-dark-green);">Watchparty</span>
+                    </div>
+                    <h2 style="font-family: var(--font-display); font-size: 1.8rem; margin: 0; line-height: 1.2; color: var(--color-onyx); margin-bottom: 8px;">
+                      {{ item.party.activeMovieTitle }}
+                    </h2>
+                    <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 12px;">
+                      @for (state of getRatingStarStates(item.avgRating); track $index) {
+                        @if (state === 'full') {
+                          <span style="color: var(--color-status-yellow); font-size: 1.4rem;">&#9733;</span>
+                        } @else if (state === 'half') {
+                          <span style="position: relative; display: inline-block; font-size: 1.4rem; color: var(--color-status-yellow); opacity: 0.35;">&#9733;
+                            <span style="position: absolute; left: 0; top: 0; width: 50%; overflow: hidden; color: var(--color-status-yellow); opacity: 1;">&#9733;</span>
+                          </span>
+                        } @else {
+                          <span style="color: var(--color-status-yellow); font-size: 1.4rem; opacity: 0.3;">&#9733;</span>
+                        }
+                      }
+                      <span style="font-size: 0.95rem; font-weight: bold; margin-left: 6px; color: var(--color-onyx);">
+                        {{ item.avgRating | number:'1.1-1' }} / 5 ({{ item.reviews.length }} calificaciones)
+                      </span>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                      <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: bold; color: var(--color-dry-sage); display: block; margin-bottom: 4px;">Integrantes:</span>
+                      <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                        <span style="background: var(--color-dark-green); color: var(--color-platinum); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
+                          Host: {{ item.party.hostName }}
+                        </span>
+                        @for (name of item.party.memberNames; track $index) {
+                          @if (name !== item.party.hostName) {
+                            <span style="background: var(--color-dry-sage); color: var(--color-onyx); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">
+                              {{ name }}
+                            </span>
+                          }
+                        }
+                      </div>
+                    </div>
+
+                    <div style="margin-top: 8px;">
+                      <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: bold; color: var(--color-dry-sage); display: block; margin-bottom: 6px;">Comentarios del Grupo:</span>
+                      @for (rev of item.reviews.slice(0, 3); track rev.id) {
+                        <div style="background: rgba(255,255,255,0.5); padding: 6px 10px; border-radius: 6px; margin-bottom: 6px; border-left: 3px solid var(--color-dark-green);">
+                          <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: bold; color: var(--color-onyx);">
+                            <span>{{ rev.user_name }}</span>
+                            <span style="color: var(--color-status-yellow);">★ {{ rev.rating }}/5</span>
+                          </div>
+                          @if (rev.review) {
+                            <p style="margin: 0; font-size: 0.75rem; color: var(--color-onyx); font-style: italic;">"{{ rev.review }}"</p>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--color-dry-sage); padding-top: 10px; margin-top: 12px; font-size: 0.8rem; color: var(--color-dark-green); font-weight: bold;">
+                    <span>Resumen Grupal</span>
+                    <span style="font-family: var(--font-display); font-size: 1rem;">FilmStack</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

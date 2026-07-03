@@ -1,0 +1,298 @@
+@if (isLoadingTmdb()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-dry-sage" role="status"></div>
+    <p class="text-dry-sage mt-2 small">Cargando informacion de la pelicula...</p>
+  </div>
+} @else if (currentMovie(); as movie) {
+  <div class="movie-detail-page">
+    <button class="btn btn-outline-secondary mb-3" (click)="goBack()">
+      <i class="bi bi-arrow-left me-1"></i> Volver
+    </button>
+
+    <div class="detail-card rounded-4 shadow-lg overflow-hidden">
+      <div class="position-relative">
+        @if (movie.backdrop_path || movie.poster_path) {
+          <img [src]="'https://image.tmdb.org/t/p/original' + (movie.backdrop_path || movie.poster_path)" class="w-100 detail-backdrop" alt="Backdrop">
+        }
+        <div class="position-absolute bottom-0 start-0 p-4 w-100 movie-backdrop-overlay">
+          <h2 class="m-0 fw-bold text-platinum">{{ movie.title }}</h2>
+          <div class="d-flex align-items-center flex-wrap gap-2 mt-2 small">
+            <span class="badge bg-status-yellow text-onyx">{{ movie.vote_average | number:'1.1-1' }} <i class="bi bi-star-fill"></i> TMDB</span>
+            @if (stats() && stats()!.total_votes > 0) {
+              <span class="badge bg-dark-green text-platinum">{{ stats()!.avg_rating | number:'1.1-1' }} <i class="bi bi-star-fill"></i> FilmStack</span>
+            }
+            <span class="opacity-50">|</span>
+            <span>{{ movie.release_date | date:'y' }}</span>
+            @if (movie.runtime) {
+              <span class="opacity-50">&bull;</span>
+              <span>{{ movie.runtime | runtime }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="tabs-bar d-flex border-bottom border-dry-sage">
+        <button class="tab-btn flex-fill" [class.active]="activeTab() === 'info'" (click)="switchTab('info')">
+          <i class="bi bi-info-circle me-1"></i>Informacion
+        </button>
+        <button class="tab-btn flex-fill" [class.active]="activeTab() === 'reviews'" (click)="switchTab('reviews')">
+          <i class="bi bi-chat-left-text me-1"></i>Resenas
+        </button>
+      </div>
+
+      <div class="detail-body p-4 pt-3" style="max-height: 60vh; overflow-y: auto;">
+        @if (activeTab() === 'info') {
+          <div class="row g-4">
+            <div class="col-12 col-md-7 col-lg-8">
+              <section class="mb-4">
+                <h6 class="text-dry-sage fw-bold text-uppercase small mb-2"><i class="bi bi-justify-left me-1"></i>Sinopsis</h6>
+                <p class="text-onyx line-height-base m-0">{{ movie.overview || 'No hay descripcion disponible.' }}</p>
+              </section>
+
+              @if (movie.credits?.cast?.length) {
+                <section class="mb-4">
+                  <h6 class="text-dry-sage fw-bold text-uppercase small mb-3"><i class="bi bi-people me-1"></i>Reparto Principal</h6>
+                  <div class="d-flex gap-3 overflow-x-auto pb-2 cast-scroll">
+                    @for (person of movie.credits?.cast?.slice(0, 12); track person.id) {
+                      <div class="text-center" style="min-width: 90px;">
+                        <img [src]="getProfileImage(person.profile_path)" class="rounded-circle mb-2 object-fit-cover shadow-sm border border-2 border-platinum" style="width: 70px; height: 70px;">
+                        <div class="small fw-bold text-truncate text-onyx" style="max-width: 90px;">{{ person.name }}</div>
+                        <div class="text-dry-sage text-truncate" style="max-width: 90px; font-size: 0.7rem;">{{ person.character }}</div>
+                      </div>
+                    }
+                  </div>
+                </section>
+              }
+
+              @if (mainTrailer()) {
+                <section>
+                  <h6 class="text-dry-sage fw-bold text-uppercase small mb-3"><i class="bi bi-play-btn me-1"></i>Trailer Oficial</h6>
+                  <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow-sm border border-dry-sage">
+                    <iframe [src]="'https://www.youtube.com/embed/' + mainTrailer()!.key | safe" allowfullscreen></iframe>
+                  </div>
+                </section>
+              }
+            </div>
+
+            <div class="col-12 col-md-5 col-lg-4 border-start-md ps-md-4">
+              @if (movie.genres) {
+                <div class="mb-4">
+                  <h6 class="text-dry-sage fw-bold text-uppercase small mb-2">Generos</h6>
+                  <div class="d-flex flex-wrap gap-1">
+                    @for (genre of movie.genres; track genre.id) {
+                      <span class="badge rounded-pill bg-dry-sage text-onyx">{{ genre.name }}</span>
+                    }
+                  </div>
+                </div>
+              }
+
+              <div class="mb-4">
+                <h6 class="text-dry-sage fw-bold text-uppercase small mb-2">Detalles Tecnicos</h6>
+                <ul class="list-unstyled small text-onyx mb-0">
+                  <li class="mb-2 d-flex justify-content-between">
+                    <span class="text-dry-sage">Lanzamiento:</span>
+                    <span class="fw-bold">{{ movie.release_date | date:'longDate' }}</span>
+                  </li>
+                  @if (movie.runtime) {
+                    <li class="mb-2 d-flex justify-content-between">
+                      <span class="text-dry-sage">Duracion:</span>
+                      <span class="fw-bold">{{ movie.runtime | runtime }}</span>
+                    </li>
+                  }
+                  <li class="mb-2 d-flex justify-content-between">
+                    <span class="text-dry-sage">Puntuacion TMDB:</span>
+                    <span class="fw-bold text-status-yellow"><i class="bi bi-star-fill"></i> {{ movie.vote_average | number:'1.1-1' }}</span>
+                  </li>
+                  @if (stats() && stats()!.total_votes > 0) {
+                    <li class="mb-0 d-flex justify-content-between">
+                      <span class="text-dry-sage">Votos FilmStack:</span>
+                      <div class="text-end">
+                        <div class="fw-bold text-dark-green"><i class="bi bi-star-fill"></i> {{ stats()!.avg_rating | number:'1.1-1' }}</div>
+                        <div class="text-dry-sage" style="font-size: 0.65rem;">({{ stats()!.total_votes }} {{ stats()!.total_votes === 1 ? 'voto' : 'votos' }})</div>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'reviews') {
+          @if (reviewsLoading()) {
+            <div class="text-center py-5">
+              <div class="spinner-border text-dry-sage" role="status"></div>
+            </div>
+          } @else if (reviews().length === 0) {
+            <div class="text-center py-5 text-dry-sage">
+              <i class="bi bi-chat-left-text fs-1 opacity-25 mb-3 d-block"></i>
+              <p class="mb-0">No hay resenas para esta pelicula aun.</p>
+            </div>
+          } @else {
+            @if (getFriendReviews().length > 0) {
+              <section class="mb-4">
+                <h6 class="text-status-yellow fw-bold text-uppercase small mb-3">
+                  <i class="bi bi-people-fill me-1"></i>Resenas de tus amigos
+                </h6>
+                <div class="d-flex flex-column gap-3">
+                  @for (review of getFriendReviews(); track review.id) {
+                    <div class="review-card friend-review rounded-3 p-3">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="review-avatar rounded-circle bg-status-yellow text-onyx d-flex align-items-center justify-content-center fw-bold">
+                            {{ review.user_name.charAt(0).toUpperCase() }}
+                          </div>
+                          <div>
+                            <span class="fw-bold text-onyx small">{{ review.user_name }}</span>
+                            <span class="badge bg-status-yellow text-onyx ms-2" style="font-size: 0.6rem;">Amigo</span>
+                          </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                          @for (star of getStarArray(review.rating); track $index) {
+                            <i class="bi" [ngClass]="{
+                              'bi-star-fill text-status-yellow': star === 'full',
+                              'bi-star-half text-status-yellow': star === 'half',
+                              'bi-star text-dry-sage': star === 'empty'
+                            }" style="font-size: 0.8rem;"></i>
+                          }
+                          <span class="ms-1 text-dry-sage small">{{ review.rating | number:'1.1-1' }}</span>
+                        </div>
+                      </div>
+                      <p class="text-onyx small mb-0 line-height-base">{{ review.review_text }}</p>
+                      <div class="mt-2">
+                        <span class="text-dry-sage" style="font-size: 0.65rem;">{{ review.source === 'backlog' ? 'Mi Coleccion' : review.source === 'watchparty' ? 'Watch Party' : 'Resena' }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+
+            @if (getOtherReviews().length > 0) {
+              <section>
+                <h6 class="text-dry-sage fw-bold text-uppercase small mb-3">
+                  <i class="bi bi-globe me-1"></i>Otras resenas
+                </h6>
+                <div class="d-flex flex-column gap-3">
+                  @for (review of getOtherReviews(); track review.id) {
+                    <div class="review-card rounded-3 p-3">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="review-avatar rounded-circle bg-dry-sage text-onyx d-flex align-items-center justify-content-center fw-bold">
+                            {{ review.user_name.charAt(0).toUpperCase() }}
+                          </div>
+                          <span class="fw-bold text-onyx small">{{ review.user_name }}</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                          @for (star of getStarArray(review.rating); track $index) {
+                            <i class="bi" [ngClass]="{
+                              'bi-star-fill text-status-yellow': star === 'full',
+                              'bi-star-half text-status-yellow': star === 'half',
+                              'bi-star text-dry-sage': star === 'empty'
+                            }" style="font-size: 0.8rem;"></i>
+                          }
+                          <span class="ms-1 text-dry-sage small">{{ review.rating | number:'1.1-1' }}</span>
+                        </div>
+                      </div>
+                      <p class="text-onyx small mb-0 line-height-base">{{ review.review_text }}</p>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+          }
+        }
+      </div>
+
+      <div class="p-3 border-top border-dry-sage detail-actions">
+        @if (isInBacklog()) {
+          @if (movieData()!.status === 'watched') {
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-status-green text-onyx"><i class="bi bi-check-circle me-1"></i>Vista</span>
+                @if (movieData()!.rating) {
+                  <div class="d-flex align-items-center gap-1 text-status-yellow small">
+                    @for (star of [1,2,3,4,5]; track star) {
+                      <i class="bi"
+                         [class.bi-star-fill]="movieData()!.rating >= star"
+                         [class.bi-star-half]="movieData()!.rating >= star - 0.5 && movieData()!.rating < star"
+                         [class.bi-star]="movieData()!.rating < star - 0.5">
+                      </i>
+                    }
+                  </div>
+                }
+              </div>
+              <div>
+                @if (isWatching()) {
+                  <span class="badge bg-status-green text-onyx p-2">
+                    <i class="bi bi-eye-fill me-1"></i> Viendo ahora
+                  </span>
+                } @else {
+                  <button class="btn btn-success btn-sm fw-bold" (click)="startWatching()">
+                    <i class="bi bi-play-fill me-1"></i> Empezar a ver
+                  </button>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="row g-2 align-items-center">
+              <div class="col-auto">
+                <label class="small text-dry-sage text-uppercase fw-bold mb-0 me-2">Estado:</label>
+              </div>
+              <div class="col-auto">
+                <select class="form-select form-select-sm" [ngModel]="movieData()!.status" (ngModelChange)="updateStatus($event)">
+                  <option value="pending">Pendiente</option>
+                  <option value="watched">Vista</option>
+                  <option value="dropped">Abandonada</option>
+                </select>
+              </div>
+              <div class="col-auto">
+                <div class="d-flex align-items-center gap-1">
+                  @for (star of [1,2,3,4,5]; track star) {
+                    <span class="star-wrapper" (click)="updateRating(star, $event)">
+                      <i class="bi"
+                         [class.bi-star-fill]="movieData()!.rating >= star"
+                         [class.bi-star-half]="movieData()!.rating >= star - 0.5 && movieData()!.rating < star"
+                         [class.bi-star]="movieData()!.rating < star - 0.5">
+                      </i>
+                    </span>
+                  }
+                </div>
+              </div>
+              <div class="col text-end">
+                @if (isWatching()) {
+                  <span class="badge bg-status-green text-onyx p-2">
+                    <i class="bi bi-eye-fill me-1"></i> Viendo ahora
+                  </span>
+                } @else {
+                  <button class="btn btn-success btn-sm fw-bold" (click)="startWatching()">
+                    <i class="bi bi-play-fill me-1"></i> Empezar a ver
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary flex-grow-1" (click)="addToBacklog()">
+              <i class="bi bi-plus-lg me-1"></i> Agregar a mi coleccion
+            </button>
+            <button class="btn btn-success flex-grow-1 fw-bold" (click)="startWatching()">
+              <i class="bi bi-play-fill me-1"></i> Empezar a ver
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="text-center py-5">
+    <button class="btn btn-outline-secondary mb-3" (click)="goBack()">
+      <i class="bi bi-arrow-left me-1"></i> Volver
+    </button>
+    <div class="alert alert-warning text-center">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      Pelicula no encontrada.
+    </div>
+  </div>
+}

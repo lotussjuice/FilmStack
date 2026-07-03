@@ -1,0 +1,21 @@
+.star-wrapper {
+    display: inline-block;
+    cursor: pointer;
+}
+
+.star-wrapper i {
+    transition: transform 0.15s;
+    pointer-events: none;
+}
+
+.star-wrapper:hover i {
+    transform: scale(1.15);
+}
+
+@media (max-width: 575.98px) {
+  .group-review-title {
+    font-size: 1.1rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+}

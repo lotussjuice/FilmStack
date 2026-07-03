@@ -1,0 +1,43 @@
+@if (isOpen() && party() && party()!.activeMovieTitle) {
+  <div class="modal-overlay d-flex align-items-center justify-content-center">
+    <div class="modal-container rounded-4 shadow-lg p-4 animate__animated animate__zoomIn">
+      <div class="text-center mb-3">
+        <h3 class="text-dark-green mb-2">Todos a la vez</h3>
+        <p class="text-dry-sage m-0">Aceptan ver la pelicula elegida?</p>
+        <div class="badge bg-status-yellow text-onyx mt-2 fw-bold">
+          <i class="bi bi-clock me-1"></i>{{ remainingSeconds() }}s
+        </div>
+      </div>
+
+      <div class="text-center mb-3">
+        @if (posterUrl(); as url) {
+          <img [src]="url" alt="Poster" class="sync-poster rounded-3 shadow mb-2">
+        }
+        <h4 class="text-onyx fw-bold m-0" style="word-break: break-word; overflow-wrap: break-word;">{{ party()!.activeMovieTitle }}</h4>
+      </div>
+
+      <div class="mb-3 px-3">
+        <div class="d-flex justify-content-between small fw-bold mb-1">
+          <span class="text-status-green">{{ syncVoteCount().add }} Aceptan</span>
+          <span class="text-status-red">{{ syncVoteCount().discard }} Niegan</span>
+        </div>
+        <div class="progress" style="height: 10px; background: var(--color-platinum); border: 1px solid var(--color-dry-sage);">
+          <div class="progress-bar bg-status-green" [style.width.%]="(syncVoteCount().add / memberCount()) * 100"></div>
+          <div class="progress-bar bg-status-red" [style.width.%]="(syncVoteCount().discard / memberCount()) * 100"></div>
+        </div>
+        <div class="text-center small text-dry-sage mt-1">
+          {{ syncVoteCount().add + syncVoteCount().discard }} de {{ memberCount() }} votos
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-light flex-grow-1 text-onyx" (click)="decline()">
+          <i class="bi bi-x-lg me-1"></i> Negarse
+        </button>
+        <button type="button" class="btn btn-primary flex-grow-1" (click)="accept()">
+          <i class="bi bi-check-lg me-1"></i> Aceptar
+        </button>
+      </div>
+    </div>
+  </div>
+}

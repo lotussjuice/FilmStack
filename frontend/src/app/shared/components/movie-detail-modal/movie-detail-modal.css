@@ -24,7 +24,7 @@
 }
 
 .modal-body-scroll::-webkit-scrollbar-thumb {
-    background: #e0e0e0;
+    background: var(--color-dry-sage);
     border-radius: 10px;
 }
 
@@ -33,7 +33,7 @@
 }
 
 .cast-scroll::-webkit-scrollbar-thumb {
-    background: #f0f0f0;
+    background: var(--color-dry-sage);
     border-radius: 10px;
 }
 
@@ -49,8 +49,76 @@
     animation-duration: 0.3s;
 }
 
+.movie-backdrop-overlay {
+  background: linear-gradient(transparent, var(--color-overlay-on-image));
+}
+
 @media (min-width: 768px) {
     .border-start-md {
-        border-left: 1px solid var(--platinum) !important;
+        border-left: 1px solid var(--color-dry-sage) !important;
     }
+}
+
+@media (max-width: 575.98px) {
+    .modal-container {
+        margin: 0.5rem;
+        max-height: 98vh;
+    }
+    .modal-container h2 {
+        font-size: 1.2rem;
+    }
+    .modal-body-scroll {
+        padding: 1rem !important;
+    }
+    .modal-body-scroll p {
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+}
+
+.tabs-bar {
+    background: var(--color-platinum);
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-dry-sage);
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+}
+
+.tab-btn:hover {
+    color: var(--color-onyx);
+    background: rgba(139, 154, 119, 0.1);
+}
+
+.tab-btn.active {
+    color: var(--color-onyx);
+    border-bottom-color: var(--color-primary);
+}
+
+.review-card {
+    background: rgba(139, 154, 119, 0.08);
+    border: 1px solid var(--color-dry-sage);
+    transition: all 0.2s;
+}
+
+.review-card:hover {
+    background: rgba(139, 154, 119, 0.15);
+}
+
+.friend-review {
+    background: rgba(215, 191, 88, 0.08);
+    border-color: var(--color-status-yellow);
+}
+
+.review-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.85rem;
 }

@@ -1,0 +1,22 @@
+<div class="container py-4 text-onyx">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-dark-green fw-bold"><i class="bi bi-people-fill me-2"></i>Social</h2>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger d-flex justify-content-between align-items-center mb-3">
+      <span>{{ error() }}</span>
+      <button type="button" class="btn-close" (click)="dismissError()"></button>
+    </div>
+  }
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-6">
+      <app-friend-search></app-friend-search>
+      <app-friend-requests class="d-block mt-3"></app-friend-requests>
+    </div>
+    <div class="col-12 col-lg-6">
+      <app-friend-list></app-friend-list>
+    </div>
+  </div>
+</div>

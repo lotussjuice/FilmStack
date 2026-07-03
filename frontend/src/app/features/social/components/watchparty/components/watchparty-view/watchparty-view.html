@@ -1,0 +1,173 @@
+@if (wp.pendingInvite(); as invite) {
+  <div class="card bg-platinum border-status-yellow shadow-sm mb-4">
+    <div class="card-header bg-status-yellow text-onyx py-3">
+      <h4 class="m-0"><i class="bi bi-envelope-open me-2"></i>Nueva invitacion a Watchparty</h4>
+    </div>
+    <div class="card-body">
+      <p class="text-onyx">Has sido invitado a unirte a una Watchparty. ¿Deseas ingresar?</p>
+      <div class="d-flex gap-2 mt-3">
+        <button type="button" class="btn btn-success" (click)="wp.acceptInvite()">Aceptar e Ingresar</button>
+        <button type="button" class="btn btn-outline-danger" (click)="wp.declineInvite()">Rechazar</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (!isInParty()) {
+  <div class="card bg-platinum border-dry-sage shadow-sm">
+    <div class="card-header bg-dark-green border-dry-sage py-3">
+      <h4 class="m-0 text-platinum"><i class="bi bi-broadcast-pin me-2"></i>Crear Watchparty</h4>
+    </div>
+    <div class="card-body">
+      <p class="text-onyx mb-3">Invita a tus amigos a una sesion sincronizada. Tu seras el host.</p>
+
+      <h6 class="text-dry-sage text-uppercase small fw-bold mb-2">Selecciona miembros</h6>
+      @if (friends().length === 0) {
+        <p class="text-dry-sage small">No tienes amigos agregados. Agrega amigos primero.</p>
+      } @else {
+        <div class="input-group input-group-sm mb-3">
+          <span class="input-group-text bg-platinum border-dry-sage text-dry-sage">
+            <i class="bi bi-search"></i>
+          </span>
+          <input
+            type="text"
+            class="form-control bg-platinum border-dry-sage"
+            placeholder="Buscar amigo por nombre..."
+            aria-label="Buscar amigo"
+            [value]="friendSearch()"
+            (input)="friendSearch.set($any($event.target).value)">
+          @if (friendSearch().trim()) {
+            <button type="button" class="btn btn-outline-secondary" (click)="friendSearch.set('')" title="Limpiar">
+              <i class="bi bi-x-circle"></i>
+            </button>
+          }
+        </div>
+        @if (filteredFriends().length === 0) {
+          <p class="text-dry-sage small fst-italic mb-3">No se encontraron amigos que coincidan con "{{ friendSearch() }}".</p>
+        }
+        <div class="row g-2 mb-3">
+          @for (f of filteredFriends(); track f.id) {
+            <div class="col-12 col-md-6">
+              <label class="d-flex align-items-center gap-2 p-2 rounded-2 member-pick" [class.selected]="memberSelection()[f.id]">
+                <input
+                  type="checkbox"
+                  class="form-check-input m-0"
+                  [checked]="!!memberSelection()[f.id]"
+                  (change)="toggleMember(f.id)">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="friend-avatar-sm">{{ f.name.charAt(0).toUpperCase() }}</div>
+                  <div>
+                    <div class="fw-bold text-onyx">{{ f.name }}</div>
+                  </div>
+                </div>
+              </label>
+            </div>
+          }
+        </div>
+      }
+
+      <button
+        type="button"
+        class="btn btn-primary w-100"
+        (click)="createParty()">
+        <i class="bi bi-play-circle me-1"></i> Iniciar Watchparty
+      </button>
+    </div>
+  </div>
+} @else if (currentParty(); as party) {
+  <div class="row g-3">
+    <div class="col-12 col-lg-8">
+      <div class="card bg-platinum border-dry-sage shadow-sm">
+        <div class="card-header bg-dark-green border-dry-sage py-3 d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="m-0 text-platinum"><i class="bi bi-broadcast me-2"></i>Watchparty en vivo</h4>
+            <div class="d-flex align-items-center gap-2 mt-1">
+              <small class="text-dry-sage">{{ members().length }} invitados</small>
+              @if (isHost()) {
+                <button type="button" class="btn btn-sm btn-outline-light py-0" style="font-size: 0.75rem;" (click)="showInviteMore.set(!showInviteMore())">
+                  <i class="bi bi-person-plus"></i> Invitar
+                </button>
+              }
+            </div>
+          </div>
+          <span class="badge bg-status-yellow text-onyx">{{ party.status | uppercase }}</span>
+        </div>
+        <div class="card-body">
+          @if (showInviteMore() && isHost()) {
+            <div class="invite-more-panel p-3 bg-platinum rounded border border-dry-sage mb-3">
+              <h6 class="text-dark-green small fw-bold mb-2">Invitar a mas amigos</h6>
+              @if (uninvitedFriends().length > 0) {
+                <div class="input-group input-group-sm mb-2">
+                  <span class="input-group-text bg-platinum border-dry-sage text-dry-sage">
+                    <i class="bi bi-search"></i>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control bg-platinum border-dry-sage"
+                    placeholder="Filtrar por nombre..."
+                    aria-label="Filtrar amigos"
+                    [value]="inviteSearch()"
+                    (input)="inviteSearch.set($any($event.target).value)">
+                  @if (inviteSearch().trim()) {
+                    <button type="button" class="btn btn-outline-secondary" (click)="inviteSearch.set('')" title="Limpiar">
+                      <i class="bi bi-x-circle"></i>
+                    </button>
+                  }
+                </div>
+              }
+              <div class="d-flex flex-wrap gap-2 mb-2">
+                @for (f of uninvitedFriends(); track f.id) {
+                  <label class="d-flex align-items-center gap-1 p-1 px-2 border rounded" style="cursor: pointer;" [class.bg-dry-sage]="inviteSelection()[f.id]">
+                    <input type="checkbox" class="form-check-input m-0" [checked]="!!inviteSelection()[f.id]" (change)="toggleInvite(f.id)">
+                    <span class="small text-onyx">{{ f.name }}</span>
+                  </label>
+                }
+                @if (uninvitedFriends().length === 0) {
+                  <span class="small text-muted">Todos tus amigos ya están en la sala.</span>
+                } @else if (inviteSearch().trim() && uninvitedFriends().length === 0) {
+                  <span class="small text-muted fst-italic">Sin coincidencias para "{{ inviteSearch() }}".</span>
+                }
+              </div>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-primary" (click)="inviteSelected()" [disabled]="uninvitedFriends().length === 0">Enviar invitaciones</button>
+                <button type="button" class="btn btn-sm btn-light" (click)="showInviteMore.set(false)">Cancelar</button>
+              </div>
+            </div>
+          }
+
+          <app-group-roulette
+            [party]="party"
+            (syncRequested)="watchSyncOpen()"
+            (finishedWatching)="finishWatching()"
+            (left)="leaveParty()">
+          </app-group-roulette>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-4">
+      <app-chat-panel [party]="party"></app-chat-panel>
+    </div>
+  </div>
+}
+
+<app-sync-modal
+  [isOpen]="showSyncModal()"
+  [party]="currentParty()"
+  (accepted)="showSyncModal.set(false)"
+  (declined)="showSyncModal.set(false)">
+</app-sync-modal>
+
+<app-group-review-modal
+  [isOpen]="showReviewModal()"
+  [party]="currentParty()"
+  (closed)="onReviewClosed()">
+</app-group-review-modal>
+
+@if (showEditModal() && editMovie(); as em) {
+  <app-edit-movie-modal
+    [isOpen]="showEditModal()"
+    [movie]="em"
+    (save)="onEditConfirm($event)"
+    (cancel)="onEditCancel()">
+  </app-edit-movie-modal>
+}

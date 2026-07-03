@@ -1,0 +1,30 @@
+.member-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-dry-sage);
+  color: var(--color-onyx);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+.review-row:last-child {
+  border-bottom: none !important;
+}
+
+/* Share card container - ensure fonts and margins map correctly when exporting */
+.share-card {
+  box-sizing: border-box;
+}

@@ -1,0 +1,130 @@
+<div class="chat-container d-flex flex-column h-100">
+  <div class="chat-header p-2 border-bottom border-dry-sage bg-dry-sage">
+    <span class="small fw-bold text-onyx text-uppercase">
+      <i class="bi bi-chat-dots me-1"></i> Chat de la sesion
+    </span>
+  </div>
+
+  <div #scrollEl class="chat-messages flex-grow-1 p-2" style="overflow-y: auto; max-height: 400px;">
+    @if (messages().length === 0) {
+      <p class="text-dry-sage small text-center my-3">Inicia la conversacion o propón una pelicula.</p>
+    }
+    @for (m of messages(); track m.id) {
+      @if (isSystemMessage(m)) {
+        <div class="text-center my-2">
+          <span class="badge bg-dry-sage text-onyx small">{{ m.text }}</span>
+        </div>
+      } @else {
+        <div class="message-bubble p-2 mb-2 rounded-3" [class.own]="isOwnMessage(m.userId)">
+          <div class="small fw-bold text-dark-green">{{ m.userName }}</div>
+          <div class="text-onyx" style="word-break: break-word; overflow-wrap: break-word;">{{ m.text }}</div>
+          @if (m.type === 'proposal' && m.proposal) {
+            @if (getFreshProposal(m.proposal); as fresh) {
+              <div class="proposal-widget mt-2 p-2 rounded-2">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="small fw-bold text-dark-green">{{ fresh.title }}</span>
+                  <span class="badge bg-status-yellow text-onyx small">
+                    {{ remainingSeconds(fresh) }}s
+                  </span>
+                </div>
+                <div class="progress mb-2 mt-1" style="height: 6px; background: var(--color-platinum); border: 1px solid var(--color-dry-sage);">
+                  <div class="progress-bar bg-status-green" [style.width.%]="(proposalVoteCount(fresh).add / party().members.length) * 100"></div>
+                  <div class="progress-bar bg-status-red" [style.width.%]="(proposalVoteCount(fresh).discard / party().members.length) * 100"></div>
+                </div>
+                <div class="d-flex gap-2 small fw-bold text-onyx mb-2 justify-content-between">
+                  <span class="text-status-green">{{ proposalVoteCount(fresh).add }} Sí</span>
+                  <span class="text-status-red">{{ proposalVoteCount(fresh).discard }} No</span>
+                </div>
+                @if (fresh.status === 'voting') {
+                  <div class="d-flex gap-1">
+                    <button type="button" class="btn btn-success btn-sm flex-grow-1" (click)="vote(fresh, 'add')">
+                      <i class="bi bi-plus-lg"></i> Añadir
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm flex-grow-1" (click)="vote(fresh, 'discard')">
+                      <i class="bi bi-x-lg"></i> Descartar
+                    </button>
+                  </div>
+                } @else {
+                  <span class="badge bg-dry-sage text-onyx">{{ fresh.status }}</span>
+                }
+              </div>
+            }
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <div class="chat-input p-2 border-top border-dry-sage">
+    @if (showProposeForm()) {
+      <div class="mb-2 p-2 rounded-2 propose-form" style="background: var(--color-platinum); border: 1px solid var(--color-dry-sage);">
+        <label class="form-label small fw-bold text-dark-green mb-1">Buscar pelicula a proponer</label>
+        <div class="position-relative mb-2">
+          <i class="bi bi-search position-absolute" style="left: 10px; top: 50%; transform: translateY(-50%); color: var(--color-dry-sage);"></i>
+          <input
+            type="text"
+            class="form-control form-control-sm ps-4 border-dry-sage"
+            placeholder="Escribe el titulo..."
+            [value]="searchQuery()"
+            (input)="onSearchQueryChange($any($event.target).value)">
+        </div>
+
+        @if (isSearching()) {
+          <div class="text-center py-2"><span class="spinner-border spinner-border-sm text-dark-green"></span></div>
+        } @else if (searchResults().length > 0 && !selectedMovie()) {
+          <div class="search-results rounded bg-white shadow-sm" style="max-height: 150px; overflow-y: auto;">
+            @for (m of searchResults(); track m.id) {
+              <button type="button" class="btn btn-sm btn-link text-start text-decoration-none text-onyx w-100 p-2 border-bottom" (click)="selectMovie(m)">
+                <div class="fw-bold" style="font-size: 0.8rem;">{{ m.title }}</div>
+                <div class="text-dry-sage" style="font-size: 0.7rem;">{{ m.release_date | date:'y' }}</div>
+              </button>
+            }
+          </div>
+        } @else if (selectedMovie(); as sel) {
+          <div class="selected-movie d-flex align-items-center justify-content-between p-2 mb-2 bg-white rounded border">
+            <div>
+              <div class="fw-bold text-dark-green small">{{ sel.title }}</div>
+            </div>
+            <button type="button" class="btn btn-sm text-status-red p-0" (click)="selectedMovie.set(null)"><i class="bi bi-x-circle"></i></button>
+          </div>
+          <div class="d-flex gap-1">
+            <button type="button" class="btn btn-primary btn-sm flex-grow-1" (click)="propose()">
+              <i class="bi bi-send me-1"></i> Proponer
+            </button>
+            <button type="button" class="btn btn-light btn-sm" (click)="showProposeForm.set(false)">
+              Cancelar
+            </button>
+          </div>
+        } @else if (searchQuery().length > 0) {
+          <p class="text-muted small text-center mb-0">Sin resultados</p>
+        }
+
+        @if (!selectedMovie() && searchResults().length === 0 && !isSearching()) {
+           <button type="button" class="btn btn-light btn-sm w-100 mt-1" (click)="showProposeForm.set(false)">Cancelar</button>
+        }
+      </div>
+    } @else if (party().status !== 'watching' && party().status !== 'finished') {
+      <div class="d-flex gap-1 mb-1">
+        <button type="button" class="btn btn-outline-primary btn-sm" (click)="showProposeForm.set(true)">
+          <i class="bi bi-plus-square"></i> Proponer pelicula
+        </button>
+      </div>
+    } @else {
+      <div class="text-center text-dry-sage small py-1 mb-1 fst-italic">
+        <i class="bi bi-eye-fill me-1"></i>Reproduciendo en vivo - no se admiten propuestas
+      </div>
+    }
+    <div class="input-group">
+      <input
+        type="text"
+        class="form-control border-dry-sage"
+        placeholder="Escribe un mensaje..."
+        [value]="newMessage()"
+        (input)="newMessage.set($any($event.target).value)"
+        (keydown.enter)="send()">
+      <button type="button" class="btn btn-primary" (click)="send()">
+        <i class="bi bi-send"></i>
+      </button>
+    </div>
+  </div>
+</div>

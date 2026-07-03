@@ -1,0 +1,122 @@
+<div class="container py-4 text-onyx">
+  <a routerLink="/forum" class="btn btn-sm btn-light border-dry-sage mb-3">
+    <i class="bi bi-arrow-left me-1"></i>Volver al Foro
+  </a>
+
+  @if (error()) {
+    <div class="alert alert-danger d-flex justify-content-between align-items-center mb-3">
+      <span>{{ error() }}</span>
+      <button type="button" class="btn-close" (click)="dismissError()"></button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <span class="spinner-border spinner-border-sm text-primary"></span>
+    </div>
+  } @else if (thread(); as t) {
+    <div class="card bg-platinum border-dry-sage shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="small text-dry-sage">
+              <i class="bi bi-person-circle me-1"></i>{{ authorName }}
+            </span>
+            <span class="small text-dry-sage">
+              <i class="bi bi-clock me-1"></i>{{ relativeTime }}
+            </span>
+            @if (t.edited) {
+              <span class="badge bg-light small">Editado</span>
+            }
+            @if (!t.is_public) {
+              <i class="bi bi-lock-fill text-dry-sage small" title="Solo amigos"></i>
+            }
+          </div>
+          @if (isOwnThread() && !t.deleted) {
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-link p-1 text-dry-sage" (click)="startEdit()" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-sm btn-link p-1 text-dry-sage" (click)="requestDelete()" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          }
+        </div>
+
+        @if (t.deleted) {
+          <p class="text-dry-sage fst-italic mb-0">El usuario ha eliminado esta entrada</p>
+        } @else if (editing()) {
+          <div class="mb-2">
+            <input class="form-control form-control-sm mb-2" [(ngModel)]="editTitle" placeholder="Titulo" />
+            <textarea class="form-control form-control-sm mb-2" rows="4" [(ngModel)]="editContent" placeholder="Contenido"></textarea>
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" id="editIsPublic" [(ngModel)]="editIsPublic" />
+              <label class="form-check-label small" for="editIsPublic">P&uacute;blico</label>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-primary" (click)="saveEdit()">Guardar</button>
+              <button class="btn btn-sm btn-light border-dry-sage" (click)="cancelEdit()">Cancelar</button>
+            </div>
+          </div>
+        } @else {
+          <h4 class="fw-bold text-onyx mb-2">{{ t.title }}</h4>
+          <p class="card-text text-onyx mb-3" style="white-space: pre-wrap; word-break: break-word;">{{ t.content }}</p>
+        }
+
+        @if (!t.deleted) {
+          <div class="d-flex align-items-center gap-3 pt-2 border-top border-dry-sage">
+            <button class="btn btn-sm btn-link p-0 vote-btn" [class.voted]="t.user_vote === 'upvote'"
+              (click)="voteThread('upvote')" title="Upvote">
+              <i class="bi bi-hand-thumbs-up fs-5 me-1"></i>
+            </button>
+            <span class="fw-bold small">{{ t.upvotes - t.downvotes }}</span>
+            <button class="btn btn-sm btn-link p-0 vote-btn" [class.voted]="t.user_vote === 'downvote'"
+              (click)="voteThread('downvote')" title="Downvote">
+              <i class="bi bi-hand-thumbs-down fs-5 me-1"></i>
+            </button>
+            <span class="small text-dry-sage ms-2">
+              <i class="bi bi-chat me-1"></i>{{ t.comment_count }} comentarios
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (!t.deleted) {
+      <div class="card bg-platinum border-dry-sage shadow-sm mb-4">
+        <div class="card-body">
+          <h6 class="fw-bold text-onyx mb-2">
+            <i class="bi bi-reply me-1"></i>Responder
+          </h6>
+          <textarea class="form-control form-control-sm mb-2" rows="3"
+            [(ngModel)]="newCommentText" placeholder="Escribe tu comentario..."></textarea>
+          <button class="btn btn-sm btn-primary" [disabled]="!newCommentText().trim()"
+            (click)="submitComment()">
+            <i class="bi bi-send me-1"></i>Publicar
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (comments().length > 0) {
+      <div class="d-flex flex-column gap-2">
+        @for (comment of comments(); track comment.id) {
+          <app-forum-comment
+            [comment]="comment"
+            [threadId]="threadId()"
+            (commentAdded)="onCommentAdded()"></app-forum-comment>
+        }
+      </div>
+    } @else if (!t.deleted) {
+      <p class="text-dry-sage text-center small">No hay comentarios todav&iacute;a. S&eacute; el primero en comentar.</p>
+    }
+  }
+</div>
+
+@if (showDeleteConfirm()) {
+  <app-forum-confirm-delete
+    message="&iquest;Est&aacute;s seguro de eliminar esta entrada? Se reemplazar&aacute; el contenido."
+    (confirm)="confirmDelete()"
+    (cancel)="cancelDelete()"></app-forum-confirm-delete>
+}

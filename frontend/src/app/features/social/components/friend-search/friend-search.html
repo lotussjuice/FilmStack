@@ -1,0 +1,50 @@
+<div class="card bg-platinum border-dry-sage shadow-sm">
+  <div class="card-header bg-dry-sage border-dry-sage py-2">
+    <span class="small fw-bold text-onyx text-uppercase">
+      <i class="bi bi-search me-1"></i> Buscar usuarios
+    </span>
+  </div>
+  <div class="card-body">
+    <div class="input-group mb-3">
+      <span class="input-group-text bg-platinum border-dry-sage text-dry-sage">
+        <i class="bi bi-person"></i>
+      </span>
+      <input
+        type="text"
+        class="form-control bg-platinum border-dry-sage"
+        placeholder="Buscar por nombre..."
+        [value]="query()"
+        (input)="onInput($any($event.target).value)">
+    </div>
+
+    @if (loading()) {
+      <div class="text-center text-dry-sage py-3">
+        <span class="spinner-border spinner-border-sm"></span>
+      </div>
+    } @else if (query().trim() && results().length === 0) {
+      <p class="text-dry-sage small mb-0">Sin coincidencias.</p>
+    } @else {
+      @for (u of results(); track u.id) {
+        <div class="d-flex align-items-center justify-content-between p-2 rounded-2 mb-2 search-result">
+          <div>
+            <div class="fw-bold text-onyx">{{ u.name }}</div>
+            <div class="small text-dry-sage">{{ u.email }}</div>
+          </div>
+          @if (isFriend(u.id)) {
+            <span class="badge bg-status-green text-onyx">
+              <i class="bi bi-check-circle-fill me-1"></i> Amigo
+            </span>
+          } @else if (hasSentRequest(u.id)) {
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancelRequest(u.id)">
+              <i class="bi bi-x-circle me-1"></i> Cancelar
+            </button>
+          } @else {
+            <button type="button" class="btn btn-outline-primary btn-sm" (click)="sendRequest(u.id)">
+              <i class="bi bi-person-plus"></i> Solicitar
+            </button>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

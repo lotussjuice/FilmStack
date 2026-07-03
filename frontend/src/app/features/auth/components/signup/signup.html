@@ -1,0 +1,143 @@
+<div class="row g-0 vh-100 bg-platinum">
+  <div class="col-lg-6 d-none d-lg-flex flex-column justify-content-center align-items-start p-5 text-platinum login-info-panel">
+    <div class="mb-4">
+      <i class="bi bi-film text-platinum" style="font-size: 5rem;"></i>
+    </div>
+    <h1 class="display-4 fw-bold mb-3 text-platinum">FilmStack</h1>
+    <p class="lead mb-5 text-dry-sage">
+      Unete a la plataforma para gestionar tu catalogo cinematografico.
+      Descubre, organiza y lleva el control de todas las peliculas que deseas ver o ya has visto.
+    </p>
+    <div class="mt-auto small text-dry-sage">
+      &copy; 2026 FilmStack.
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-6 d-flex justify-content-center align-items-center p-4 p-md-5 bg-platinum">
+    <div class="w-100 auth-container p-4 p-md-5" style="max-width: 450px;">
+
+      <div class="d-lg-none text-center mb-4">
+        <i class="bi bi-film text-dark-green fs-1 mb-2"></i>
+        <h2 class="fw-bold text-dark-green">FilmStack</h2>
+      </div>
+
+      @if (success()) {
+        <div class="text-center">
+          <i class="bi bi-envelope-check text-status-green" style="font-size: 4rem;"></i>
+          <h3 class="mt-3 fw-bold text-onyx">Verifica tu Correo</h3>
+          <p class="text-dry-sage mt-3">
+            Hemos enviado un enlace de verificacion a <strong>{{ registeredEmail() }}</strong>.
+          </p>
+          <p class="text-dry-sage small">Revisa tu bandeja de entrada y carpeta de spam.</p>
+          <a routerLink="/login" class="btn btn-primary mt-3 fw-bold">
+            Ir a Iniciar Sesion <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+      } @else {
+        <h3 class="mb-4 fw-bold text-onyx text-center">Crear Cuenta</h3>
+
+        @if (errorMessage()) {
+          <div class="alert alert-danger mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage() }}
+          </div>
+        }
+
+        <form (ngSubmit)="onRegister()">
+        <div class="mb-3">
+          <label for="name" class="form-label text-dry-sage small text-uppercase fw-bold">Nombre</label>
+          <div class="input-group">
+            <span class="input-group-text bg-platinum border-end-0 border-dry-sage">
+              <i class="bi bi-person text-dry-sage"></i>
+            </span>
+            <input type="text" id="name"
+              class="form-control border-start-0 ps-0 border-dry-sage"
+              [class.is-invalid]="nameError()"
+              placeholder="Tu nombre"
+              [ngModel]="name()" (ngModelChange)="name.set($event)" (blur)="onBlur('name')"
+              name="name" required>
+          </div>
+          @if (nameError()) {
+            <div class="invalid-feedback d-block">
+              <i class="bi bi-exclamation-circle me-1"></i>{{ nameError() }}
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label text-dry-sage small text-uppercase fw-bold">Correo Electronico</label>
+          <div class="input-group">
+            <span class="input-group-text bg-platinum border-end-0 border-dry-sage">
+              <i class="bi bi-envelope text-dry-sage"></i>
+            </span>
+            <input type="email" id="email"
+              class="form-control border-start-0 ps-0 border-dry-sage"
+              [class.is-invalid]="emailError()"
+              placeholder="tu@correo.com"
+              [ngModel]="email()" (ngModelChange)="email.set($event)" (blur)="onBlur('email')"
+              name="email" required>
+          </div>
+          @if (emailError()) {
+            <div class="invalid-feedback d-block">
+              <i class="bi bi-exclamation-circle me-1"></i>{{ emailError() }}
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label text-dry-sage small text-uppercase fw-bold">Contrasena</label>
+          <div class="input-group">
+            <span class="input-group-text bg-platinum border-end-0 border-dry-sage">
+              <i class="bi bi-lock text-dry-sage"></i>
+            </span>
+            <input type="password" id="password"
+              class="form-control border-start-0 ps-0 border-dry-sage"
+              [class.is-invalid]="passwordError()"
+              placeholder="Minimo 6 caracteres"
+              [ngModel]="password()" (ngModelChange)="password.set($event)" (blur)="onBlur('password')"
+              name="password" required>
+          </div>
+          @if (passwordError()) {
+            <div class="invalid-feedback d-block">
+              <i class="bi bi-exclamation-circle me-1"></i>{{ passwordError() }}
+            </div>
+          }
+        </div>
+
+        <div class="mb-4">
+          <label for="passwordConfirm" class="form-label text-dry-sage small text-uppercase fw-bold">Confirmar Contrasena</label>
+          <div class="input-group">
+            <span class="input-group-text bg-platinum border-end-0 border-dry-sage">
+              <i class="bi bi-lock-fill text-dry-sage"></i>
+            </span>
+            <input type="password" id="passwordConfirm"
+              class="form-control border-start-0 ps-0 border-dry-sage"
+              [class.is-invalid]="passwordConfirmError()"
+              placeholder="Repite la contrasena"
+              [ngModel]="passwordConfirm()" (ngModelChange)="passwordConfirm.set($event)" (blur)="onBlur('passwordConfirm')"
+              name="passwordConfirm" required>
+          </div>
+          @if (passwordConfirmError()) {
+            <div class="invalid-feedback d-block">
+              <i class="bi bi-exclamation-circle me-1"></i>{{ passwordConfirmError() }}
+            </div>
+          }
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Creando cuenta...
+          } @else {
+            Crear Cuenta <i class="bi bi-person-plus ms-2"></i>
+          }
+        </button>
+      </form>
+
+        <div class="text-center mt-4">
+          <span class="text-dry-sage">¿Ya tienes cuenta? </span>
+          <a routerLink="/login" class="fw-bold">Inicia Sesion</a>
+        </div>
+      }
+    </div>
+  </div>
+</div>

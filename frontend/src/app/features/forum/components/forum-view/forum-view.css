@@ -1,0 +1,15 @@
+.page-link {
+  background-color: var(--color-platinum);
+  border-color: var(--color-dry-sage);
+  color: var(--color-onyx);
+}
+.page-item.active .page-link {
+  background-color: var(--color-dark-green);
+  border-color: var(--color-dark-green);
+  color: var(--color-platinum);
+}
+.page-item.disabled .page-link {
+  background-color: var(--color-platinum);
+  border-color: var(--color-dry-sage);
+  color: var(--color-dry-sage);
+}

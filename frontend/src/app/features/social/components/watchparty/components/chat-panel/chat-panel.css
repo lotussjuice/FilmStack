@@ -1,0 +1,33 @@
+.chat-container {
+  background: var(--color-platinum);
+  border: 1px solid var(--color-dry-sage);
+  border-radius: 8px;
+  min-height: 500px;
+}
+
+.message-bubble {
+  background: var(--color-dry-sage);
+  border: 1px solid var(--color-dry-sage);
+  max-width: 90%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.message-bubble.own {
+  background: var(--color-dark-green);
+  color: var(--color-platinum);
+  margin-left: auto;
+}
+.message-bubble.own .text-dark-green,
+.message-bubble.own .text-onyx {
+  color: var(--color-platinum) !important;
+}
+
+.proposal-widget {
+  background: var(--color-platinum);
+  border: 1px solid var(--color-dry-sage);
+}
+
+.propose-form {
+  background: var(--color-dry-sage);
+}

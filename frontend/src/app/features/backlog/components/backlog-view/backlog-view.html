@@ -1,0 +1,114 @@
+<div class="container py-4 text-onyx">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <h2 class="m-0 text-dark-green fw-bold"><i class="bi bi-collection-play me-2"></i>Mi Backlog</h2>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-dry-sage shadow-sm bg-platinum overflow-hidden">
+        <div class="card-header bg-dry-sage border-dry-sage py-2 d-flex justify-content-between align-items-center">
+          <span class="small fw-bold text-onyx">
+            <i class="bi bi-funnel me-1"></i> Filtros
+          </span>
+          <button class="btn btn-link btn-sm text-decoration-none text-onyx p-0" (click)="resetFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i> Reiniciar
+          </button>
+        </div>
+        <div class="card-body p-3">
+          <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-3">
+              <label class="form-label small fw-bold text-dry-sage">Buscar titulo</label>
+              <div class="input-group">
+                <span class="input-group-text bg-platinum border-dry-sage text-dry-sage">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input
+                  type="text"
+                  class="form-control bg-platinum border-dry-sage"
+                  placeholder="Titulo..."
+                  [value]="filterTitle()"
+                  (input)="onTitleFilter($any($event.target).value)">
+              </div>
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label small fw-bold text-dry-sage">Estado</label>
+              <div class="btn-group w-100" role="group">
+                <button type="button" class="btn btn-sm btn-light border-dry-sage" [class.active]="filterStatus() === 'all'" (click)="setFilter('all')">Todos</button>
+                <button type="button" class="btn btn-sm btn-light border-dry-sage text-status-yellow" [class.active]="filterStatus() === 'pending'" (click)="setFilter('pending')" title="Pendientes"><i class="bi bi-hourglass-split"></i></button>
+                <button type="button" class="btn btn-sm btn-light border-dry-sage text-status-green" [class.active]="filterStatus() === 'watched'" (click)="setFilter('watched')" title="Vistas"><i class="bi bi-check-circle"></i></button>
+                <button type="button" class="btn btn-sm btn-light border-dry-sage text-status-red" [class.active]="filterStatus() === 'dropped'" (click)="setFilter('dropped')" title="Abandonadas"><i class="bi bi-x-circle"></i></button>
+              </div>
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label small fw-bold text-dry-sage d-flex justify-content-between">
+                Puntuacion Minima <span>{{ filterMinRating() > 0 ? filterMinRating() + '/5' : 'Cualquiera' }}</span>
+              </label>
+              <input type="range" class="form-range" min="0" max="5" step="1"
+                     [ngModel]="filterMinRating()" (ngModelChange)="filterMinRating.set($event)">
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label small fw-bold text-dry-sage d-block">Favoritas</label>
+              <div class="form-check form-switch fs-5">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="favFilterSwitch"
+                  [checked]="filterFavoritesOnly()"
+                  (change)="toggleFavoritesOnly()">
+                <label class="form-check-label small fw-semibold text-dry-sage" for="favFilterSwitch">
+                  <i class="bi bi-star-fill" [class.text-status-yellow]="filterFavoritesOnly()"></i> Solo favoritas
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    @for (movie of filteredMovies(); track movie.id) {
+      <div class="col-12 col-md-6 col-xl-4">
+        <app-backlog-card
+          [movie]="movie"
+          (info)="openInfo($event)"
+          (edit)="openEdit($event)"
+          (delete)="requestRemove($event.id, $event.event)">
+        </app-backlog-card>
+      </div>
+    } @empty {
+      <div class="col-12 text-center text-dry-sage my-5 py-5 border border-platinum border-dashed rounded bg-platinum shadow-sm">
+        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+        <h5 class="fw-bold text-onyx">No hay películas en esta sección</h5>
+        <p>Busca películas y añádelas a tu colección.</p>
+      </div>
+    }
+  </div>
+
+  <app-confirm-modal 
+    [isOpen]="isDeleteModalOpen()"
+    title="Eliminar Película"
+    message="¿Estás seguro de que deseas eliminar esta película de tu backlog? Esta acción no se puede deshacer."
+    confirmText="Eliminar"
+    confirmClass="btn-danger"
+    (confirmed)="confirmRemove()"
+    (cancelled)="closeDeleteModal()">
+  </app-confirm-modal>
+
+  @if (selectedMovie() && selectedMovie()?.tmdb_data) {
+    <app-edit-movie-modal
+      [isOpen]="isEditModalOpen()"
+      [movie]="selectedMovie()!"
+      (save)="onEditConfirm($event)"
+      (cancel)="onEditCancel()">
+    </app-edit-movie-modal>
+
+    <app-movie-detail-modal
+      [isOpen]="isInfoModalOpen()"
+      [movie]="selectedMovie()!.tmdb_data!"
+      [stats]="selectedMovie()!.stats"
+      [isAlreadyInBacklog]="true"
+      (close)="isInfoModalOpen.set(false)">
+    </app-movie-detail-modal>
+  }
+</div>

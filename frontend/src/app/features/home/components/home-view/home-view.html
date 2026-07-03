@@ -1,0 +1,137 @@
+<div class="home-view">
+  @if (isLoading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-dry-sage" role="status"></div>
+    </div>
+  } @else {
+    <div class="mb-4">
+      <h3 class="fw-bold text-onyx mb-1">Bienvenido, {{ auth.user()?.name || 'Usuario' }}</h3>
+      <p class="text-dry-sage mb-0">Resumen de tu actividad en FilmStack</p>
+    </div>
+
+    @if (homeData()?.summary) {
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="stat-card rounded-3 p-3 text-center" [style.borderBottomColor]="'var(--color-dark-green)'">
+            <div class="stat-value text-platinum">{{ homeData()!.summary.total }}</div>
+            <div class="stat-label text-platinum">Total</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card rounded-3 p-3 text-center" [style.borderBottomColor]="'var(--color-status-green)'">
+            <div class="stat-value text-platinum">{{ homeData()!.summary.watched }}</div>
+            <div class="stat-label text-platinum">Vistas</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card rounded-3 p-3 text-center" [style.borderBottomColor]="'var(--color-status-yellow)'">
+            <div class="stat-value text-platinum">{{ homeData()!.summary.pending }}</div>
+            <div class="stat-label text-platinum">Pendientes</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card rounded-3 p-3 text-center" [style.borderBottomColor]="'var(--color-status-red)'">
+            <div class="stat-value text-platinum">{{ homeData()!.summary.favorites }}</div>
+            <div class="stat-label text-platinum">Favoritas</div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-4">
+        <button class="nav-card rounded-3 p-3 w-100 text-start" (click)="navigateTo('/search')">
+          <i class="bi bi-search fs-3 text-dark-green mb-2 d-block"></i>
+          <span class="fw-bold text-onyx d-block">Buscar</span>
+          <small class="text-dry-sage">Busca peliculas por titulo, genero o actor</small>
+        </button>
+      </div>
+      <div class="col-6 col-md-4">
+        <button class="nav-card rounded-3 p-3 w-100 text-start" (click)="navigateTo('/backlog')">
+          <i class="bi bi-collection-play fs-3 text-status-yellow mb-2 d-block"></i>
+          <span class="fw-bold text-onyx d-block">Mi Backlog</span>
+          <small class="text-dry-sage">Administra tu coleccion de peliculas pendientes y vistas</small>
+        </button>
+      </div>
+      <div class="col-6 col-md-4">
+        <button class="nav-card rounded-3 p-3 w-100 text-start" (click)="navigateTo('/stats')">
+          <i class="bi bi-bar-chart fs-3 text-primary mb-2 d-block"></i>
+          <span class="fw-bold text-onyx d-block">Estadisticas</span>
+          <small class="text-dry-sage">Descubre tus patrones de consumo cinematografico</small>
+        </button>
+      </div>
+      <div class="col-6 col-md-4">
+        <button class="nav-card rounded-3 p-3 w-100 text-start" (click)="navigateTo('/recommendations')">
+          <i class="bi bi-lightbulb fs-3 text-status-yellow mb-2 d-block"></i>
+          <span class="fw-bold text-onyx d-block">Recomendaciones</span>
+          <small class="text-dry-sage">Peliculas elegidas para ti segun tu historial y gustos</small>
+        </button>
+      </div>
+      <div class="col-6 col-md-4">
+        <button class="nav-card rounded-3 p-3 w-100 text-start" (click)="navigateTo('/roulette')">
+          <i class="bi bi-dice-5 fs-3 text-status-red mb-2 d-block"></i>
+          <span class="fw-bold text-onyx d-block">Ruleta</span>
+          <small class="text-dry-sage">Deja que la suerte decida que pelicula ver hoy</small>
+        </button>
+      </div>
+      <div class="col-6 col-md-4">
+        <button class="nav-card rounded-3 p-3 w-100 text-start" (click)="navigateTo('/social')">
+          <i class="bi bi-people fs-3 text-dark-green mb-2 d-block"></i>
+          <span class="fw-bold text-onyx d-block">Social</span>
+          <small class="text-dry-sage">Conectate con amigos y descubre que estan viendo</small>
+        </button>
+      </div>
+    </div>
+
+    @if (lastWatchedMovie()) {
+      <section class="mb-4">
+        <h5 class="fw-bold text-onyx mb-3"><i class="bi bi-clock-history me-2 text-dry-sage"></i>Ultima vista</h5>
+        <div class="last-watched-card rounded-3 overflow-hidden position-relative">
+          @if (lastWatchedMovie().backdrop_path) {
+            <img [src]="getBackdropUrl(lastWatchedMovie().backdrop_path)" class="w-100" style="height: 200px; object-fit: cover; filter: brightness(0.5);">
+          }
+          <div class="position-absolute bottom-0 start-0 p-3 w-100">
+            <div class="d-flex align-items-end gap-3">
+              <img [src]="getPosterUrl(lastWatchedMovie().poster_path)" class="rounded shadow" style="width: 60px; height: 90px; object-fit: cover;">
+              <div>
+                <h6 class="text-platinum fw-bold mb-1">{{ lastWatchedMovie().title }}</h6>
+                @if (homeData()?.lastWatched?.rating) {
+                  <div class="d-flex align-items-center gap-1">
+                    <span class="badge bg-status-yellow text-onyx">
+                      <i class="bi bi-star-fill"></i> {{ homeData()!.lastWatched!.rating | number:'1.1-1' }}
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+
+    @if (friendsMovies().length > 0) {
+      <section>
+        <h5 class="fw-bold text-onyx mb-3"><i class="bi bi-people-fill me-2 text-status-yellow"></i>Tus amigos estan viendo</h5>
+        <div class="row g-2">
+          @for (movie of friendsMovies(); track movie.id) {
+            <div class="col-4 col-md-2">
+              <div class="friend-movie-card rounded-3 overflow-hidden position-relative">
+                <img [src]="getPosterUrl(movie.poster_path)" class="w-100" style="aspect-ratio: 2/3; object-fit: cover;">
+                <div class="friend-badge position-absolute top-0 start-0 m-1">
+                  <span class="badge bg-dark-green text-platinum" style="font-size: 0.55rem;">{{ movie.friendName }}</span>
+                </div>
+                @if (movie.friendRating) {
+                  <div class="rating-badge position-absolute bottom-0 end-0 m-1">
+                    <span class="badge bg-status-yellow text-onyx" style="font-size: 0.6rem;">
+                      <i class="bi bi-star-fill"></i> {{ movie.friendRating }}
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+  }
+</div>

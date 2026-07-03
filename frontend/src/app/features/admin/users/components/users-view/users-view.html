@@ -1,0 +1,94 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-dark-green fw-bold"><i class="bi bi-people me-2"></i>Gestión de Usuarios</h2>
+    <button class="btn btn-outline-primary btn-sm" (click)="loadUsers()">
+      <i class="bi bi-arrow-clockwise"></i> Actualizar
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="text-center my-5">
+      <div class="spinner-border text-dark-green" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  } @else {
+    <div class="card border-platinum shadow-sm">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="bg-dry-sage">
+            <tr>
+              <th class="text-onyx small fw-bold">ID</th>
+              <th class="fw-bold text-onyx">Nombre / Email</th>
+              <th class="fw-bold text-onyx">Rol</th>
+              <th class="fw-bold text-onyx">Estado</th>
+              <th class="text-end fw-bold text-onyx">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users(); track user.id) {
+              <tr [class.opacity-50]="user.deleted">
+                <td class="text-onyx small"><code>{{ user.id }}</code></td>
+                <td>
+                  <div class="fw-bold text-onyx">{{ user.name || 'Sin Nombre' }}</div>
+                  <div class="small text-grey-olive">{{ user.email }}</div>
+                </td>
+                <td>
+                  <select 
+                    class="form-select form-select-sm bg-platinum text-onyx border-dry-sage w-auto shadow-none" 
+                    [value]="user.role"
+                    (change)="updateRole(user.id, roleSelect.value)"
+                    #roleSelect
+                    [disabled]="user.deleted || !canChangeRole(user)"
+                    [title]="isCurrentUser(user) ? 'No puedes cambiar tu propio rol' : user.role === 'admin' ? 'No se puede cambiar el rol de otro administrador' : ''">
+                    <option value="guest">Guest</option>
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                  @if (isCurrentUser(user)) {
+                    <small class="text-dry-sage d-block mt-1"><i class="bi bi-info-circle me-1"></i>Tu</small>
+                  } @else if (user.role === 'admin') {
+                    <small class="text-dry-sage d-block mt-1"><i class="bi bi-shield-lock me-1"></i>Admin</small>
+                  }
+                </td>
+                <td>
+                  @if (user.deleted) {
+                    <span class="badge bg-danger text-platinum">Suspendido</span>
+                  } @else {
+                    <span class="badge bg-status-green text-onyx">Activo</span>
+                  }
+                </td>
+                <td class="text-end">
+                  <button 
+                    class="btn btn-sm shadow-none" 
+                    [class.text-status-red]="!user.deleted"
+                    [class.text-status-yellow]="user.deleted"
+                    (click)="requestToggleDelete(user)"
+                    [title]="user.deleted ? 'Restaurar' : 'Eliminar'">
+                    <i class="bi" [class.bi-trash]="!user.deleted" [class.bi-arrow-counterclockwise]="user.deleted"></i>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="text-center py-4 text-grey-olive">
+                  No hay usuarios registrados
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <app-confirm-modal 
+    [isOpen]="isModalOpen()"
+    [title]="targetUser()?.deleted ? 'Restaurar Usuario' : 'Suspender Usuario'"
+    [message]="targetUser()?.deleted ? '¿Deseas restaurar el acceso de este usuario?' : '¿Estás seguro de que deseas suspender a este usuario? No podrá realizar acciones en la plataforma.'"
+    [confirmText]="targetUser()?.deleted ? 'Restaurar' : 'Suspender'"
+    [confirmClass]="targetUser()?.deleted ? 'btn-warning' : 'btn-danger'"
+    (confirmed)="confirmToggleDelete()"
+    (cancelled)="closeModal()">
+  </app-confirm-modal>
+</div>

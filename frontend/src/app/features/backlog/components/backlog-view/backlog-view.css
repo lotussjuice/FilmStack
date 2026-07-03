@@ -1,0 +1,29 @@
+.border-dashed {
+    border-style: dashed !important;
+}
+
+.btn-group .btn.active {
+    background-color: var(--color-dark-green) !important;
+    border-color: var(--color-dark-green) !important;
+    color: var(--color-platinum) !important;
+    font-weight: 600;
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.2);
+}
+
+.btn-group .btn.text-status-yellow.active {
+    background-color: var(--color-status-yellow) !important;
+    border-color: var(--color-status-yellow) !important;
+    color: var(--color-onyx) !important;
+}
+
+.btn-group .btn.text-status-green.active {
+    background-color: var(--color-status-green) !important;
+    border-color: var(--color-status-green) !important;
+    color: var(--color-onyx) !important;
+}
+
+.btn-group .btn.text-status-red.active {
+    background-color: var(--color-status-red) !important;
+    border-color: var(--color-status-red) !important;
+    color: var(--color-platinum) !important;
+}

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { TMDbMovie } from '../../models/movie.model';
+import { TMDbMovie } from '../interfaces/movie.interface';
 
 @Injectable({
   providedIn: 'root'

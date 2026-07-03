@@ -1,0 +1,31 @@
+services:
+  frontend:
+    container_name: mb-filmstack-frontend-dev
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/angular.json:/app/angular.json
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+      - ./frontend/tsconfig.app.json:/app/tsconfig.app.json
+      - ./frontend/proxy.conf.json:/app/proxy.conf.json
+    depends_on:
+      - backend
+
+  backend:
+    container_name: mb-filmstack-backend-dev
+    build:
+      context: ./backend
+      dockerfile: pocketbase.Dockerfile
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./backend/pb_data:/pb_data
+      - ./backend/pb_migrations:/pb_migrations
+      - ./backend/pb_hooks:/pb_hooks
+    env_file:
+      - .env

@@ -1,0 +1,38 @@
+<div class="card bg-platinum border-dry-sage shadow-sm">
+  <div class="card-header bg-dry-sage border-dry-sage py-2">
+    <span class="small fw-bold text-onyx text-uppercase">
+      <i class="bi bi-people me-1"></i> Mis amigos
+    </span>
+  </div>
+  <div class="card-body">
+    @if (friends().length === 0) {
+      <p class="text-dry-sage small mb-0">Aun no tienes amigos. Busca por nombre exacto para enviar solicitud.</p>
+    } @else {
+      @for (f of friends(); track f.id) {
+        <div class="d-flex align-items-center justify-content-between p-2 rounded-2 mb-2 friend-item">
+          <div class="d-flex align-items-center gap-2">
+            <div class="friend-avatar">{{ f.name.charAt(0).toUpperCase() }}</div>
+            <div>
+              <div class="fw-bold text-onyx">{{ f.name }}</div>
+              <div class="small text-dry-sage">{{ f.email }}</div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline-danger btn-sm" (click)="askRemove(f.id)" title="Eliminar amigo">
+            <i class="bi bi-person-dash"></i>
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<app-confirm-modal
+  [isOpen]="isConfirmOpen()"
+  title="Eliminar amigo"
+  message="¿Estas seguro de eliminar a este amigo de tu lista?"
+  confirmText="Eliminar"
+  cancelText="Cancelar"
+  confirmClass="btn-danger"
+  (confirmed)="confirmRemove()"
+  (cancelled)="cancelRemove()">
+</app-confirm-modal>

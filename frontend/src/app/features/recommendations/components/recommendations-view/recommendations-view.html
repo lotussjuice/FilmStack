@@ -1,0 +1,55 @@
+<div class="recommendations-view">
+  @if (isLoading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-dry-sage" role="status"></div>
+      <p class="text-dry-sage mt-2 small">Analizando tu perfil...</p>
+    </div>
+  } @else if (rows().length === 0) {
+    <div class="text-center py-5">
+      <i class="bi bi-lightbulb fs-1 text-dry-sage opacity-25 mb-3 d-block"></i>
+      <h5 class="text-onyx">No hay recomendaciones disponibles</h5>
+      <p class="text-dry-sage">Agrega peliculas a tu backlog para recibir sugerencias personalizadas.</p>
+    </div>
+  } @else {
+    <div class="mb-4">
+      <h3 class="fw-bold text-onyx mb-1"><i class="bi bi-lightbulb me-2 text-status-yellow"></i>Recomendaciones</h3>
+      <p class="text-dry-sage mb-0">Sugerencias basadas en tu perfil y preferencias</p>
+    </div>
+
+    @for (row of rows(); track row.title; let rowIdx = $index) {
+      <section class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <h5 class="fw-bold text-onyx mb-0">{{ row.title }}</h5>
+            <small class="text-dry-sage">{{ row.subtitle }}</small>
+          </div>
+        </div>
+
+        <div class="carousel-container position-relative">
+          <button class="carousel-btn carousel-btn-left" (click)="scrollLeft($event, rowIdx)">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
+          <div class="carousel-track d-flex gap-2 overflow-hidden">
+            @for (movie of row.movies; track movie.id) {
+              <div class="rec-card flex-shrink-0 rounded-3 overflow-hidden" (click)="openDetail(movie.id)">
+                <img [src]="getPosterUrl(movie.poster_path)" class="w-100" style="aspect-ratio: 2/3; object-fit: cover;">
+                <div class="rec-info p-2">
+                  <div class="rec-title text-onyx small fw-bold text-truncate">{{ movie.title }}</div>
+                  <div class="d-flex align-items-center gap-1">
+                    <span class="text-status-yellow" style="font-size: 0.65rem;"><i class="bi bi-star-fill"></i></span>
+                    <span class="text-dry-sage" style="font-size: 0.7rem;">{{ movie.vote_average | number:'1.1-1' }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <button class="carousel-btn carousel-btn-right" (click)="scrollRight($event, rowIdx)">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </section>
+    }
+  }
+</div>

@@ -1,19 +1,16 @@
 @if (isOpen()) {
-  <div class="modal-backdrop fade show"></div>
-  <div class="modal d-block fade show" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content bg-dark text-light border-secondary shadow-lg">
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title">{{ title() }}</h5>
-          <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="onCancel()"></button>
-        </div>
-        <div class="modal-body">
-          <p>{{ message() }}</p>
-        </div>
-        <div class="modal-footer border-secondary">
-          <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">{{ cancelText() }}</button>
-          <button type="button" class="btn" [class]="confirmClass()" (click)="onConfirm()">{{ confirmText() }}</button>
-        </div>
+  <div class="modal-overlay d-flex align-items-center justify-content-center">
+    <div class="modal-container rounded-4 shadow-lg p-4 animate__animated animate__fadeInUp">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="m-0 fw-bold text-dark-green">{{ title() }}</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="onCancel()"></button>
+      </div>
+      <div class="mb-4">
+        <p class="text-onyx">{{ message() }}</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-light flex-grow-1 text-onyx" (click)="onCancel()">{{ cancelText() }}</button>
+        <button type="button" class="btn flex-grow-1" [class]="confirmClass()" (click)="onConfirm()">{{ confirmText() }}</button>
       </div>
     </div>
   </div>

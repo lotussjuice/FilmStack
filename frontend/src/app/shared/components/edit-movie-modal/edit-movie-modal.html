@@ -1,43 +1,43 @@
 @if (isOpen()) {
   <div class="modal-overlay d-flex align-items-center justify-content-center">
-    <div class="modal-container bg-white rounded-4 shadow-lg p-4 animate__animated animate__fadeInUp">
+    <div class="modal-container rounded-4 shadow-lg p-4 animate__animated animate__fadeInUp">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="m-0 fw-bold text-dusk-blue">Editar Película</h4>
+        <h4 class="m-0 fw-bold text-dark-green">Editar Pelicula</h4>
         <button class="btn-close" (click)="onCancel()"></button>
       </div>
 
-      <div class="movie-mini-info d-flex gap-3 mb-4 p-3 bg-light rounded-3">
+      <div class="movie-mini-info d-flex gap-3 mb-4 p-3 bg-dry-sage rounded-3">
         @if (movie().tmdb_data?.poster_path) {
           <img [src]="'https://image.tmdb.org/t/p/w200' + movie().tmdb_data?.poster_path" class="rounded-2 shadow-sm" style="width: 60px; height: 90px; object-fit: cover;">
         }
         <div>
-          <h6 class="m-0 fw-bold">{{ movie().tmdb_data?.title }}</h6>
-          <p class="small text-muted m-0">{{ movie().tmdb_data?.release_date | date:'y' }}</p>
+          <h6 class="m-0 fw-bold text-onyx">{{ movie().tmdb_data?.title }}</h6>
+          <p class="small text-onyx m-0">{{ movie().tmdb_data?.release_date | date:'y' }}</p>
         </div>
       </div>
 
       <div class="mb-4">
-        <label class="form-label fw-semibold text-grey-olive">Estado</label>
+        <label class="form-label fw-semibold text-dry-sage">Estado</label>
         <div class="d-flex gap-2">
-          <button 
-            type="button" 
-            class="btn flex-grow-1" 
+          <button
+            type="button"
+            class="btn flex-grow-1"
             [class.btn-primary]="status() === 'pending'"
             [class.btn-outline-primary]="status() !== 'pending'"
             (click)="status.set('pending')">
             <i class="bi bi-clock"></i> Pendiente
           </button>
-          <button 
-            type="button" 
-            class="btn flex-grow-1" 
+          <button
+            type="button"
+            class="btn flex-grow-1"
             [class.btn-success]="status() === 'watched'"
             [class.btn-outline-success]="status() !== 'watched'"
             (click)="status.set('watched')">
             <i class="bi bi-check-circle"></i> Vista
           </button>
-          <button 
-            type="button" 
-            class="btn flex-grow-1" 
+          <button
+            type="button"
+            class="btn flex-grow-1"
             [class.btn-danger]="status() === 'dropped'"
             [class.btn-outline-danger]="status() !== 'dropped'"
             (click)="status.set('dropped')">
@@ -49,28 +49,34 @@
       @if (status() === 'watched' || status() === 'dropped') {
         <div class="animate__animated animate__fadeIn">
           <div class="mb-3">
-            <label class="form-label fw-semibold text-grey-olive">Tu Nota</label>
-            <div class="rating-stars d-flex gap-1 fs-3">
+            <label class="form-label fw-semibold text-dry-sage">Tu Nota</label>
+            <div class="rating-stars d-flex gap-1 fs-3" [class.is-invalid]="ratingError()">
               @for (star of [1,2,3,4,5]; track star) {
-                <i 
-                  class="bi" 
-                  [class.bi-star-fill]="rating() >= star" 
-                  [class.bi-star]="rating() < star"
-                  [class.text-warning]="rating() >= star"
-                  [class.text-muted]="rating() < star"
-                  (click)="setRating(star)"
-                  style="cursor: pointer;">
-                </i>
+                <span class="star-wrapper" (click)="setRating(star, $event)">
+                  <i
+                    class="bi"
+                    [class.bi-star-fill]="rating() >= star"
+                    [class.bi-star-half]="rating() >= star - 0.5 && rating() < star"
+                    [class.bi-star]="rating() < star - 0.5"
+                    [class.text-status-yellow]="rating() >= star - 0.5"
+                    [class.text-muted]="rating() < star - 0.5">
+                  </i>
+                </span>
               }
             </div>
+            @if (ratingError()) {
+              <div class="text-danger small mt-1">
+                <i class="bi bi-exclamation-circle me-1"></i>{{ ratingError() }}
+              </div>
+            }
           </div>
 
           <div class="mb-3">
-            <label class="form-label fw-semibold text-grey-olive">Tu Reseña</label>
-            <textarea 
-              class="form-control border-platinum" 
-              rows="3" 
-              placeholder="Escribe lo que te pareció..."
+            <label class="form-label fw-semibold text-dry-sage">Tu Resena</label>
+            <textarea
+              class="form-control border-dry-sage"
+              rows="3"
+              placeholder="Escribe lo que te parecio..."
               [(ngModel)]="review">
             </textarea>
           </div>
@@ -79,22 +85,42 @@
 
       <div class="mb-4 d-flex align-items-center gap-2">
         <div class="form-check form-switch fs-5">
-          <input 
-            class="form-check-input" 
-            type="checkbox" 
-            id="editFavSwitch" 
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="editFavSwitch"
             [(ngModel)]="isFavorite">
-          <label class="form-check-label small fw-semibold text-grey-olive" for="editFavSwitch">
-            <i class="bi" [class.bi-star-fill]="isFavorite()" [class.text-warning]="isFavorite()"></i>
+          <label class="form-check-label small fw-semibold text-dry-sage" for="editFavSwitch">
+            <i class="bi" [class.bi-star-fill]="isFavorite()" [class.text-status-yellow]="isFavorite()"></i>
             Favorita
           </label>
         </div>
       </div>
 
+      @if (status() === 'watched' || status() === 'dropped') {
+        <div class="mb-3 d-flex align-items-center gap-2">
+          <button
+            type="button"
+            class="btn btn-outline-primary flex-grow-1"
+            [disabled]="isExporting()"
+            (click)="exportReview()">
+            <i class="bi bi-share me-1"></i>
+            {{ isExporting() ? 'Exportando...' : 'Exportar Reseña' }}
+          </button>
+          @if (exportMessage()) {
+            <span class="small text-dry-sage">{{ exportMessage() }}</span>
+          }
+        </div>
+      }
+
       <div class="d-flex gap-2">
-        <button class="btn btn-light flex-grow-1 text-grey-olive" (click)="onCancel()">Cancelar</button>
+        <button class="btn btn-light flex-grow-1 text-onyx" (click)="onCancel()">Cancelar</button>
         <button class="btn btn-primary flex-grow-1" (click)="onSave()">Actualizar</button>
       </div>
     </div>
   </div>
+
+  @if (isOpen() && (status() === 'watched' || status() === 'dropped')) {
+    <app-review-share-card #shareCard [movie]="movie()" [userName]="currentUserName"></app-review-share-card>
+  }
 }

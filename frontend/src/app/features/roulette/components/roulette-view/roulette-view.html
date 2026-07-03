@@ -1,0 +1,119 @@
+<div class="container py-4 text-onyx">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+      <h2 class="m-0 text-dark-green fw-bold"><i class="bi bi-dice-5 me-2"></i>Ruleta de Decision</h2>
+      <p class="text-dry-sage m-0 mt-1">Deja que el azar elija tu proxima pelicula</p>
+    </div>
+    <div class="d-flex gap-2 shadow-sm rounded-3 p-1" style="background: var(--color-platinum); border: 2px solid var(--color-dry-sage);">
+      <button
+        type="button"
+        class="mode-pill rounded-2"
+        [class.active]="mode() === 'pending'"
+        (click)="setMode('pending')">
+        <i class="bi bi-hourglass-split me-1"></i> Backlog
+      </button>
+      <button
+        type="button"
+        class="mode-pill rounded-2"
+        [class.active]="mode() === 'rewatch'"
+        (click)="setMode('rewatch')">
+        <i class="bi bi-arrow-clockwise me-1"></i> Rewatch
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-6">
+      <div class="card roulette-card border-dry-sage shadow-sm p-4 text-center">
+        <h4 class="text-dark-green mb-2">Listo para decidir?</h4>
+        <p class="text-dry-sage mb-4">
+          Tienes <strong class="text-onyx">{{ candidates().length }}</strong>
+          @if (mode() === 'pending') { peliculas pendientes en el pozo. }
+          @else { peliculas vistas disponibles para rewatch. }
+        </p>
+
+        <div class="roulette-stage mb-4">
+          <div class="roulette-pointer">
+            <svg width="32" height="40" viewBox="0 0 32 40">
+              <path d="M16 40 L4 12 L28 12 Z" fill="var(--color-status-red)" stroke="var(--color-onyx)" stroke-width="2"/>
+              <circle cx="16" cy="12" r="4" fill="var(--color-status-red)" stroke="var(--color-onyx)" stroke-width="2"/>
+            </svg>
+          </div>
+
+          <div class="roulette-wheel" [class.spinning]="isSpinning()" [class.glow]="!isSpinning() && candidates().length > 0" [style.background]="wheelGradient()">
+            <div class="wheel-center">
+              <i class="bi bi-dice-5-fill text-dark-green"></i>
+            </div>
+            <div class="roulette-labels">
+              @for (name of poolNames(); track $index; let i = $index) {
+                <span class="roulette-label" [style.transform]="'rotate(' + (labelAngles()[i] - 90) + 'deg)'">
+                  <span class="roulette-label-text">{{ name }}</span>
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="spin-button w-100"
+          [disabled]="candidates().length === 0 || isSpinning()"
+          (click)="spin()">
+          @if (isSpinning()) {
+            <span class="spinner-border spinner-border-sm me-2"></span> Girando...
+          } @else {
+            <i class="bi bi-play-fill me-2"></i> Girar Ruleta
+          }
+        </button>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card bg-platinum border-dry-sage shadow-sm p-4 h-100">
+        <h5 class="text-dark-green fw-bold mb-3">
+          <i class="bi bi-collection me-1"></i> Pozo de seleccion
+          <span class="badge bg-dry-sage text-onyx ms-2">{{ candidates().length }}</span>
+        </h5>
+        @if (candidates().length === 0) {
+          <div class="text-center text-dry-sage py-5">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            <p class="m-0 fw-semibold">No hay peliculas en esta categoria.</p>
+            <small>Añade peliculas a tu backlog o marcalas como vistas.</small>
+          </div>
+        } @else {
+          <div class="candidate-list">
+            @for (movie of candidates(); track movie.id) {
+              <div class="candidate-item d-flex align-items-center gap-3 p-2 mb-2 rounded-2">
+                @if (posterUrl(movie); as url) {
+                  <img [src]="url" alt="" class="candidate-thumb">
+                } @else {
+                  <div class="candidate-thumb candidate-thumb-placeholder d-flex align-items-center justify-content-center">
+                    <i class="bi bi-film"></i>
+                  </div>
+                }
+                <div class="flex-grow-1 overflow-hidden">
+                  <div class="fw-bold text-onyx text-truncate">{{ movie.tmdb_data?.title }}</div>
+                  <div class="small text-dry-sage">
+                    @if (movie.tmdb_data?.release_date) {
+                      {{ movie.tmdb_data?.release_date | date:'y' }}
+                    }
+                    @if (movie.rating) {
+                      · <span class="text-status-yellow"><i class="bi bi-star-fill"></i> {{ movie.rating }}/5</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <app-roulette-result-modal
+    [isOpen]="isResultOpen()"
+    [movie]="selected()"
+    (accepted)="onAccept()"
+    (dismissed)="onDismiss()">
+  </app-roulette-result-modal>
+</div>

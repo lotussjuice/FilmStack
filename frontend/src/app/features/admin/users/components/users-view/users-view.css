@@ -1,0 +1,13 @@
+.card {
+  background: var(--color-platinum);
+}
+.card .table {
+  color: var(--color-onyx);
+}
+.card .table thead {
+  background: var(--color-dry-sage);
+}
+.form-select option {
+  background: var(--color-platinum);
+  color: var(--color-onyx);
+}
